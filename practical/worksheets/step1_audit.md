@@ -6,10 +6,10 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 
 ## What I downloaded
 
-| File | Size | What it holds | Why I need it (or not) |
-|------|------|---------------|------------------------|
-| | | | |
-
+| File                  | Size   | What it holds                  | Why I need it (or not)                   |
+|-----------------------|--------|--------------------------------|------------------------------------------|
+| GSE115650_all.soft.txt|13.5 MB |GEO metadata and sample records | To obtain sample information and metadata|
+|
 ## Sample table
 
 Number of samples: 
