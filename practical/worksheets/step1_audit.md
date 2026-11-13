@@ -8,14 +8,28 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 
 | File | Size | What it holds | Why I need it (or not) |
 |------|------|---------------|------------------------|
-| | | | |
+|GSE115650_all.soft.txt |13.5 MB |GEO series record and sample metadata |To identify the biopsies and audit their metadata |
+|GSE115650_biopsy_genecounts.csv.gz |1.7 MB |Raw gene counts for each biopsy |To check that the count columns match the sample records and provide inputs for analysis |
+|gencode.v24.annotation.gtf.gz |38.7 MB |GENCODE v24 gene annotation |To map gene IDs to gene symbols and types |
+
 
 ## Sample table
 
-Number of samples: 
-Condition groups and counts: 
-Variables available per sample (list the columns of `sample_table.csv`): 
-Variables that have a value for one condition only (see `missing_values.csv`): 
+Number of samples: 43
+Condition groups and counts: 34 FSHD and 9 controls
+Variables available per sample (list the columns of `sample_table.csv`): gsm, title, geo_accession, status, submission_date, last_update_date, type,
+channel_count, source_name_ch1, organism_ch1, taxid_ch1, char:subject status,
+char:age, char:gender, char:path.score, char:inflam, char:active, char:stir,
+char:t1, char:fat.fraction, char:tissue, char:rnaseq.score, char:rnaseq.rank,
+char:sample_id, char:batch, growth_protocol_ch1, molecule_ch1,
+extract_protocol_ch1, data_processing, platform_id, contact_name,
+contact_email, contact_laboratory, contact_department, contact_institute,
+contact_address, contact_city, contact_state, contact_zip/postal_code,
+contact_country, instrument_model, library_selection, library_source,
+library_strategy, relation, supplementary_file_1, series_id, data_row_count,
+condition
+Variables that have a value for one condition only (see `missing_values.csv`): char:age, char:gender, char:stir, char:t1, char:fat.fraction,
+char:rnaseq.score, char:rnaseq.rank
 
 ## Do the counts match the sample table?
 
@@ -28,6 +42,8 @@ variable say in one sentence whether it is balanced across conditions and
 whether it is technical (batch, instrument, tissue of sampling) or biological
 (sex, age). A technical variable that is unbalanced across conditions is a
 confounder: name it as such.
+
+Batches I and II contain only FSHD biopsies, while batches III and IV contain both FSHD and control biopsies. (batch effect, course 4)
 
 ## What the paper says about the samples and GEO does not
 

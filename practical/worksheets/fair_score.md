@@ -10,7 +10,7 @@ evidence, so do not round up.
 | Principle | Criterion | Score (0 to 2) | Evidence |
 |-----------|-----------|----------------|----------|
 | F1 | The dataset has a persistent identifier (GEO accession, DOI of the paper) | | |
-| F2 | Sample metadata are rich: condition, donor, sex, age, tissue, batch are present for every sample | | |
+| F2 | Sample metadata are rich: condition, donor, sex, age, tissue, batch are present for every sample |0|several features lacking for controls |
 | F3 | The metadata point to the data files and the paper, and the paper points back to the accession | | |
 | F4 | The series is indexed and searchable (GEO search, PubMed link) | | |
 | A1 | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login | | |
