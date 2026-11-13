@@ -1,0 +1,40 @@
+name: Question about the practical (GSE115650, Wang et al. 2019)
+description: One question per issue. Link the file or the line of code it concerns.
+title: "[step ?] "
+labels: ["question"]
+body:
+  - type: dropdown
+    id: step
+    attributes:
+      label: Step
+      options:
+        - Set up (uv, git, fork, pull request)
+        - Step 1, fetch and audit
+        - Step 2, QC and exploration
+        - Step 3, differential expression
+        - Step 4, comparison with the paper
+        - The paper or the methods
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: My question
+      description: What you are trying to do and where you are stuck.
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: File or line of code
+      description: A link to the file or line in your fork. On GitHub, click a line number, then "Copy permalink".
+  - type: textarea
+    id: tried
+    attributes:
+      label: What I tried
+      description: The command you ran and what you expected.
+  - type: textarea
+    id: output
+    attributes:
+      label: Error message or output
+      render: shell
