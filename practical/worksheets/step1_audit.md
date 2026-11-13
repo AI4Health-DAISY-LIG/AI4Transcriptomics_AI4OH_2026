@@ -43,7 +43,7 @@ whether it is technical (batch, instrument, tissue of sampling) or biological
 (sex, age). A technical variable that is unbalanced across conditions is a
 confounder: name it as such.
 
-Batches I and II contain only FSHD biopsies, while batches III and IV contain both FSHD and control biopsies. (batch effect, course 4)
+FSHD and control biopsies are unevenly distributed across batches, so technical batch effects could look like disease effects in PCA (Course 4)
 
 ## What the paper says about the samples and GEO does not
 
