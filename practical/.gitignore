@@ -1,0 +1,19 @@
+# Two folders stay on your machine and never go into git (see README.md):
+# data/  everything step 1 downloads and the tables the scripts derive from it
+# doc/   the paper, its supplementary files, your notes, your report
+data/
+doc/
+*.part
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.ruff_cache/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
