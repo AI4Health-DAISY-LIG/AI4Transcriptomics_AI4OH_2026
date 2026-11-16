@@ -8,7 +8,9 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 
 | File | Size | What it holds | Why I need it (or not) |
 |------|------|---------------|------------------------|
-| | | | |
+| `GSE115650_all.soft.txt` | 13.5 MB | Complete series and sample metadata from GEO for GSE115650 | Needed to extract sample attributes, batch, conditions (Control vs FSHD), and clinical scores |
+| `GSE115650_biopsy_genecounts.csv.gz` | 1.7 MB | Raw RNA-seq read counts for 43 muscle biopsy samples across 60,554 genes | Needed as primary numerical input for QC, filtering, and PyDESeq2 differential expression |
+| `gencode.v24.annotation.gtf.gz` | 38.7 MB | Human genome annotation (GENCODE release 24, hg38) | Needed to map Ensembl gene IDs to official gene symbols (e.g. LEUTX, TRIM43) because the count file lacks gene symbols |
 
 ## Sample table
 
