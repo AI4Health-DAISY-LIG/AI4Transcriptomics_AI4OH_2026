@@ -14,11 +14,13 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 
 ## Sample table
 
-Number of samples: 
-Condition groups and counts: 
-Variables available per sample (list the columns of `sample_table.csv`): 
+Number of samples: 43
+Condition groups and counts: FSHD = 34, Control = 9
+Variables available per sample (list the columns of `sample_table.csv`): ['gsm', 'title', 'geo_accession', 'status', 'submission_date', 'last_update_date', 'type', 'channel_count', 'source_name_ch1', 'organism_ch1', 'taxid_ch1', 'char:subject status', 'char:age', 'char:gender', 'char:path.score', 'char:inflam', 'char:active', 'char:stir', 'char:t1', 'char:fat.fraction', 'char:tissue', 'char:rnaseq.score', 'char:rnaseq.rank', 'char:sample_id', 'char:batch', 'growth_protocol_ch1', 'molecule_ch1', 'extract_protocol_ch1', 'data_processing', 'platform_id', 'contact_name', 'contact_email', 'contact_laboratory', 'contact_department', 'contact_institute', 'contact_address', 'contact_city', 'contact_state', 'contact_zip/postal_code', 'contact_country', 'instrument_model', 'library_selection', 'library_source', 'library_strategy', 'relation', 'supplementary_file_1', 'series_id', 'data_row_count', 'condition']
 Variables that have a value for one condition only (see `missing_values.csv`): 
-
+char:age, char:gender, char:path.score, char:inflam, 
+char:active, char:stir, char:t1, char:fat.fraction, 
+char:rnaseq.score, char:rnaseq.rank - all FSHD only, missing for Controls.
 ## Do the counts match the sample table?
 
 What `counts_header_check.txt` shows, and what you decided: 
