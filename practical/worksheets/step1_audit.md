@@ -24,7 +24,11 @@ char:rnaseq.score, char:rnaseq.rank - all FSHD only, missing for Controls.
 ## Do the counts match the sample table?
 
 What `counts_header_check.txt` shows, and what you decided: 
-
+The file shows 43 columns in the counts file and 43 GSM records in GEO. 
+Matching by sample title gives 43/43 matches. Matching by char:sample_id 
+gives only 42/43 - one sample is named "01-0022-1" in the counts file but 
+"01-0022" in GEO. These are the same sample; the "-1" suffix is a typo in 
+the counts file. Decision: use the title column for matching so all 43 samples are kept.
 ## Cross-tabulations: condition against the other variables
 
 Paste or link the tables from `results/step1_audit/crosstab_*.csv`. For each
