@@ -37,8 +37,14 @@ def gene_names_from_gtf(gtf_gz, dest) -> pd.DataFrame:
             if fields[2] != "gene":
                 continue
             attr = dict(re.findall(r'(\S+) "([^"]*)"', fields[8]))
-            rows.append({"gene_id": attr["gene_id"], "gene_id_noversion": attr["gene_id"].split(".")[0],
-                         "gene_name": attr.get("gene_name", ""), "gene_type": attr.get("gene_type", "")})
+            rows.append(
+                {
+                    "gene_id": attr["gene_id"],
+                    "gene_id_noversion": attr["gene_id"].split(".")[0],
+                    "gene_name": attr.get("gene_name", ""),
+                    "gene_type": attr.get("gene_type", ""),
+                }
+            )
     table = pd.DataFrame(rows)
     table.to_csv(dest, index=False)
     return table
@@ -52,18 +58,23 @@ def main(optional: bool) -> None:
     soft = geo.fetch_soft(config.ACC, config.RAW, targ="all")
     series, samples = geo.parse_soft(soft)
     (OUT / "series_record.txt").write_text(
-        "\n".join(f"{k} = {v}" for k, vals in series.items() for v in vals), encoding="utf-8"
+        "\n".join(f"{k} = {v}" for k, vals in series.items() for v in vals),
+        encoding="utf-8",
     )
 
     # 2. Sample table with a clean condition column.
     samples["condition"] = samples[config.CONDITION_COL].map(config.CONDITION_LABELS)
     if samples["condition"].isna().any():
-        raise SystemExit(f"unmapped condition values: {samples[config.CONDITION_COL].unique()}")
+        raise SystemExit(
+            f"unmapped condition values: {samples[config.CONDITION_COL].unique()}"
+        )
     samples.to_csv(OUT / "sample_table.csv", index=False)
     print(samples["condition"].value_counts().to_string(), "\n")
 
     # 3. Supplementary files and annotation (one request each).
-    geo.download(geo.suppl_url(config.ACC, config.COUNTS_FILE), config.RAW / config.COUNTS_FILE)
+    geo.download(
+        geo.suppl_url(config.ACC, config.COUNTS_FILE), config.RAW / config.COUNTS_FILE
+    )
     if optional:
         for name in config.OPTIONAL_FILES:
             geo.download(geo.suppl_url(config.ACC, name), config.RAW / name)
@@ -95,19 +106,26 @@ def main(optional: bool) -> None:
     present = samples[chars].notna().groupby(samples["condition"]).sum().T
     present["n_samples_total"] = len(samples)
     present.to_csv(OUT / "missing_values.csv")
-    print("samples with a value, per variable and condition:\n", present.to_string(), "\n")
+    print(
+        "samples with a value, per variable and condition:\n", present.to_string(), "\n"
+    )
 
     # 6. Do the counts columns match the samples? GEO lists 43 GSMs; the CSV has its own names.
     with gzip.open(config.RAW / config.COUNTS_FILE, "rt") as fh:
         header = fh.readline().rstrip("\n").split(",")
     cols = [c.strip('"') for c in header[1:]]
-    report = [f"columns in counts file: {len(cols)}", f"GSM records in GEO: {len(samples)}"]
+    report = [
+        f"columns in counts file: {len(cols)}",
+        f"GSM records in GEO: {len(samples)}",
+    ]
     for key in ["title", "char:sample_id"]:
         ids = set(samples[key].astype(str)) if key in samples.columns else set()
         report += [
             f"[{key}] columns matched: {sum(c in ids for c in cols)}",
-            f"[{key}] columns without a GEO record: " + ", ".join(c for c in cols if c not in ids),
-            f"[{key}] GEO records without a column: " + ", ".join(sorted(ids - set(cols))),
+            f"[{key}] columns without a GEO record: "
+            + ", ".join(c for c in cols if c not in ids),
+            f"[{key}] GEO records without a column: "
+            + ", ".join(sorted(ids - set(cols))),
         ]
     report.append("first columns: " + ", ".join(cols[:8]))
     (OUT / "counts_header_check.txt").write_text("\n".join(report), encoding="utf-8")
@@ -118,6 +136,9 @@ def main(optional: bool) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--optional", action="store_true",
-                        help="also download the FPKM, normalised and R object files")
+    parser.add_argument(
+        "--optional",
+        action="store_true",
+        help="also download the FPKM, normalised and R object files",
+    )
     main(parser.parse_args().optional)

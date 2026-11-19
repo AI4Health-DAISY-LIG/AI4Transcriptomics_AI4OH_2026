@@ -69,18 +69,32 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str) -> None:
     plt.close(fig)
 
 
-def run(x: pd.DataFrame, meta: pd.DataFrame, factor: str, names: pd.Series | None) -> list[str]:
+def run(
+    x: pd.DataFrame, meta: pd.DataFrame, factor: str, names: pd.Series | None
+) -> list[str]:
     """Fit one model for `factor` and test each of its levels against the controls."""
     meta = meta[meta[factor].notna()]
     x = x.loc[meta.index]
     design = f"~ batch + {factor}" if ADJUST_FOR_BATCH else f"~ {factor}"
-    dds = DeseqDataSet(counts=x, metadata=meta[[factor, "batch"]], design=design, quiet=True)
+    dds = DeseqDataSet(
+        counts=x, metadata=meta[[factor, "batch"]], design=design, quiet=True
+    )
     dds.deseq2()
-    lines = [f"design: {design}",
-             "samples per level: " + ", ".join(f"{k}={v}" for k, v in meta[factor].value_counts().sort_index().items())]
+    lines = [
+        f"design: {design}",
+        "samples per level: "
+        + ", ".join(
+            f"{k}={v}" for k, v in meta[factor].value_counts().sort_index().items()
+        ),
+    ]
     for level in sorted(set(meta[factor]) - {config.REFERENCE_LEVEL}):
         tag = f"{level}_vs_{config.REFERENCE_LEVEL}"
-        stats = DeseqStats(dds, contrast=[factor, level, config.REFERENCE_LEVEL], alpha=ALPHA, quiet=True)
+        stats = DeseqStats(
+            dds,
+            contrast=[factor, level, config.REFERENCE_LEVEL],
+            alpha=ALPHA,
+            quiet=True,
+        )
         stats.summary()
         res = stats.results_df
         if names is not None:
@@ -89,8 +103,10 @@ def run(x: pd.DataFrame, meta: pd.DataFrame, factor: str, names: pd.Series | Non
         res.to_csv(OUT / f"de_{tag}.csv", float_format="%.5g")
         sig = res[res["padj"] < ALPHA]
         n_up = int((sig["log2FoldChange"] > 0).sum())
-        lines.append(f"[{tag}] genes tested: {len(res)}  padj < {ALPHA}: {len(sig)}  "
-                     f"up: {n_up}  down: {len(sig) - n_up}")
+        lines.append(
+            f"[{tag}] genes tested: {len(res)}  padj < {ALPHA}: {len(sig)}  "
+            f"up: {n_up}  down: {len(sig) - n_up}"
+        )
         plots(res, sig, tag)
     return lines
 
@@ -98,7 +114,9 @@ def run(x: pd.DataFrame, meta: pd.DataFrame, factor: str, names: pd.Series | Non
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     counts = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
-    meta = pd.read_csv(config.PROCESSED / "metadata.csv", index_col=0).loc[counts.columns]
+    meta = pd.read_csv(config.PROCESSED / "metadata.csv", index_col=0).loc[
+        counts.columns
+    ]
     names = None
     if config.GENE_NAMES.exists():
         names = pd.read_csv(config.GENE_NAMES, index_col="gene_id")["gene_name"]
@@ -116,14 +134,18 @@ def main() -> None:
     # target genes between a group and the controls.
     rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
     meta["group"] = ("G" + rank.astype("Int64").astype(str)).where(rank.notna())
-    meta.loc[meta["condition"] == config.REFERENCE_LEVEL, "group"] = config.REFERENCE_LEVEL
+    meta.loc[meta["condition"] == config.REFERENCE_LEVEL, "group"] = (
+        config.REFERENCE_LEVEL
+    )
 
     summary = [f"samples: {x.shape[0]}  genes: {x.shape[1]}", ""]
     summary += run(x, meta, "condition", names) + [""]
     summary += run(x, meta, "group", names)
     (OUT / "summary.txt").write_text("\n".join(summary), encoding="utf-8")
     print("\n".join(summary))
-    print("\nNext: fill worksheets/step3_de.md. Run a second design before you conclude")
+    print(
+        "\nNext: fill worksheets/step3_de.md. Run a second design before you conclude"
+    )
 
 
 if __name__ == "__main__":
