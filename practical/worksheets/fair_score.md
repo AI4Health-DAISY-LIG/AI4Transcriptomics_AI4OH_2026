@@ -16,16 +16,15 @@ evidence, so do not round up.
 | A1        | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login                    | 2              | The `supplementary_file` fields are `ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE115nnn/GSE115650/suppl/...` and open without a login.                                                                                                                                                                                                                                                                                           |
 | A2        | The metadata stay available even if the files were withdrawn (GEO keeps the record)                 | 2              | GEO standard practice retains series records; `!Series_status = Public on Sep 04 2018` indicates public availability and retention of metadata.                                                                                                                                                                                                                                                                               |
 | I1        | The data use an open, documented format (CSV or TSV, not a binary from one tool)                    | 1              | The files include both documented formats like CSV.gz but also binaries using R format (.rda.gz).                                                                                                                                                                                                                                                                                                                             |
-| I2        | Gene identifiers follow a named reference (which genome build, which annotation release?)           | 1              | The GEO series contains Ensembl IDs; the annotation is from GENCODE v24 based on the article description. The data were aligned to the genome hg38 using Tophat-2.1.0/Bowtie2-2.2.6. To be clear, the GEO series does not contain this information, but the data can be reconstructed based on the article description; therefore, I would argue that it is partly met.                                                       |
+| I2        | Gene identifiers follow a named reference (which genome build, which annotation release?)           | 1              | The GEO series contains Ensembl IDs. The annotation is from GENCODE v24 based on the article description. The data were aligned to the genome hg38 using Tophat-2.1.0/Bowtie2-2.2.6. To be clear, the GEO series does not contain this information, but the data can be reconstructed based on the article description, therefore, I would argue that it is partly met.                                                       |
 | I3        | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue | 1              | Spelling is consistent: subject status is "Control" or "Facioscapulohumeral muscular dystrophy (FSHD)", and tissue is "muscle biopsy" for 43/43 samples. No terms are mapped to an ontology. Comparing the term "muscle biopsy" to the research paper, there are actually different types of muscle biopsies, but no information about this is in the GEO data. This is problematic because it cannot be used as a covariate. |
 | R1        | A licence or usage terms are stated                                                                 | 0              | Apart from GEO's own guidelines, there are no visible licenses.                                                                                                                                                                                                                                                                                                                                                               |
 | R2        | The processing provenance is stated: aligner, annotation, counting method, software versions        | 1              | The data were aligned to the genome hg38 using Tophat-2.1.0/Bowtie2-2.2. The annotations were made using GENCODE V24. Gene counts were then estimated by using the Bioconductor 3.5 function `GenomicAlignments::summarizeOverlaps` with IntersectionStrict mode. The researcher used R/3.4.                                                                                                                                  |
 | R3        | Raw counts are deposited, not only normalised values                                                | 2              | Both raw counts and normalized values are available in the data.                                                                                                                                                                                                                                                                                                                                                              |
-| R4        | The sample table lets you rebuild the groups compared in the paper without guessing                 | 0              | The groups were created using the results of a clustering method, and no description of the hyperparameters used is provided in the article; therefore, it will be guesswork.                                                                                                                                                                                                                                                 |
+| R4        | The sample table lets you rebuild the groups compared in the paper without guessing                 | 0              | The groups were created using threasholds based on the sum of the 4 relative genes expression but they did not share the threasholds.                                                                                                                                                                                                                                                                                         |
 | R5        | The deposited files and the paper agree on the number of samples                                    | 1              | There are 43 different samples in the sample table, which matches the 34 + 9 disease and healthy patients described in the research paper. Indeed, there are 2 missing biopsies due to QC problems (reduced from 36 to 34). However, there is also a missing GEO record for patient ID `01-0022-1`. So, at the end, there are 42 samples.                                                                                     |
 | R6        | A reader can tell which deposited file feeds which figure of the paper                              | 0              | The four supplementary files have no description tied to a figure.                                                                                                                                                                                                                                                                                                                                                            |
 | **Total** |                                                                                                     | **16/30**      |                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|           |
 
 ## What blocks the reproduction
 
@@ -33,4 +32,37 @@ List here what you could not find in GEO or in the paper and needed to decide
 for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
--
+### Some missing information
+
+- No QC thresholds are provided.
+- No transformation or filter is described for the PCA analysis.
+- The first digits "01" and "32" in the title appear to indicate location, but it remains unclear which corresponds to which site.
+
+### Group threshold
+
+For the four groups, we do not have precise thresholds used in the original study; however, Figure 1 can be used as a reference for reasonable estimates. They used the sum of the relative expression levels of the four genes: _LEUTX_, _KHDC1L_, _TRIM43_, and _PRAMEF2_.
+
+| Group number | Threshold estimate (Figure 1) |
+| ------------ | ----------------------------- |
+| Group 1      | x < 1                         |
+| Group 2      | 1 ≤ x < 2.5                   |
+| Group 3      | 2.5 ≤ x < 11                  |
+| Group 4      | x ≥ 11                        |
+
+### Covariate
+
+Based on `missing_values.csv`, we can confirm that most of the data are only available for the disease group.
+
+Regarding batch effects, I recommend using **Batch III and IV** as covariates, since both batches contain a roughly equal proportion of cases and controls. The first two batches (I and II) lack sufficient control samples and were therefore used only for exploratory analyses via PCA and secondary validation later on.
+
+The site factor can also be included as a covariate using the "01" and "32" codes from the sample titles, once their meaning is clarified.
+
+### Versions
+
+Because there are many unknowns in this analysis and because we use Python rather than R (as in the original study), matching versions of each tool used becomes challenging. Installing software that is over seven years old on a modern machine may be difficult. In my opinion, reproducibility will depend more on the decisions made at each step where information is missing than on the tools themselves.
+
+Of course, the gene annotation must match that of the original study. Please consult the UV environment to identify which package versions were used.
+
+### Sample exclusion
+
+In the data, sample `01-0022-1` lacks a corresponding GEO record, and there is no column with "01-0022" in the provided files. On the [GEO website](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3186680) or by inspecting `sample_table.csv` for sample GSM3186680, we see that the title is "01-0022-1" and the sample ID is "01-0022". We can safely map these two together for all subsequent analyses. No samples are removed during analysis.
