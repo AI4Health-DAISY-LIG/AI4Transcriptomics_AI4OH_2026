@@ -1,0 +1,14 @@
+Table S1 subject IDs: 36 (unique: 36)
+GEO FSHD samples: 34; GEO control samples: 9
+
+[char:sample_id] GEO FSHD unique values: 34
+[char:sample_id] in both: 34
+[char:sample_id] only in Table S1: 01-0028, 01-0031
+[char:sample_id] only in GEO FSHD: none
+
+[title] GEO FSHD unique values: 34
+[title] in both: 33
+[title] only in Table S1: 01-0022, 01-0028, 01-0031
+[title] only in GEO FSHD: 01-0022-1
+
+GEO controls found in Table S1: none
