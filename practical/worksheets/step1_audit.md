@@ -36,8 +36,8 @@ char:t1, char:fat.fraction, char:rnaseq.score, char:rnaseq.rank
 
 What `counts_header_check.txt` shows, and what you decided:
 
-All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. As no other sample uses 01-0022, we'll consider it as an inconsistent label for one biopsy, not a duplicate donor.
-In Step 2, the merge key will be changed to title so the concerned biopsy will no be left unmatched and silently dropped.
+All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. As no other sample uses 01-0022 and both title and char:sample_id are unique across the 43 records, we'll consider it as an inconsistent label for one biopsy, not a duplicate donor.
+In Step 2, the merge key will be changed to title so the concerned biopsy will not be left unmatched and silently dropped. The choice was made so that the original data are not modified and the sample_id column will be kept in the future merged table for traceability and verification purposes.
 
 
 ## Cross-tabulations: condition against the other variables
@@ -48,7 +48,58 @@ whether it is technical (batch, instrument, tissue of sampling) or biological
 (sex, age). A technical variable that is unbalanced across conditions is a
 confounder: name it as such.
 
-FSHD and control biopsies are unevenly distributed across batches, so technical batch effects could look like disease effects in PCA (Course 4)
+Source: `results/step1_audit/crosstabs.md`
+
+**Batch** (`char:batch`)
+
+| condition | I | II | III | IV | All |
+|:----------|--:|---:|----:|---:|----:|
+| Control   | 0 |  0 |   6 |  3 |   9 |
+| FSHD      | 5 |  5 |  16 |  8 |  34 |
+| All       | 5 |  5 |  22 | 11 |  43 |
+
+Batch is a partial confounder because Batches I and II contain only FSHD samples, meaning technical batch effects in those batches could look like disease effects (course 4).
+
+**Instrument** (`instrument_model`)
+
+| condition | Illumina HiSeq 2500 | All |
+|:----------|--------------------:|----:|
+| Control   |                   9 |   9 |
+| FSHD      |                  34 |  34 |
+| All       |                  43 |  43 |
+
+
+**Tissue** (`char:tissue`)
+
+| condition | muscle biopsy | All |
+|:----------|--------------:|----:|
+| Control   |             9 |   9 |
+| FSHD      |            34 |  34 |
+| All       |            43 |  43 |
+
+
+Instrument (Illumina HiSeq 2500) and tissue (muscle biopsy) are technical and present respectively a single value in all samples, and are thus balanced across conditions.
+
+**Sex** (`char:gender`)
+
+| condition | female | male | missing | All |
+|:----------|-------:|-----:|--------:|----:|
+| Control   |      0 |    0 |       9 |   9 |
+| FSHD      |     12 |   22 |       0 |  34 |
+| All       |     12 |   22 |       9 |  43 |
+
+
+**Age** (`char:age`, binned in years)
+
+| condition | [0, 30) | [30, 45) | [45, 60) | [60, 120) | missing | All |
+|:----------|--------:|---------:|---------:|----------:|--------:|----:|
+| Control   |       0 |        0 |        0 |         0 |       9 |   9 |
+| FSHD      |       2 |        5 |       14 |        13 |       0 |  34 |
+| All       |       2 |        5 |       14 |        13 |       9 |  43 |
+
+
+We cannot tell whether sex or age (biological) are balanced across conditions as both are missing for all 9 control samples.
+
 
 ## What the paper says about the samples and GEO does not
 
