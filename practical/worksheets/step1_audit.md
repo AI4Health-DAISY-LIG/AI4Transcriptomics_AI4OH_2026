@@ -102,8 +102,13 @@ variables the paper describes that you cannot find in the GEO record.
 
 ## FAIR score
 
-Total: /30 (see `fair_score.md`). The two weakest criteria and why:
+Total: 23/30 (see `fair_score.md`). The two weakest criteria and why:
+
+1. **F2** - age and sex are missing for all 9 controls, so metadata is not complete for every sample.
+2. **R2** - the paper names the tools used but does not share the exact commands or scripts, so the pipeline cannot be reproduced exactly.
 
 ## Decisions I made
 
--
+- Used `title` to match count columns to GEO because `char:sample_id` drops one sample (01-0022-1 vs 01-0022 mismatch). All 43 kept.
+- Batch I and II have no controls so batch is a confounder. Will run the DE analysis both with and without batch correction in step 3 to see what changes.
+- Age and sex not usable as covariates - missing for all controls.
