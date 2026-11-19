@@ -13,6 +13,7 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 |gencode.v24.annotation.gtf.gz |38.7 MB |GENCODE v24 gene annotation |To map gene IDs to gene symbols and types |
 | Wang et al. (2019), article PDF | 5.3 MB | Published methods, results, and figures | To compare the study design, methods, and results with GEO and my analysis. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
 | `ddy364_supp.zip` | 13.7 MB | Supplementary Tables S1–S10 and Figures S1–S7 | Table S1 supports the participant ID and metadata checks against GEO. Table S2 and the differential expression tables provide reference results for Step 4. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
+| `GSE115650_biopsy.dds.rda.gz` | 14.9 MiB | DESeq2 object containing gene counts, FPKM and per-sample TopHat alignment summaries | Inspected separately for the FAIR audit and to calculate mapping rates for all 43 samples. Downloaded separately from GEO, not by the Step 1 script |
 
 
 ## Sample table
@@ -62,7 +63,7 @@ Source: `results/step1_audit/crosstabs.md`
 | All       | 5 |  5 |  22 | 11 |  43 |
 
 Batch is a partial confounder because Batches I and II contain only FSHD samples, meaning technical batch effects in those batches could look like disease effects (course 4).
-The authors' code shows that each batch is one sequencing run, and that batches I–II and III–IV carry different instrument identifiers; machine is therefore nested within the same batches, therefore adjusting for batch also covers for instrument difference.
+The authors' code shows that each batch is one sequencing run, and the run names associate batches I–II with one instrument identifier and III–IV with another ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)). Batches are therefore nested within instrument: instrument is determined by batch, so adjusting for batch also absorbs instrument effects, and the two cannot be estimated separately in the same model.
 
 **Instrument** (`instrument_model`)
 
@@ -82,7 +83,7 @@ The authors' code shows that each batch is one sequencing run, and that batches 
 | All       |            43 |  43 |
 
 
-Instrument (Illumina HiSeq 2500) and tissue (muscle biopsy) are technical and present respectively a single value in all samples, and are thus balanced across conditions.
+Instrument and tissue are technical. GEO gives every sample the same sequencer model (Illumina HiSeq 2500) and the same broad label (muscle biopsy), so these fields cannot confound condition as recorded. They hide real differences, however: the run names show two instrument identifiers, tied to batch (see above), and the paper reports four different muscles among FSHD biopsies but quadriceps for all controls (Table S1, series description).
 
 **Sex** (`char:gender`)
 
@@ -129,12 +130,31 @@ Results “Study cohort”, p. 477, and Methods, pp. 483–484).
 GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches. The authors' code links each batch to one Illumina sequencing run, dated 2 Oct 2015 (I), 8 Feb 2016 (II), 8 Sep 2016 (III) and 19 Jan 2017 (IV); the run folder names carry one instrument identifier for batches I–II and another for III–IV ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)).
 
 Additional discrepancies: The article and GEO both report 34 FSHD1 and 2 FSHD2 participants among the 36 recruited, and report that 34% were women. Supplementary Table S1 lists three participants labelled FSHD2, one separately labelled mosaic, and 13 women among 36 participants (36%). The GEO sample table contains 12 women among the 34 sequenced FSHD participants (35%).
-The authors' code also removes five sequenced libraries before analysis: 0952, 32-0008-1, 32-0002b, and two control libraries, 2374-1 and 2374-2 ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). The paper does not mention these exclusions or give a reason. For participant 32-0008, the retained library has the lower mapping rate (67.7% vs 96.2% for the excluded 32-0008-1), according to the authors' alignment summaries ([tophat_summary.rda](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/data/tophat_summary.rda)). Whether the "-1" and "b" libraries are re-runs or second-visit biopsies is not stated.
+Library selection: The authors' alignment summary lists 49 library IDs. Their pre-filter count object `se.rda` contains 48 libraries (37 FSHD and 11 controls), with `2374` already absent. Applying the five removals listed in `makeSE.R` (`0952`, `32-0008-1`, `32-0002b`, `2374-1` and `2374-2`) yields exactly the 43 library IDs in the saved `sanitized.dds.rda` and the GEO count object. The paper does not explain these selection decisions. The retained `32-0008` mapped at 67.7%, and the excluded `32-0008-1` mapped at 96.2%. The files checked do not establish whether the suffixes denote resequencing or distinct biopsies. [Library selection code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L151-L164) · [Alignment summaries](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/data/tophat_summary.rda)
 
 ## FAIR score
 
-Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), because no dataset-specific licence or reuse terms are stated anywhere; R2 (1/2), because processing provenance is incomplete in GEO and the paper (TopHat version misprinted, read type and strandedness missing) and only partly recovered from the authors' code, whose README lists different R and Bioconductor versions.
+Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), because no dataset-specific licence or reuse terms are stated anywhere; R2 (1/2), because the paper and GEO sample metadata misprint the TopHat version and omit read layout and strandedness. These gaps were recovered from SRA RunInfo and the authors' code, but the software versions remain inconsistent between the paper and the authors' README.
 
 ## Decisions I made
 
--
+
+- Use GEO `title` to join the count matrix to the sample table in Step 2.
+  It matches all 43 count columns, including `01-0022-1`. Keep
+  `char:sample_id` to link the 34 FSHD participants to Supplementary
+  Table S1, where that participant is `01-0022`. Resolve the join in code
+  and preserve the deposited identifiers. See `counts_header_check.txt`
+  and `paper_table_s1_id_check.txt`.
+- Start the main analysis with all 43 deposited biopsies. In Step 2,
+  examine library size and mapping rate by batch and flag the three
+  low-mapping biopsies (`32-0008`, `01-0037`, `32-0009`). All three are
+  FSHD biopsies from Batch II. I will rerun key results in Steps 2–4
+  without these three to see how sensitive the conclusions are.
+- Keep versioned Ensembl IDs as gene identifiers and use GENCODE v24 to
+  annotate gene symbols and types. All 27,506 deposited gene IDs matched
+  this annotation release.
+- Treat batch as partially confounded with condition. Examine it in
+  the PCA in Step 2 and compare differential-expression designs with
+  and without batch in Step 3.
+- Consult the authors' code to fill gaps in the paper and identify which
+  findings come from it. [Authors' code at commit 90cd343](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)

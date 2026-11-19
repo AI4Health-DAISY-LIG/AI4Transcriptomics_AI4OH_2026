@@ -19,7 +19,7 @@ evidence, so do not round up.
 | I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) |2|`data_processing` names hg38 and GENCODE v24; all 27,506 count IDs are unique, versioned and found in GENCODE v24 (`data/processed/gene_names.csv`) |
 | I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue |2|`char:subject status` uses one consistent label per condition; all 43 `char:tissue` entries are "muscle biopsy"; no ontology terms (`sample_table.csv`) |
 | R1 | A licence or usage terms are stated |0|No dataset-specific licence or reuse terms in the GEO record; NCBI's general terms are not dataset-specific; the article is "All rights reserved"; the authors' code repository has no licence file |
-| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |1|GEO and paper name Trimmomatic 0.32, TopHat/Bowtie2, hg38, GENCODE v24 and summarizeOverlaps IntersectionStrict, but give TopHat as "21.0" and omit read type and strandedness. The authors' code gives TopHat 2.1.0 and Bowtie2 2.2.6, single-end unstranded reads, and separate alignment and counting annotations. Its README lists R 3.5 / Bioconductor 3.7 as requirements, while the paper reports R 3.4 / Bioconductor 3.5; the README alone cannot establish which versions produced the published results ([authors' code, commit 90cd343](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)) |
+| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |1|GEO and the paper name Trimmomatic 0.32, TopHat/Bowtie2, hg38, GENCODE v24 and summarizeOverlaps IntersectionStrict, but misprint the TopHat version ("21.0") and omit read layout and strandedness. These gaps were recovered elsewhere: SRA RunInfo lists all 43 runs as single-end, and the authors' code gives TopHat 2.1.0, Bowtie2 2.2.6 and unstranded settings. Versions remain uncertain: the paper and the `makeSE.R` header give R 3.4, the README R 3.5 / Bioconductor 3.7 ([SRA RunInfo](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRP150311); [authors' code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)) |
 | R3 | Raw counts are deposited, not only normalised values |2|`GSE115650_biopsy_genecounts.csv.gz` is the count file, separate from the normalised file; all 1,182,758 entries (27,506 genes × 43 samples) are non-negative integers; raw reads in SRA (SRP150311) |
 | R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2|`condition` and `char:rnaseq.rank` give the 9 controls and FSHD groups 1–4 with the paper's sizes (10/5/13/6), and `source_name_ch1` agrees. Among the 34 sequenced FSHD biopsies, "normal-appearing" MRI needs STIR = 0 and T1 = 0 (10), and STIR+ is STIR > 0 (23) (`sample_table.csv`). Open until Step 3: whether some published comparisons used historical controls not deposited in GEO |
 | R5 | The deposited files and the paper agree on the number of samples |2|43 count columns and 43 GEO records (`counts_header_check.txt`). The paper's 36 recruited FSHD participants include 2 without an RNA-seq sample, leaving 34 sequenced FSHD participants plus 9 controls (`paper_table_s1_id_check.txt`) |
@@ -32,4 +32,51 @@ List here what you could not find in GEO or in the paper and needed to decide
 for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
--
+- **Control covariates.** The paper gives age and sex only as group
+  summaries for the controls, and GEO leaves both fields blank for all
+  nine. The deposited metadata cannot support individual age or sex
+  adjustment in the FSHD–control comparison.
+- **Batches.** GEO lists batches I–IV and the authors' code identifies
+  them as sequencing runs. The paper gives no batch adjustment strategy.
+  Controls occur only in batches III and IV, so within-batch
+  FSHD–control comparisons are possible in those two batches. I will
+  examine batch in Step 2 and compare DE designs in Step 3.
+- **Original library selection.** The alignment summary lists 49 libraries.
+  `2374` is already absent from the 48-library pre-filter count object.
+  The five removals listed in the authors' code then yield exactly the
+  43 deposited libraries. The paper does not explain these decisions.
+  I will start from the 43 libraries in the deposited count matrix.
+  [Library selection code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L151-L164)
+- **Read layout and strandedness.** SRA RunInfo identifies all 43 runs
+  as single-end. The authors' code supplies the unstranded settings.
+  [SRA RunInfo](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRP150311) · [Alignment settings](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/do_tophat.sh#L15-L22)
+- **Mapping QC.** GEO stores the per-sample TopHat alignment summaries
+  in `GSE115650_biopsy.dds.rda.gz`. The open-format GEO files omit
+  these fields. I will document how I extract and use them in Step 2.
+- **Gene filter.** The paper gives no threshold. The smallest total count
+  per gene in the deposited matrix is 21, consistent with the authors'
+  rule of more than 20 counts across samples. I will document the
+  additional filtering rule I choose in Step 2.
+  [Authors' filter](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L161-L166)
+- **Published PCA.** The exact input and settings for Figure 3 are
+  unclear. The authors' repository contains several PCA implementations.
+  I will document the input, filtering, transformation and feature
+  selection I use in Step 2.
+- **DE design and thresholds.** The Methods name DESeq2 and omit the
+  design and cutoffs. The authors' helper fits `~ pheno_type` and
+  filters results at adjusted p < 0.05 and absolute log2 fold change ≥ 2,
+  consistent with the supplementary sheet labels. I will document my
+  design and reporting thresholds in Step 3.
+  [Authors' DE helper](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L320-L359)
+- **Historical controls.** Some contrasts in the authors' code use
+  controls beyond the nine in GSE115650. In Step 3 I will check which
+  published contrasts used them and which can be reconstructed from GEO.
+- **Biomarker score.** The authors compute the score from DESeq2 rlog
+  values. The locked PyDESeq2 release lacks rlog, so I will document
+  the transformation I use in Step 4.
+- **Software versions.** The paper reports R 3.4 and Bioconductor 3.5, and
+  the header of `makeSE.R` names R 3.4.0, but the authors' README lists
+  R 3.5 and Bioconductor 3.7 as requirements. The versions may have varied
+  between scripts, so the exact environment that generated the published
+  results is uncertain. I will report the versions used for my runs.
+  [makeSE.R header](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L1-L5)
