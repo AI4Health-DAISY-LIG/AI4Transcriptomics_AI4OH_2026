@@ -11,8 +11,8 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 |GSE115650_all.soft.txt |13.5 MB |GEO series record and sample metadata |To identify the biopsies and audit their metadata |
 |GSE115650_biopsy_genecounts.csv.gz |1.7 MB |Raw gene counts for each biopsy |To check that the count columns match the sample records and provide inputs for analysis |
 |gencode.v24.annotation.gtf.gz |38.7 MB |GENCODE v24 gene annotation |To map gene IDs to gene symbols and types |
-| Wang et al. (2019), article PDF | 5.3 MB | Published methods, results, and figures | To compare the study design, methods, and results with GEO and my analysis |
-| `ddy364_supp.zip` | 13.7 MB | Supplementary Tables S1–S10 and Figures S1–S7 | Table S1 supports the participant ID and metadata checks against GEO. Table S2 and the differential expression tables provide reference results for Step 4. |
+| Wang et al. (2019), article PDF | 5.3 MB | Published methods, results, and figures | To compare the study design, methods, and results with GEO and my analysis. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
+| `ddy364_supp.zip` | 13.7 MB | Supplementary Tables S1–S10 and Figures S1–S7 | Table S1 supports the participant ID and metadata checks against GEO. Table S2 and the differential expression tables provide reference results for Step 4. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
 
 
 ## Sample table
@@ -126,6 +126,7 @@ Results “Study cohort”, p. 477, and Methods, pp. 483–484).
 | Control relationship to people with FSHD and genetic confirmation | Results, Study cohort | GEO lacks these details. The paper describes unaffected spouses, parents, or siblings and reports genetic confirmation for at-risk controls. |
 
 GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches.
+
 Additional discrepancies: The article and GEO both report 34 FSHD1 and 2 FSHD2 participants among the 36 recruited, and report that 34% were women. Supplementary Table S1 lists three participants labelled FSHD2, one separately labelled mosaic, and 13 women among 36 participants (36%). The GEO sample table contains 12 women among the 34 sequenced FSHD participants (35%).
 
 ## FAIR score
