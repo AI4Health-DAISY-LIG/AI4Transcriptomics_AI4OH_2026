@@ -129,11 +129,11 @@ Results “Study cohort”, p. 477, and Methods, pp. 483–484).
 GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches. The authors' code links each batch to one Illumina sequencing run, dated 2 Oct 2015 (I), 8 Feb 2016 (II), 8 Sep 2016 (III) and 19 Jan 2017 (IV); the run folder names carry one instrument identifier for batches I–II and another for III–IV ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)).
 
 Additional discrepancies: The article and GEO both report 34 FSHD1 and 2 FSHD2 participants among the 36 recruited, and report that 34% were women. Supplementary Table S1 lists three participants labelled FSHD2, one separately labelled mosaic, and 13 women among 36 participants (36%). The GEO sample table contains 12 women among the 34 sequenced FSHD participants (35%).
-The authors' code also removes five sequenced libraries before analysis: 0952, 32-0008-1, 32-0002b, and two control libraries, 2374-1 and 2374-2 ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). The paper does not mention these exclusions or give a reason.
+The authors' code also removes five sequenced libraries before analysis: 0952, 32-0008-1, 32-0002b, and two control libraries, 2374-1 and 2374-2 ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). The paper does not mention these exclusions or give a reason. For participant 32-0008, the retained library has the lower mapping rate (67.7% vs 96.2% for the excluded 32-0008-1), according to the authors' alignment summaries ([tophat_summary.rda](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/data/tophat_summary.rda)). Whether the "-1" and "b" libraries are re-runs or second-visit biopsies is not stated.
 
 ## FAIR score
 
-Total: /30 (see `fair_score.md`). The two weakest criteria and why:
+Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), because no dataset-specific licence or reuse terms are stated anywhere; R2 (1/2), because processing provenance is incomplete in GEO and the paper (TopHat version misprinted, read type and strandedness missing) and only partly recovered from the authors' code, whose README lists different R and Bioconductor versions.
 
 ## Decisions I made
 

@@ -9,22 +9,22 @@ evidence, so do not round up.
 
 | Principle | Criterion | Score (0 to 2) | Evidence |
 |-----------|-----------|----------------|----------|
-| F1 | The dataset has a persistent identifier (GEO accession, DOI of the paper) | | |
-| F2 | Sample metadata are rich: condition, donor, sex, age, tissue, batch are present for every sample |0|several features lacking for controls |
-| F3 | The metadata point to the data files and the paper, and the paper points back to the accession | | |
-| F4 | The series is indexed and searchable (GEO search, PubMed link) | | |
-| A1 | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login | | |
-| A2 | The metadata stay available even if the files were withdrawn (GEO keeps the record) | | |
-| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) | | |
-| I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) | | |
-| I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue | | |
-| R1 | A licence or usage terms are stated | | |
-| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions | | |
-| R3 | Raw counts are deposited, not only normalised values | | |
-| R4 | The sample table lets you rebuild the groups compared in the paper without guessing | | |
-| R5 | The deposited files and the paper agree on the number of samples | | |
-| R6 | A reader can tell which deposited file feeds which figure of the paper | | |
-| **Total** | | **/30** | |
+| F1 | The dataset has a persistent identifier (GEO accession, DOI of the paper) |2|GEO series GSE115650 with one GSM per sample; paper DOI 10.1093/hmg/ddy364; BioProject PRJNA475678 and SRA SRP150311 (`series_record.txt`) |
+| F2 | Sample metadata are rich: condition, donor, sex, age, tissue, batch are present for every sample |1|Condition, sample ID, tissue and batch are present for all 43 samples; no separate donor field; age and sex are missing for the 9 controls (`missing_values.csv`) |
+| F3 | The metadata point to the data files and the paper, and the paper points back to the accession |1|GEO links the files and PMID 30312408 (`series_record.txt`); the paper's RNA-Seq analysis section prints "GSExxxxx" in place of the accession |
+| F4 | The series is indexed and searchable (GEO search, PubMed link) |2|Indexed in GEO DataSets as 200115650; NCBI links it to PMID 30312408 in both directions (https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&db=gds&id=30312408) |
+| A1 | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login |2|Step 1 retrieves the SOFT record and the count file over HTTPS without login (`scripts/geo.py`); GEO also lists FTP links |
+| A2 | The metadata stay available even if the files were withdrawn (GEO keeps the record) |1|For published accessions, GEO retains the record and adds a withdrawal notice. Record contents may be modified or deleted. [GEO FAQ, "How can I delete my records?"](https://www.ncbi.nlm.nih.gov/geo/info/faq.html) |
+| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) |1|Raw counts, normalized counts and FPKM are available as CSV, and sample metadata as SOFT. Per-sample TopHat alignment summaries (input and mapped reads) are stored only in `GSE115650_biopsy.dds.rda.gz`, an R binary, and are absent from the open-format files ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L18-L37)) |
+| I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) |2|`data_processing` names hg38 and GENCODE v24; all 27,506 count IDs are unique, versioned and found in GENCODE v24 (`data/processed/gene_names.csv`) |
+| I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue |2|`char:subject status` uses one consistent label per condition; all 43 `char:tissue` entries are "muscle biopsy"; no ontology terms (`sample_table.csv`) |
+| R1 | A licence or usage terms are stated |0|No dataset-specific licence or reuse terms in the GEO record; NCBI's general terms are not dataset-specific; the article is "All rights reserved"; the authors' code repository has no licence file |
+| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |1|GEO and paper name Trimmomatic 0.32, TopHat/Bowtie2, hg38, GENCODE v24 and summarizeOverlaps IntersectionStrict, but give TopHat as "21.0" and omit read type and strandedness. The authors' code gives TopHat 2.1.0 and Bowtie2 2.2.6, single-end unstranded reads, and separate alignment and counting annotations. Its README lists R 3.5 / Bioconductor 3.7 as requirements, while the paper reports R 3.4 / Bioconductor 3.5; the README alone cannot establish which versions produced the published results ([authors' code, commit 90cd343](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)) |
+| R3 | Raw counts are deposited, not only normalised values |2|`GSE115650_biopsy_genecounts.csv.gz` is the count file, separate from the normalised file; all 1,182,758 entries (27,506 genes × 43 samples) are non-negative integers; raw reads in SRA (SRP150311) |
+| R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2|`condition` and `char:rnaseq.rank` give the 9 controls and FSHD groups 1–4 with the paper's sizes (10/5/13/6), and `source_name_ch1` agrees. Among the 34 sequenced FSHD biopsies, "normal-appearing" MRI needs STIR = 0 and T1 = 0 (10), and STIR+ is STIR > 0 (23) (`sample_table.csv`). Open until Step 3: whether some published comparisons used historical controls not deposited in GEO |
+| R5 | The deposited files and the paper agree on the number of samples |2|43 count columns and 43 GEO records (`counts_header_check.txt`). The paper's 36 recruited FSHD participants include 2 without an RNA-seq sample, leaving 34 sequenced FSHD participants plus 9 controls (`paper_table_s1_id_check.txt`) |
+| R6 | A reader can tell which deposited file feeds which figure of the paper |1|The mapping from GEO files to published figures is incomplete. The authors' README outlines the Figure 1 workflow, which uses repository R objects rather than the GEO files |
+| **Total** | | **22/30** | Findable 6/8, Accessible 3/4, Interoperable 5/6, Reusable 8/12 |
 
 ## What blocks the reproduction
 
