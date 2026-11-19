@@ -38,7 +38,7 @@ char:t1, char:fat.fraction, char:rnaseq.score, char:rnaseq.rank
 
 What `counts_header_check.txt` shows, and what you decided:
 
-All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. As no other sample uses 01-0022 and both title and char:sample_id are unique across the 43 records, we'll consider it as an inconsistent label for one biopsy, not a duplicate donor.
+All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. No other GEO sample uses 01-0022, and both title and char:sample_id are unique across the 43 records, so GEO holds one sample for this participant. The authors' code explains the suffix: it renames sequencing library 0952-1 to 01-0022-1 ([renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L17-L19)) and removes a library named 0952 before analysis ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). This suggests the participant was sequenced twice and only the second library was kept and deposited.
 In Step 2, the merge key will be changed to title so the concerned biopsy will not be left unmatched and silently dropped. The choice was made so that the original data are not modified and the sample_id column will be kept in the future merged table for traceability and verification purposes.
 Moreover, paper's Table S1 confirms that both keys are needed: it lists 01-0022 without the "-1" suffix, so title links GEO to the count matrix (43/43) while char:sample_id links GEO to the paper's tables (34/34 FSHD) (in results:`paper_table_s1_id_check.txt`)
 
@@ -62,6 +62,7 @@ Source: `results/step1_audit/crosstabs.md`
 | All       | 5 |  5 |  22 | 11 |  43 |
 
 Batch is a partial confounder because Batches I and II contain only FSHD samples, meaning technical batch effects in those batches could look like disease effects (course 4).
+The authors' code shows that each batch is one sequencing run, and that batches I–II and III–IV carry different instrument identifiers; machine is therefore nested within the same batches, therefore adjusting for batch also covers for instrument difference.
 
 **Instrument** (`instrument_model`)
 
@@ -125,9 +126,10 @@ Results “Study cohort”, p. 477, and Methods, pp. 483–484).
 | Control age and sex | Results, Study cohort | The paper reports six women and three men, with a mean age of 35 years (range 19–56). It gives these figures for the group as a whole. Age and sex are blank for each control sample in GEO. |
 | Control relationship to people with FSHD and genetic confirmation | Results, Study cohort | GEO lacks these details. The paper describes unaffected spouses, parents, or siblings and reports genetic confirmation for at-risk controls. |
 
-GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches.
+GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches. The authors' code links each batch to one Illumina sequencing run, dated 2 Oct 2015 (I), 8 Feb 2016 (II), 8 Sep 2016 (III) and 19 Jan 2017 (IV); the run folder names carry one instrument identifier for batches I–II and another for III–IV ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)).
 
 Additional discrepancies: The article and GEO both report 34 FSHD1 and 2 FSHD2 participants among the 36 recruited, and report that 34% were women. Supplementary Table S1 lists three participants labelled FSHD2, one separately labelled mosaic, and 13 women among 36 participants (36%). The GEO sample table contains 12 women among the 34 sequenced FSHD participants (35%).
+The authors' code also removes five sequenced libraries before analysis: 0952, 32-0008-1, 32-0002b, and two control libraries, 2374-1 and 2374-2 ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). The paper does not mention these exclusions or give a reason.
 
 ## FAIR score
 
