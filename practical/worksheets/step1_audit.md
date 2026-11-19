@@ -28,12 +28,17 @@ contact_address, contact_city, contact_state, contact_zip/postal_code,
 contact_country, instrument_model, library_selection, library_source,
 library_strategy, relation, supplementary_file_1, series_id, data_row_count,
 condition
-Variables that have a value for one condition only (see `missing_values.csv`): char:age, char:gender, char:stir, char:t1, char:fat.fraction,
-char:rnaseq.score, char:rnaseq.rank
+Variables that have a value for one condition only (see `missing_values.csv`): char:age, char:gender, char:path.score, char:inflam, char:active, char:stir,
+char:t1, char:fat.fraction, char:rnaseq.score, char:rnaseq.rank
+
 
 ## Do the counts match the sample table?
 
-What `counts_header_check.txt` shows, and what you decided: 
+What `counts_header_check.txt` shows, and what you decided:
+
+All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. As no other sample uses 01-0022, we'll consider it as an inconsistent label for one biopsy, not a duplicate donor.
+In Step 2, the merge key will be changed to title so the concerned biopsy will no be left unmatched and silently dropped.
+
 
 ## Cross-tabulations: condition against the other variables
 
