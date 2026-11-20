@@ -126,11 +126,12 @@ Results “Study cohort”, p. 477, and Methods, pp. 483–484).
 | Specific muscle biopsied and side | Supplementary Table S1 | `char:tissue` says `muscle biopsy` for all samples. The series description specifies quadriceps for controls. |
 | Recruitment site | Methods | The paper reports 18 participants recruited at each site, Seattle and Rochester, with different biopsy needles (modified Bergstrom at Rochester, regular Bergstrom at Seattle); all controls were banked at Rochester. GEO lacks a participant-level site or needle field. |
 | Strength of the biopsied muscle | Methods, Clinical assessments | The paper describes measurement with a hand-held dynamometer. GEO lacks the measurements. |
+| Handling of the RNA aliquots | Methods, "Muscle biopsy for pathologic grading and biomarker studies" | The paper reports flash-freezing in liquid nitrogen within 30 seconds and storage at −80 °C, and describes the banked Rochester controls as collected under identical conditions. GEO describes extraction and library preparation only. Neither source gives per-sample collection dates, storage durations or RNA integrity. |
 | MRI measurements by anatomical region | Supplementary Table S1 and Figure S7 | GEO STIR and T1 match the whole-muscle ratings in Table S1 for all 34 sequenced FSHD biopsies, and GEO fat fraction matches Table S1, whose fat-fraction column leaves the region unspecified (`paper_table_s1_id_check.txt`, section 3). GEO provides no separate biopsy-region STIR, quantitative T2, or fat-fraction fields. |
 | Control age and sex | Results, Study cohort | The paper reports six women and three men, with a mean age of 35 years (range 19–56). It gives these figures for the group as a whole. Age and sex are blank for each control sample in GEO. |
 | Control relationship to people with FSHD and genetic confirmation | Results, Study cohort | GEO lacks these details. The paper describes unaffected spouses, parents, or siblings and reports genetic confirmation for at-risk controls. |
 
-GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches. The authors' code links each batch to one Illumina sequencing run, dated 2 Oct 2015 (I), 8 Feb 2016 (II), 8 Sep 2016 (III) and 19 Jan 2017 (IV); the run folder names carry one instrument identifier for batches I–II and another for III–IV ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)).
+GEO records a sequencing batch (I to IV) for every sample. The paper does not report these batches. The authors' code links each batch to one Illumina sequencing run, dated 2 Oct 2015 (I), 8 Feb 2016 (II), 8 Sep 2016 (III) and 19 Jan 2017 (IV); the run folder names carry one instrument identifier for batches I–II and another for III–IV ([ReadMe.txt](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/ReadMe.txt#L3-L9)). The runs span 475 days, with a seven-month gap between batches II and III where the instrument identifier changes. These dates identify sequencing runs; the interval between each biopsy and its sequencing cannot be calculated from the available records.
 
 Additional discrepancies: The article and GEO both report 34 FSHD1 and 2 FSHD2 participants among the 36 recruited, and report that 34% were women.
 The Methods state that all procedures, including muscle biopsies, were identical at both sites, but also report different biopsy needles and MRI skin markers at each site.
@@ -163,3 +164,7 @@ Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), 
   and without batch in Step 3.
 - Consult the authors' code to fill gaps in the paper and identify which
   findings come from it. [Authors' code at commit 90cd343](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)
+- Use the deposited RNA group labels to reproduce the published
+  comparisons. The split and merge rules the authors applied after
+  clustering are documented in `fair_score.md`; a sensitivity analysis
+  with an unmodified tree cut is planned for Step 4.

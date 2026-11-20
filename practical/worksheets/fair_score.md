@@ -21,7 +21,7 @@ evidence, so do not round up.
 | R1 | A licence or usage terms are stated |0|No dataset-specific licence or reuse terms in the GEO record; NCBI's general terms are not dataset-specific; the article is "All rights reserved"; the authors' code repository has no licence file |
 | R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |1|GEO and the paper name Trimmomatic 0.32, TopHat/Bowtie2, hg38, GENCODE v24 and summarizeOverlaps IntersectionStrict, but misprint the TopHat version ("21.0") and omit read layout and strandedness. These gaps were recovered elsewhere: SRA RunInfo lists all 43 runs as single-end, and the authors' code gives TopHat 2.1.0, Bowtie2 2.2.6 and unstranded settings. Versions remain uncertain: the paper and the `makeSE.R` header give R 3.4, the README R 3.5 / Bioconductor 3.7 ([SRA RunInfo](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRP150311); [authors' code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/tree/90cd343b3d60a696a35041a33015131ab9908164)) |
 | R3 | Raw counts are deposited, not only normalised values |2|`GSE115650_biopsy_genecounts.csv.gz` is the count file, separate from the normalised file; all 1,182,758 entries (27,506 genes × 43 samples) are non-negative integers; raw reads in SRA (SRP150311) |
-| R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2|`condition` and `char:rnaseq.rank` give the 9 controls and FSHD groups 1–4 with the paper's sizes (10/5/13/6), and `source_name_ch1` agrees. The published DE tables use the same 9 controls: S4 compares the two group 1 PCA outliers (01-0037, 32-0016) with them, and S5, S6, S8 and S10 compare groups 1–4, with sample columns matching GEO's group memberships. Among the 34 sequenced FSHD biopsies, "normal-appearing" MRI needs STIR = 0 and T1 = 0 (10), and STIR+ is STIR > 0 (23) (`sample_table.csv`). The labels can be reused, but the stated clustering method alone does not reproduce them (see "What blocks the reproduction") |
+| R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2|`condition` and `char:rnaseq.rank` give the 9 controls and FSHD groups 1–4 with the paper's sizes (10/5/13/6), and `source_name_ch1` agrees. The published DE tables use the same 9 controls: S4 compares the two group 1 PCA outliers (01-0037, 32-0016) with them, and S5, S6, S8 and S10 compare groups 1–4, with sample columns matching GEO's group memberships. Among the 34 sequenced FSHD biopsies, "normal-appearing" MRI needs STIR = 0 and T1 = 0 (10), and STIR+ is STIR > 0 (23) (`sample_table.csv`). GEO identifies the groups actually used in the published comparisons; re-deriving those memberships from expression requires the split and merge rules recovered from the authors' code (see "What blocks the reproduction") |
 | R5 | The deposited files and the paper agree on the number of samples |2|43 count columns and 43 GEO records (`counts_header_check.txt`). The paper's 36 recruited FSHD participants include 2 without an RNA-seq sample, leaving 34 sequenced FSHD participants plus 9 controls (`paper_table_s1_id_check.txt`) |
 | R6 | A reader can tell which deposited file feeds which figure of the paper |1|Neither the paper nor GEO maps files to figures. All 54 genes × 43 biopsies in each of the three Supplementary Table S2 sheets match the corresponding GEO CSV (raw counts identical; normalized counts and the S2 "RPKM" sheet, which matches the GEO "FPKM" file, to rounding precision; check run outside this repository). The authors' code shows that Figures 4–5 plot log10(FPKM + 0.5), an offset missing from the legends, and that Figure 3 uses their saved rlog object, not a GEO file ([figure code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFigs.R#L75-L141)) |
 | **Total** | | **22/30** | Findable 6/8, Accessible 3/4, Interoperable 5/6, Reusable 8/12 |
@@ -36,6 +36,12 @@ feeds Part 2 of your report.
   summaries for the controls, and GEO leaves both fields blank for all
   nine. The deposited metadata cannot support individual age or sex
   adjustment in the FSHD–control comparison.
+- **Sample handling and RNA integrity.** The paper gives the freezing
+  protocol and storage temperature, but the paper and public sample
+  records examined do not provide per-sample collection or preparation
+  dates, storage or freeze–thaw histories, or RNA integrity measurements,
+  so I cannot check whether handling or RNA quality differed by
+  condition. Mapping rates are available for QC in Step 2.
 - **Batches.** GEO lists batches I–IV and the authors' code identifies
   them as sequencing runs. The paper gives no batch adjustment strategy.
   Controls occur only in batches III and IV, so within-batch
@@ -79,14 +85,24 @@ feeds Part 2 of your report.
   on the four biomarker genes only and sum each gene's difference from
   the control mean
   ([getRankScore](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L84-L129)).
+    Figure 1 plots this control-centered score
+  ([Figure 1 code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFig_scatterPlot.R#L43-L49)), but the score deposited in GEO subtracts the cohort minimum
+  ([score export](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L191-L198)).
+  In Step 4, I will match the convention to the values being compared.
   The locked PyDESeq2 release lacks rlog, so I will document the
   transformation I use in Step 4.
 - **RNA groups.** The Methods describe hierarchical clustering into four
-  groups, but the authors' code relabels the clusters by hand: it assigns
-  five samples to group 2 by their row position in a score-sorted table
-  and merges two clusters into group 4. The deposited labels can be
-  reused, but the stated method alone does not reproduce them.
-  [Group relabelling](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFig_scatterPlot.R#L17-L22)
+  groups. The authors' code cuts the tree into four clusters, sorts all
+  43 biopsies by the four-gene score, assigns rows 20–24 of that table to
+  Group 2, and merges original tree clusters 3 and 4 into published
+  Group 4. The five reassigned biopsies all come from the lowest tree
+  cluster. In `sample_table.csv`, the boundary between published Groups 1
+  and 2 is the largest adjacent score gap among their 15 FSHD biopsies
+  (0.52840 to 1.15210). The paper omits the split and merge rules, and the
+  public materials examined give no rationale for choosing them. GEO and
+  Supplementary Tables S5, S6, S8 and S10 identify the groups used in the
+  published comparisons.
+  [Assignment rules](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/addColDataToDDS.R#L14-L31)
 - **MRI measure level.** GEO's STIR and T1 are the whole-muscle ratings
   (they match Table S1's whole-muscle columns), which supports the
   Figure 2 comparison. The biopsy-region correlations in Supplementary
