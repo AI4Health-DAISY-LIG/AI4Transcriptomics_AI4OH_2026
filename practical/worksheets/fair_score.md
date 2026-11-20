@@ -75,9 +75,6 @@ feeds Part 2 of your report.
   memberships. The code's historical-control comparisons are separate
   analyses. I will document my design and thresholds in Step 3.
   [Authors' DE helper](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L320-L359)
-- **Historical controls.** Some contrasts in the authors' code use
-  controls beyond the nine in GSE115650. In Step 3 I will check which
-  published contrasts used them and which can be reconstructed from GEO.
 - **Biomarker score.** The authors fit DESeq2's rlog (`fitType="local"`)
   on the four biomarker genes only and sum each gene's difference from
   the control mean
