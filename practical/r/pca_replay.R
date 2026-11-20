@@ -12,6 +12,7 @@
 #   pca_replay_scores.csv     PC1 to PC10 per sample, with GEO title and library ID
 #   pca_replay_genes.txt      the 500 genes used, for the same-gene comparison in Python
 #   r_session_info.txt        R and package versions
+#   mapping_rates.csv         input and mapped reads and exact mapping rate per sample (GEO object)
 # Run from practical/:  pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R
 
 suppressMessages(library(DESeq2))
@@ -30,6 +31,21 @@ geo <- get(load(tmp))
 # the mapped reads and the size factors must then agree as well.
 a <- as.data.frame(colData(rlg))
 g <- as.data.frame(colData(geo))
+# Mapping rates from GEO's object: the exact rate uses the integer at the start of the `Mapped`
+# text field (e.g. "77632355 (97.2% of input)"), since the printed percentage is rounded.
+mapped_text <- as.character(g$Mapped)
+mapped_reads <- as.numeric(sub("^[^0-9]*([0-9]+).*$", "\\1", mapped_text))
+input_reads <- as.numeric(as.character(g$Input))
+if (anyNA(mapped_reads) || anyNA(input_reads)) {
+  print(head(data.frame(Input = as.character(g$Input), Mapped = mapped_text)))
+}
+stopifnot(!anyNA(mapped_reads), !anyNA(input_reads))
+rates <- data.frame(geo_title = rownames(g), batch = g$Batch, condition = g$pheno_type,
+                    input_reads = input_reads, mapped_reads = mapped_reads,
+                    mapping_rate_pct = round(100 * mapped_reads / input_reads, 2))
+rates <- rates[order(rates$mapping_rate_pct), ]
+write.csv(rates, file.path(out, "mapping_rates.csv"), row.names = FALSE)
+print(head(rates, 6), row.names = FALSE)
 stopifnot(!anyDuplicated(a$Input), !anyDuplicated(g$Input))
 idx <- match(a$Input, g$Input)
 stopifnot(!anyNA(idx),
