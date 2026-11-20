@@ -15,7 +15,7 @@ evidence, so do not round up.
 | F4 | The series is indexed and searchable (GEO search, PubMed link) |2|Indexed in GEO DataSets as 200115650; NCBI links it to PMID 30312408 in both directions (https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&db=gds&id=30312408) |
 | A1 | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login |2|Step 1 retrieves the SOFT record and the count file over HTTPS without login (`scripts/geo.py`); GEO also lists FTP links |
 | A2 | The metadata stay available even if the files were withdrawn (GEO keeps the record) |1|For published accessions, GEO retains the record and adds a withdrawal notice. Record contents may be modified or deleted. [GEO FAQ, "How can I delete my records?"](https://www.ncbi.nlm.nih.gov/geo/info/faq.html) |
-| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) |1|Raw counts, normalized counts and FPKM are available as CSV, and sample metadata as SOFT. Per-sample TopHat alignment summaries exist only in `GSE115650_biopsy.dds.rda.gz`, an R binary, as columns `Input` (reads) and `Mapped`, a text field such as "77632355 (97.2% of input)", so mapping rates must be parsed from strings inside the R object (checked with DESeq2 1.50.2); they are absent from the open-format files ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L18-L37))
+| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) |1|Raw counts, normalized counts and FPKM are available as CSV, and sample metadata as SOFT. Per-sample TopHat alignment summaries exist only in `GSE115650_biopsy.dds.rda.gz`, an R binary, as columns `Input` (reads) and `Mapped`, a text field such as "77632355 (97.2% of input)", so mapping rates must be parsed from strings inside the R object; the printed percentage is rounded, and the exact rate is 100 × mapped / input reads (checked with DESeq2 1.50.2); they are absent from the open-format files ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L18-L37))
 | I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) |2|`data_processing` names hg38 and GENCODE v24; all 27,506 count IDs are unique, versioned and found in GENCODE v24 (`data/processed/gene_names.csv`) |
 | I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue |2|`char:subject status` uses one consistent label per condition; all 43 `char:tissue` entries are "muscle biopsy"; no ontology terms (`sample_table.csv`) |
 | R1 | A licence or usage terms are stated |0|No dataset-specific licence or reuse terms in the GEO record; NCBI's general terms are not dataset-specific; the article is "All rights reserved"; the authors' code repository has no licence file |
@@ -54,8 +54,8 @@ feeds Part 2 of your report.
   I will start from the 43 libraries in the deposited count matrix.
   [Library selection code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L151-L164)
   - **Sample identifiers in the authors' objects.** The authors' saved R
-  objects name the Rochester samples by sequencing library ID (for
-  example `2567`), not by GEO title, and the lookup spreadsheet named in
+  objects name all 25 `01-` samples (Rochester) by sequencing library ID (for
+  example `2567`), while the 18 `32-` samples already use their GEO titles, not by GEO title, and the lookup spreadsheet named in
   `renameSample.R` is not public. I linked all 43 samples to GEO titles
   through the TopHat input read counts, which are unique per library, and
   checked the link on mapped reads, size factors and the ten pairs named
