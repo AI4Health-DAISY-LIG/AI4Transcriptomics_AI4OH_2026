@@ -95,8 +95,7 @@ feeds Part 2 of your report.
   groups. The authors' code cuts the tree into four clusters, sorts all
   43 biopsies by the four-gene score, assigns rows 20–24 of that table to
   Group 2, and merges original tree clusters 3 and 4 into published
-  Group 4. The five reassigned biopsies all come from the lowest tree
-  cluster. In `sample_table.csv`, the boundary between published Groups 1
+  Group 4. Because later assignments overwrite earlier ones in this code, the five biopsies that end up in Group 2 (in GEO and Table S6) must all come from the lowest tree cluster, the one relabelled Group 1. In `sample_table.csv`, the boundary between published Groups 1
   and 2 is the largest adjacent score gap among their 15 FSHD biopsies
   (0.52840 to 1.15210). The paper omits the split and merge rules, and the
   public materials examined give no rationale for choosing them. GEO and
