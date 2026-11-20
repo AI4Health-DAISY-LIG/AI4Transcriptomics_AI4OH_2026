@@ -1,7 +1,8 @@
 """Step 2: quality control and exploration of the raw counts.
 
 Outputs (results/step2_qc/):
-  library_sizes.png                 total counts per sample, coloured by condition
+  library_sizes.png                 total counts per sample, by batch, colour and shape = condition
+  library_sizes.csv                 total counts per sample with condition and batch
   gene_filter.txt                   genes before and after filtering, with the rule used
   pca_variance.csv                  variance explained by the first 10 components
   pca_scores.csv                    PC1 to PC10 per sample
@@ -78,15 +79,33 @@ def main() -> None:
     meta = meta.loc[counts.columns]
     print(f"counts: {counts.shape[0]} genes x {counts.shape[1]} samples")
 
-    # Library sizes
+    # Library sizes: total deposited counts per sample, i.e. reads assigned to genes after
+    # the authors' gene filter, not sequencing depth. Shown per batch, because depth differs
+    # by sequencing run; colour and shape show condition (worksheets/step2_qc.md).
+    # Samples labelled: low mapping rate (32-0008, 01-0037, 32-0009) and the paper's
+    # two PCA outliers (01-0037, 32-0016).
+    watch = ["32-0008", "01-0037", "32-0009", "32-0016"]
     lib = counts.sum(axis=0)
-    colors = meta["condition"].map({"Control": "tab:blue", "FSHD": "tab:red"})
-    fig, ax = plt.subplots(figsize=(12, 4))
-    ax.bar(range(len(lib)), lib.values / 1e6, color=colors.values)
-    ax.set_xticks(range(len(lib)))
-    ax.set_xticklabels(lib.index, rotation=90, fontsize=6)
+    lib_table = meta[["condition", "char:batch"]].assign(lib_size=lib)
+    lib_table.sort_values(["char:batch", "lib_size"]).to_csv(OUT / "library_sizes.csv")
+    batches = sorted(lib_table["char:batch"].unique())
+    x_pos = lib_table["char:batch"].map(batches.index)
+    x_pos = x_pos + np.random.default_rng(0).uniform(-0.15, 0.15, len(x_pos))  # fixed jitter
+    y_val = lib_table["lib_size"] / 1e6
+    fig, ax = plt.subplots(figsize=(6, 4))
+    styles = {"FSHD": ("o", "tab:red"), "Control": ("^", "tab:blue")}
+    for condition, (marker, color) in styles.items():
+        idx = lib_table["condition"] == condition
+        ax.scatter(x_pos[idx], y_val[idx], marker=marker, s=45, color=color,
+                   edgecolors="black", linewidths=0.5, alpha=0.85, label=condition)
+    for sample in watch:
+        ax.annotate(sample, (x_pos[sample], y_val[sample]), fontsize=6,
+                    xytext=(4, 0), textcoords="offset points")
+    ax.set_xticks(range(len(batches)))
+    ax.set_xticklabels([f"batch {b}" for b in batches])
     ax.set_ylabel("counts (millions)")
-    ax.set_title("Library size per sample (blue: control, red: FSHD)")
+    ax.set_title("Library size per sample, by batch")
+    ax.legend(fontsize=7)
     fig.tight_layout()
     fig.savefig(OUT / "library_sizes.png", dpi=150)
     plt.close(fig)
