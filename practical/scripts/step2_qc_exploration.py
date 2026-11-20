@@ -110,20 +110,32 @@ def main() -> None:
     fig.savefig(OUT / "library_sizes.png", dpi=150)
     plt.close(fig)
 
-    # Gene filtering.
-    # TODO(student): choose and justify the rule. The default keeps a gene when at least
-    # `min_samples` samples have `min_count` counts or more, with min_samples = smallest group.
-    # Check what your rule does to the four biomarker genes of the paper (config.BIOMARKERS).
-    min_count = 10
-    min_samples = int(meta["condition"].value_counts().min())
-    keep = (counts >= min_count).sum(axis=1) >= min_samples
+    # Gene filtering: the authors' rule, total counts above 20 across the samples
+    # (makeSE.R line 164 at commit 90cd343:
+    # https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L164).
+    # The paper states no threshold. The deposited count file was already filtered with
+    # this rule, so every gene should pass; gene_filter.txt records the evidence (smallest
+    # gene total, genes before and after, and the four biomarkers of config.BIOMARKERS).
+    min_total = 20
+    totals = counts.sum(axis=1)
+    keep = totals > min_total
     filtered = counts.loc[keep]
+    names = pd.read_csv(config.GENE_NAMES)
+    symbol_to_id = dict(zip(names["gene_name"], names["gene_id"]))
+    marker_lines = [
+        f"  {symbol} ({symbol_to_id[symbol]}): total {int(totals[symbol_to_id[symbol]])}, "
+        f"kept {bool(keep[symbol_to_id[symbol]])}"
+        for symbol in config.BIOMARKERS
+    ]
     (OUT / "gene_filter.txt").write_text(
-        f"rule: >= {min_count} counts in >= {min_samples} samples\n"
-        f"genes before: {len(counts)}\ngenes after: {len(filtered)}\n",
+        f"rule: total counts > {min_total} across {counts.shape[1]} samples "
+        f"(authors' makeSE.R line 164, commit 90cd343)\n"
+        f"smallest gene total in the deposited file: {int(totals.min())}\n"
+        f"genes before: {len(counts)}\ngenes after: {len(filtered)}\n"
+        "biomarkers:\n" + "\n".join(marker_lines) + "\n",
         encoding="utf-8",
     )
-    print(f"genes kept: {len(filtered)} / {len(counts)}")
+    print(f"genes kept: {len(filtered)} / {len(counts)} (smallest gene total {int(totals.min())})")
     filtered.to_csv(config.PROCESSED / "counts_filtered.csv")
     meta.to_csv(config.PROCESSED / "metadata.csv")
 
