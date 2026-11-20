@@ -36,6 +36,11 @@ stopifnot(!anyNA(idx),
           identical(as.character(a$Mapped), as.character(g$Mapped[idx])),
           isTRUE(all.equal(a$sizeFactor, g$sizeFactor[idx])))
 geo_title <- rownames(g)[idx]
+# The ten pairs written in the authors' code (renameSample.R L13-L21) must be reproduced.
+known <- c("2524" = "01-0041", "2536" = "01-0042", "2538" = "01-0043", "2539" = "01-0044",
+           "2540" = "01-0045", "2550" = "01-0046", "2559" = "01-0047", "2563" = "01-0048",
+           "2578" = "01-0049", "0952-1" = "01-0022-1")
+stopifnot(identical(unname(geo_title[match(names(known), colnames(rlg))]), unname(known)))
 
 # PCA as plotPCA computes it: top 500 genes by variance of the rlog values, prcomp centred.
 mat <- assay(rlg)

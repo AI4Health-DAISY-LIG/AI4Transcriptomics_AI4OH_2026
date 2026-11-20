@@ -53,14 +53,16 @@ feeds Part 2 of your report.
   43 deposited libraries. The paper does not explain these decisions.
   I will start from the 43 libraries in the deposited count matrix.
   [Library selection code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L151-L164)
-  - **Sample identifiers in the authors' objects.** The authors' saved R
-  objects name all 25 `01-` samples (Rochester) by sequencing library ID (for
-  example `2567`), while the 18 `32-` samples already use their GEO titles, not by GEO title, and the lookup spreadsheet named in
-  `renameSample.R` is not public. I linked all 43 samples to GEO titles
-  through the TopHat input read counts, which are unique per library, and
-  checked the link on mapped reads, size factors and the ten pairs named
-  in the code (`r/pca_replay.R`). This confirms, for example, that
-  library `2567` is `01-0037`.
+  - **Sample identifiers in the authors' objects.** The saved R objects use
+  internal library IDs for all 25 samples whose GEO titles start with
+  `01-` (for example `2567`); the 18 samples whose titles start with `32-`
+  already use their GEO titles. The lookup spreadsheet named in
+  `renameSample.R` is not public. `r/pca_replay.R` links all 43 samples to
+  GEO titles through the TopHat input read counts, which are unique per
+  library, checks the link on mapped reads and size factors, and checks
+  that it reproduces the ten pairs written in the authors' code; for
+  example, library `2567` is `01-0037`.
+  [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L13-L21)
   [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L1-L21)
 - **Read layout and strandedness.** SRA RunInfo identifies all 43 runs
   as single-end. The authors' code supplies the unstranded settings.
@@ -76,10 +78,11 @@ feeds Part 2 of your report.
 - **Published PCA.** The paper does not state the input or settings for
   Figure 3. The authors' code runs DESeq2's `plotPCA` (500 most variable
   genes by default) on an rlog transform saved as an R object, not as a
-  GEO file. A check run outside this repository (NumPy on that saved rlog
-  matrix, 500 most variable genes) gave 37.94% for PC1 and 13.77% for PC2,
-  matching the published 38% and 14%. Reproducing this in my code, and
-  comparing it with a fresh PCA from the GEO counts, is part of Step 2.
+  GEO file. Replaying that step on their saved matrix (`r/pca_replay.R`,
+  DESeq2 1.50.2) gives 37.94% for PC1 and 13.77% for PC2, matching the
+  published 38% and 14%, with 32-0016 and 01-0037 the most extreme on PC2
+  (`results/step2_qc/pca_replay_variance.csv`, `pca_replay_scores.csv`).
+  Whether the GEO counts reproduce that rlog matrix is tested in Step 2.
   [PCA code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFigs.R#L75-L93)
 - **DE design and thresholds.** The Methods name DESeq2 and omit the
   design and cutoffs. The authors' code fits `~ pheno_type` separately
