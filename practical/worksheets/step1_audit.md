@@ -16,6 +16,7 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 | `GSE115650_biopsy.dds.rda.gz` | 15.6 MB | DESeq2 object containing gene counts, FPKM, sample size factors, gene annotations (symbols, types) and per-sample TopHat alignment summaries | Inspected separately for the FAIR audit and to calculate mapping rates for all 43 samples. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
 | `GSE115650_biosy_normalized_genecounts.csv.gz` | 7.1 MB | DESeq2-normalized gene counts (filename misspelled on GEO) | To check Supplementary Table S2 against GEO. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
 | `GSE115650_biopsy_FPKM.csv.gz` | 8.6 MB | FPKM per gene and sample | To check Supplementary Table S2 and the inputs of Figures 4–5. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
+| `sanitized.rlg.rda` (authors' repository) | 16.8 MB | DESeq2 rlog matrix of the 43 samples (27,506 genes), the input of Figure 3 | To replay the published PCA (`r/pca_replay.R`). Downloaded with `curl` from TapscottLab/FSHD-Biopsy-RNA-seq at commit 90cd343 into `data/raw/authors/`; SHA-256 70b1758029229dbb89c33f3f0abc2dea5165d43f61e0da102566994c2dc18239 |
 
 
 ## Sample table
