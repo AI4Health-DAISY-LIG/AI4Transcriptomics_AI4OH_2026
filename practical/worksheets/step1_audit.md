@@ -13,9 +13,9 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 |gencode.v24.annotation.gtf.gz |38.7 MB |GENCODE v24 gene annotation |To map gene IDs to gene symbols and types |
 | Wang et al. (2019), article PDF | 5.3 MB | Published methods, results, and figures | To compare the study design, methods, and results with GEO and my analysis. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
 | `ddy364_supp.zip` | 13.7 MB | Supplementary Tables S1–S10 and Figures S1–S7 | Table S1 supports the participant ID and metadata checks against GEO. Table S2 and the differential expression tables provide reference results for Step 4. Downloaded by hand from the publisher; kept in `doc/`, not in git. |
-| `GSE115650_biopsy.dds.rda.gz` | 14.8 MB | DESeq2 object containing gene counts, FPKM, sample size factors, gene annotations (symbols, types) and per-sample TopHat alignment summaries | Inspected separately for the FAIR audit and to calculate mapping rates for all 43 samples. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
-| `GSE115650_biosy_normalized_genecounts.csv.gz` | 6.8 MB | DESeq2-normalized gene counts (filename misspelled on GEO) | To check Supplementary Table S2 against GEO. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
-| `GSE115650_biopsy_FPKM.csv.gz` | 8.3 MB | FPKM per gene and sample | To check Supplementary Table S2 and the inputs of Figures 4–5. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
+| `GSE115650_biopsy.dds.rda.gz` | 15.6 MB | DESeq2 object containing gene counts, FPKM, sample size factors, gene annotations (symbols, types) and per-sample TopHat alignment summaries | Inspected separately for the FAIR audit and to calculate mapping rates for all 43 samples. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
+| `GSE115650_biosy_normalized_genecounts.csv.gz` | 7.1 MB | DESeq2-normalized gene counts (filename misspelled on GEO) | To check Supplementary Table S2 against GEO. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
+| `GSE115650_biopsy_FPKM.csv.gz` | 8.6 MB | FPKM per gene and sample | To check Supplementary Table S2 and the inputs of Figures 4–5. Downloaded from GEO over HTTPS with `curl`, not by the Step 1 script |
 
 
 ## Sample table
@@ -41,7 +41,7 @@ char:t1, char:fat.fraction, char:rnaseq.score, char:rnaseq.rank
 
 What `counts_header_check.txt` shows, and what you decided:
 
-All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. No other GEO sample uses 01-0022, and both title and char:sample_id are unique across the 43 records, so GEO holds one sample for this participant. The authors' code explains the suffix: it renames sequencing library 0952-1 to 01-0022-1 ([renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L17-L19)) and removes a library named 0952 before analysis ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). This suggests the participant was sequenced twice and only the second library was kept and deposited.
+All 43 sample columns in the count table match the GEO title field, while only 42 match char:sample_id. The single mismatch is record GSM3186680, which is labeled 01-0022-1 in title (matching the count column) but 01-0022 in char:sample_id. No other GEO sample uses 01-0022, and both title and char:sample_id are unique across the 43 records, so GEO holds one sample for this participant. The authors' code explains the suffix: it renames sequencing library 0952-1 to 01-0022-1 ([renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L17-L19)) and removes a library named 0952 before analysis ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L162)). Whether library 0952 comes from the same participant or the same biopsy is not stated in the code or the paper.
 In Step 2, the merge key will be changed to title so the concerned biopsy will not be left unmatched and silently dropped. The choice was made so that the original data are not modified and the sample_id column will be kept in the future merged table for traceability and verification purposes.
 Moreover, paper's Table S1 confirms that both keys are needed: it lists 01-0022 without the "-1" suffix, so title links GEO to the count matrix (43/43) while char:sample_id links GEO to the paper's tables (34/34 FSHD) (in results:`paper_table_s1_id_check.txt`)
 
@@ -105,7 +105,7 @@ Instrument and tissue are technical. GEO gives every sample the same sequencer m
 | All       |       2 |        5 |       14 |        13 |       9 |  43 |
 
 
-We cannot tell whether sex or age (biological) are balanced across conditions as both are missing for all 9 control samples.
+Sex and age (biological) are missing in GEO for all 9 controls, so their balance cannot be checked sample by sample. The paper's group summaries show that controls were younger on average (35 vs 53.6 years for the sequenced FSHD participants) and more often female (6/9 vs 12/34). GEO lacks the individual control values needed to adjust for either variable.
 
 
 ## What the paper says about the samples and GEO does not
@@ -140,7 +140,7 @@ Library selection: The authors' alignment summary lists 49 library IDs. Their pr
 
 ## FAIR score
 
-Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), because no dataset-specific licence or reuse terms are stated anywhere; R2 (1/2), because the paper and GEO sample metadata misprint the TopHat version and omit read layout and strandedness. These gaps were recovered from SRA RunInfo and the authors' code, but the software versions remain inconsistent between the paper and the authors' README.
+Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), no dataset-specific licence or reuse terms were identified; R2 (1/2), because the paper and GEO sample metadata misprint the TopHat version and omit read layout and strandedness. These gaps were recovered from SRA RunInfo and the authors' code, but the software versions remain inconsistent between the paper and the authors' README.
 
 ## Decisions I made
 
