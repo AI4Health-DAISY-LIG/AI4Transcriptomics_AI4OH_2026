@@ -63,7 +63,6 @@ feeds Part 2 of your report.
   that it reproduces the ten pairs written in the authors' code; for
   example, library `2567` is `01-0037`.
   [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L1-L21)
-  [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L13-L21)
 - **Read layout and strandedness.** SRA RunInfo identifies all 43 runs
   as single-end. The authors' code supplies the unstranded settings.
   [SRA RunInfo](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRP150311) · [Alignment settings](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/do_tophat.sh#L15-L22)
@@ -83,12 +82,14 @@ feeds Part 2 of your report.
   GEO file. Replaying that step on their saved matrix (`r/pca_replay.R`)
   gives 37.94% / 13.77%, matching the published 38% / 14%. Recomputing
   rlog from the GEO counts with DESeq2 1.50.2 (`r/rlog_from_geo.R`)
-  reproduces the authors' size factors and prior width exactly, and their
-  rlog values for all but 9 genes to within 0.01; the 9 are sparse genes,
-  zero in 25 to 42 samples. With all genes the PCA gives 37.32% / 13.61%,
-  with the same two PC2 outliers (32-0016, 01-0037) and score
-  correlations above 0.9997; without the 9 genes, both PCAs are identical
-  (38.38% / 13.91%) (`results/step2_qc/rlog_geo_comparison.txt`).
+  reproduces the authors' size factors exactly and their prior width at
+  the reported precision (1.07696). The rlog values agree with a median
+  absolute difference of 4 × 10⁻⁷; 9 genes differ by more than 0.1, all
+  sparse (zero in 25 to 42 samples, `rlog_geo_differing_genes.csv`). With
+  all genes the PCA gives 37.32% / 13.61%, with the same two PC2
+  outliers (32-0016, 01-0037) and score correlations above 0.9997;
+  without the 9 genes, both PCAs give 38.38% / 13.91% to two decimals
+  (`results/step2_qc/rlog_geo_comparison.txt`).
   [PCA code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFigs.R#L75-L93)
 - **DE design and thresholds.** The Methods name DESeq2 and omit the
   design and cutoffs. The authors' code fits `~ pheno_type` separately
