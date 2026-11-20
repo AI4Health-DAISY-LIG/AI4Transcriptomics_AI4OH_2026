@@ -3,8 +3,8 @@
 # Inputs
 #   data/raw/authors/sanitized.rlg.rda    authors' rlog matrix, TapscottLab/FSHD-Biopsy-RNA-seq
 #                                         commit 90cd343, sha256 70b1758029229dbb89c33f3f0abc2dea5165d43f61e0da102566994c2dc18239
-#   data/raw/GSE115650_biopsy.dds.rda.gz  GEO's DESeq2 object, used only to link the authors'
-#                                         library IDs to GEO titles
+#   data/raw/GSE115650_biopsy.dds.rda.gz  GEO's DESeq2 object, used to link the authors' library
+#                                         IDs to GEO titles and to export the mapping rates
 # Method (authors' makeManuscripts_supFigs.R L82): DESeq2 plotPCA, i.e. the 500 genes with the
 # highest variance of the rlog values, centred, not scaled.
 # Outputs (results/step2_qc/)

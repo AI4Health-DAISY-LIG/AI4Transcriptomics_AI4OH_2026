@@ -15,7 +15,7 @@ evidence, so do not round up.
 | F4 | The series is indexed and searchable (GEO search, PubMed link) |2|Indexed in GEO DataSets as 200115650; NCBI links it to PMID 30312408 in both directions (https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&db=gds&id=30312408) |
 | A1 | The files can be retrieved by a standard protocol (HTTPS or FTP) without a login |2|Step 1 retrieves the SOFT record and the count file over HTTPS without login (`scripts/geo.py`); GEO also lists FTP links |
 | A2 | The metadata stay available even if the files were withdrawn (GEO keeps the record) |1|For published accessions, GEO retains the record and adds a withdrawal notice. Record contents may be modified or deleted. [GEO FAQ, "How can I delete my records?"](https://www.ncbi.nlm.nih.gov/geo/info/faq.html) |
-| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) |1|Raw counts, normalized counts and FPKM are available as CSV, and sample metadata as SOFT. Per-sample TopHat alignment summaries exist only in `GSE115650_biopsy.dds.rda.gz`, an R binary, as columns `Input` (reads) and `Mapped`, a text field such as "77632355 (97.2% of input)", so mapping rates must be parsed from strings inside the R object; the printed percentage is rounded, and the exact rate is 100 × mapped / input reads (checked with DESeq2 1.50.2); they are absent from the open-format files ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L18-L37))
+| I1 | The data use an open, documented format (CSV or TSV, not a binary from one tool) |1|Raw counts, normalized counts and FPKM are available as CSV, and sample metadata as SOFT. Per-sample TopHat alignment summaries exist only in `GSE115650_biopsy.dds.rda.gz`, an R binary, as columns `Input` (reads) and `Mapped`, a text field such as "77632355 (97.2% of input)"; the printed percentage is rounded, and the exact rate is 100 × mapped / input reads. `r/pca_replay.R` extracts them for all 43 samples (`results/step2_qc/mapping_rates.csv`); they are absent from the open-format files ([makeSE.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L18-L37)) |
 | I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) |2|`data_processing` names hg38 and GENCODE v24; all 27,506 count IDs are unique, versioned and found in GENCODE v24 (`data/processed/gene_names.csv`) |
 | I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue |2|`char:subject status` uses one consistent label per condition; all 43 `char:tissue` entries are "muscle biopsy"; no ontology terms (`sample_table.csv`) |
 | R1 | A licence or usage terms are stated |0|No dataset-specific licence or reuse terms in the GEO record; NCBI's general terms are not dataset-specific; the article is "All rights reserved"; the authors' code repository has no licence file |
@@ -53,7 +53,7 @@ feeds Part 2 of your report.
   43 deposited libraries. The paper does not explain these decisions.
   I will start from the 43 libraries in the deposited count matrix.
   [Library selection code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L151-L164)
-  - **Sample identifiers in the authors' objects.** The saved R objects use
+ - **Sample identifiers in the authors' objects.** The saved R objects use
   internal library IDs for all 25 samples whose GEO titles start with
   `01-` (for example `2567`); the 18 samples whose titles start with `32-`
   already use their GEO titles. The lookup spreadsheet named in
@@ -62,27 +62,33 @@ feeds Part 2 of your report.
   library, checks the link on mapped reads and size factors, and checks
   that it reproduces the ten pairs written in the authors' code; for
   example, library `2567` is `01-0037`.
-  [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L13-L21)
   [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L1-L21)
+  [renameSample.R](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/renameSample.R#L13-L21)
 - **Read layout and strandedness.** SRA RunInfo identifies all 43 runs
   as single-end. The authors' code supplies the unstranded settings.
   [SRA RunInfo](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRP150311) · [Alignment settings](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/do_tophat.sh#L15-L22)
 - **Mapping QC.** GEO stores the per-sample TopHat alignment summaries
-  in `GSE115650_biopsy.dds.rda.gz`. The open-format GEO files omit
-  these fields. I will document how I extract and use them in Step 2.
-- **Gene filter.** The paper gives no threshold. The smallest total count
-  per gene in the deposited matrix is 21, consistent with the authors'
-  rule of more than 20 counts across samples. I will document the
-  additional filtering rule I choose in Step 2.
+  only in `GSE115650_biopsy.dds.rda.gz`; the open-format GEO files omit
+  them. `r/pca_replay.R` extracts them for all 43 samples
+  (`results/step2_qc/mapping_rates.csv`): three batch II biopsies map at
+  67.73%, 76.52% and 85.60%, every other biopsy at 94.85% or more.
+- **Gene filter.** The paper gives no threshold. The authors' code keeps
+  genes with more than 20 counts in total, and the deposited matrix
+  already satisfies it (smallest gene total 21). I apply the same rule
+  and no additional filter (`results/step2_qc/gene_filter.txt`).
   [Authors' filter](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L161-L166)
 - **Published PCA.** The paper does not state the input or settings for
   Figure 3. The authors' code runs DESeq2's `plotPCA` (500 most variable
   genes by default) on an rlog transform saved as an R object, not as a
-  GEO file. Replaying that step on their saved matrix (`r/pca_replay.R`,
-  DESeq2 1.50.2) gives 37.94% for PC1 and 13.77% for PC2, matching the
-  published 38% and 14%, with 32-0016 and 01-0037 the most extreme on PC2
-  (`results/step2_qc/pca_replay_variance.csv`, `pca_replay_scores.csv`).
-  Whether the GEO counts reproduce that rlog matrix is tested in Step 2.
+  GEO file. Replaying that step on their saved matrix (`r/pca_replay.R`)
+  gives 37.94% / 13.77%, matching the published 38% / 14%. Recomputing
+  rlog from the GEO counts with DESeq2 1.50.2 (`r/rlog_from_geo.R`)
+  reproduces the authors' size factors and prior width exactly, and their
+  rlog values for all but 9 genes to within 0.01; the 9 are sparse genes,
+  zero in 25 to 42 samples. With all genes the PCA gives 37.32% / 13.61%,
+  with the same two PC2 outliers (32-0016, 01-0037) and score
+  correlations above 0.9997; without the 9 genes, both PCAs are identical
+  (38.38% / 13.91%) (`results/step2_qc/rlog_geo_comparison.txt`).
   [PCA code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFigs.R#L75-L93)
 - **DE design and thresholds.** The Methods name DESeq2 and omit the
   design and cutoffs. The authors' code fits `~ pheno_type` separately
@@ -97,12 +103,14 @@ feeds Part 2 of your report.
   on the four biomarker genes only and sum each gene's difference from
   the control mean
   ([getRankScore](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L84-L129)).
-    Figure 1 plots this control-centered score
-  ([Figure 1 code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFig_scatterPlot.R#L43-L49)), but the score deposited in GEO subtracts the cohort minimum
+  Figure 1 plots this control-centred score
+  ([Figure 1 code](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeManuscripts_supFig_scatterPlot.R#L43-L49)),
+  but the score deposited in GEO subtracts the cohort minimum
   ([score export](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/misc_tools.R#L191-L198)).
   In Step 4, I will match the convention to the values being compared.
-  The locked PyDESeq2 release lacks rlog, so I will document the
-  transformation I use in Step 4.
+  PyDESeq2 has no rlog, but DESeq2's own rlog is available in the locked
+  R environment (`r/pixi.toml`), so Step 4 can use the authors'
+  transformation.
 - **RNA groups.** The Methods describe hierarchical clustering into four
   groups. The authors' code cuts the tree into four clusters, sorts all
   43 biopsies by the four-gene score, assigns rows 20–24 of that table to
@@ -124,7 +132,8 @@ feeds Part 2 of your report.
   Step 4.
 - **Software versions.** The paper reports R 3.4 and Bioconductor 3.5, and
   the header of `makeSE.R` names R 3.4.0, but the authors' README lists
-  R 3.5 and Bioconductor 3.7 as requirements. The versions may have varied
-  between scripts, so the exact environment that generated the published
-  results is uncertain. I will report the versions used for my runs.
+  R 3.5 and Bioconductor 3.7 as requirements, so the exact environment
+  that generated the published results is uncertain. My runs use
+  Python 3.12 with PyDESeq2 0.5.4 (`uv.lock`) and R 4.5.3 with
+  DESeq2 1.50.2 (`r/pixi.lock`, `results/step2_qc/r_session_info.txt`).
   [makeSE.R header](https://github.com/TapscottLab/FSHD-Biopsy-RNA-seq/blob/90cd343b3d60a696a35041a33015131ab9908164/scripts/makeSE.R#L1-L5)

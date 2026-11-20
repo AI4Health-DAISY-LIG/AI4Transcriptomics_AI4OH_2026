@@ -32,7 +32,7 @@ Compare your PCA with Figure 3 of the paper. The same or not, and why:
 
 ## Samples I excluded, and why
 
-- None in the main analysis: all 43 deposited biopsies are kept. The three biopsies with low mapping rates (32-0008, 01-0037, 32-0009, all FSHD, all batch II) are flagged and excluded only in a separate sensitivity run, which keeps the same 27,506 genes so that only the samples change.
+- None in the main analysis: all 43 deposited biopsies are kept. Three biopsies, all FSHD from batch II, have low mapping rates: 32-0008 (67.73%), 01-0037 (76.52%) and 32-0009 (85.60%), against 94.85% or more for every other biopsy, including the paper's other PCA outlier, 32-0016 (95.26%). Rates are calculated from the integer input and mapped read counts in GEO's R object and rounded to two decimals (`results/step2_qc/mapping_rates.csv`). A sensitivity run excluding these three biopsies is planned; it will keep the same 27,506 genes so that only the samples change.
 
 ## Decisions I made
 
