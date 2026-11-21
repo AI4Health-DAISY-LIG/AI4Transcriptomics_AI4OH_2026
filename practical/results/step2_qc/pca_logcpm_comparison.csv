@@ -1,0 +1,5 @@
+input,genes,pc1_pct,pc2_pct,figure3_genes_included
+rlog of GEO counts,own top 500,37.32,13.61,498
+log2(CPM + 1),Figure 3's 500 genes,46.06,13.73,500
+log2(CPM + 1),own top 500,58.05,15.57,197
+log2(CPM + 1),own top 2000 (course default),63.8,11.17,320
