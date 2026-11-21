@@ -37,8 +37,8 @@ def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
     # TODO(student): read results/step1_audit/counts_header_check.txt first. This join keeps
     # only the count columns whose name equals a GEO sample_id. If a column has no match,
     # find out which biopsy it is and decide: rename it, or leave it out and say why.
-    key = "char:sample_id" if "char:sample_id" in samples.columns else "title"
-    meta = samples.set_index(key).reindex(counts.columns)
+    
+    meta = samples.set_index("title").reindex(counts.columns)
     missing = meta["condition"].isna()
     if missing.any():
         print(f"[warn] {missing.sum()} count column(s) dropped, no GEO record under that name: "
