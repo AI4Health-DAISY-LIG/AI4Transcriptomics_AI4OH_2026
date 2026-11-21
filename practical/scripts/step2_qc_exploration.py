@@ -10,6 +10,7 @@ Outputs (results/step2_qc/):
   pca_scores.csv                    PC1 to PC10 per sample, signs aligned to the Figure 3 replay
   pca_by_<variable>.png             PC1 vs PC2, colour = variable, shape = condition
   pca_logcpm_comparison.csv         PC1 and PC2 variance of log2(CPM + 1) PCAs, for comparison
+  pca_associations.csv              association of PC1 to PC3 with each plotted variable
   data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
   data/processed/metadata.csv          one row per sample column of the counts, with condition
 
@@ -35,6 +36,7 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from sklearn.decomposition import PCA  # noqa: E402
+from scipy.stats import spearmanr  # noqa: E402
 
 import config  # noqa: E402
 
@@ -256,6 +258,27 @@ def main() -> None:
         scatter_by(pcs, values, meta["condition"], name, pct,
                    f"PCA, rlog of GEO counts, top {N_TOP} genes: colour = {name}",
                    OUT / f"pca_by_{name}.png")
+        
+            # Association of PC1 to PC3 with each plotted variable, to name what separates the
+    # samples: Spearman rho for numeric variables, and for categorical ones the share of the
+    # PC's variance explained by the levels (R^2). Descriptive only: batch and group overlap.
+    rows = []
+    for name, values in variables.items():
+        ok = values.notna()
+        numeric = pd.to_numeric(values[ok], errors="coerce")
+        for pc in ["PC1", "PC2", "PC3"]:
+            y = pcs.loc[ok[ok].index, pc]
+            if numeric.notna().all():
+                rho, p = spearmanr(y, numeric)
+                rows.append({"pc": pc, "variable": name, "measure": "spearman_rho",
+                             "value": round(rho, 3), "p_value": float(f"{p:.3g}"),
+                             "n": int(ok.sum())})
+            else:
+                within = ((y - y.groupby(values[ok]).transform("mean")) ** 2).sum()
+                r2 = 1 - within / ((y - y.mean()) ** 2).sum()
+                rows.append({"pc": pc, "variable": name, "measure": "r2_between_levels",
+                             "value": round(r2, 3), "p_value": None, "n": int(ok.sum())})
+    pd.DataFrame(rows).to_csv(OUT / "pca_associations.csv", index=False)
     print("figures written to", OUT)
     print("\nNext: fill worksheets/step2_qc.md")
 
