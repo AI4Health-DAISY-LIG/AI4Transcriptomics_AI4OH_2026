@@ -6,18 +6,11 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 
 ## What I downloaded
 
-| File                          | Size   | What it holds                                  | Why I need it (or not)                                                                                |
-| ----------------------------- | ------ | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| counts_header_check.txt       | 392 B  | Header validation results for the count matrix | Needed to confirm file header format is correct and is associated with the correct sample             |
-| crosstab_age.csv              | 125 B  | Age group cross-tabulation statistics          | Useful for demographic analysis as a covariate, but not usable here since we lack control group data. |
-| crosstab_batch.csv            | 78 B   | Sample counts per batch by condition           | Useful for QC and potentially for correcting batch effects if applicable during execution.            |
-| crosstab_gender.csv           | 81 B   | Gender distribution cross-tabulation           | Like age, this data is not useful here since we lack control group information.                       |
-| crosstab_instrument_model.csv | 67 B   | Machine used for mRNA sequencing analysis      | Every sample was processed on the same machine, so no need to use this as a covariate.                |
-| crosstab_tissue.csv           | 61 B   | Tissue type cross-tabulation                   | Data is too coarse to be useful as a covariate; only one general tissue type is listed.               |
-| crosstabs.md                  | 1.6 KB | Summary of all cross-tabulations               | Quick reference guide for all crosstab files.                                                         |
-| missing_values.csv            | 332 B  | Missing value counts per sample metadata field | Needed to assess data completeness and identify gaps in the dataset.                                  |
-| sample_table.csv              | 89 KB  | Sample metadata dataset                        | Used for mapping samples to geo records and as a source of covariate information.                     |
-| series_record.txt             | 4.3 KB | Geo-series metadata                            | Helps locate supplementary files and provides general study info (PubMed ID, abstract, authors).      |
+| File                                 | Size | What it holds                                  | Why I need it (or not)                                                                                                              |
+| ------------------------------------ | ---- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `GSE115650_all.soft.txt`             | 13M  | GEO Soft format metadata for GSE115650         | **Yes**: Contains sample titles, characteristics, and platform info. Essential for mapping samples to conditions (control vs FSHD). |
+| `GSE115650_biopsy_genecounts.csv.gz` | 1.7M | Compressed CSV of gene-level counts per sample | **Yes**: This is the primary expression matrix (counts), it's the result of the muscle biopsy sequencing.                           |
+| `gencode.v24.annotation.gtf.gz`      | 37M  | GENCODE v24 annotation in GTF format           | **yes**: Needed to align gene symbole IDs to their names.                                                                           |
 
 ## Sample table
 
@@ -121,7 +114,7 @@ variables the paper describes that you cannot find in the GEO record.
 - The Gender of the control is composed of 6 females, 3 males but no mapping to sample is given. Also the male/female ratio differs a lot between the groups : 34% females in the FSHD group vs 66% females in the control.
 - The detailed biopsy tissue type for the samples of the FSHD (additional files)
 - Regarding the age the mean age between the FSHD and the control respectively 54 vs 35 years old differ.
-- The control are related (spouses, parents or siblings of FSHD individuals).
+- The control are related (spouses, parents or siblings) with FSHD individuals.
 
 ## FAIR score
 
@@ -141,4 +134,4 @@ All the analyses were based on these four groups, but we cannot recompute them b
 
 ## Decisions I made
 
--
+- Since the title is correctly set to `01-0022-1` for this sample, I chose to keep it and correct the sample ID to `01-0022-1` for the rest of the analysis.
