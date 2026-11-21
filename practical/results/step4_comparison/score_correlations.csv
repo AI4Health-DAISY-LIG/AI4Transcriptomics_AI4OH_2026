@@ -1,0 +1,9 @@
+variable,n,spearman
+rnaseq.score,34,0.995
+stir,34,0.577
+active,32,0.681
+inflam,32,0.658
+path.score,32,0.564
+rnaseq.rank,34,0.955
+fat.fraction,34,0.238
+t1,34,0.393
