@@ -14,6 +14,7 @@ Outputs (results/step2_qc/):
   paper_group_by_batch.csv          number of samples per paper group and batch
   sex_check.csv                     sex inferred from XIST and 6 Y genes vs GEO label
   sex_check.png                     XIST vs Y genes, colour = GEO label, shape = condition
+  sample_similarity.csv             each sample's most similar other sample (duplicate check)
   pca_genes.txt                     the 500 genes of the PCA, reused by the sensitivity run
   pca_top_genes.csv                 the 20 genes with the largest weight on PC1 to PC3, with symbols
   data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
@@ -293,6 +294,24 @@ def sex_check(counts: pd.DataFrame, meta: pd.DataFrame, out) -> pd.DataFrame:
     return table
 
 
+def similarity_check(counts: pd.DataFrame, out) -> None:
+    """Looks for duplicated libraries: identical count columns, and each sample's most similar
+    other sample (Pearson r of log2(CPM + 1) over genes with >= 10 counts in at least half the
+    samples). A library sequenced twice or put under two names would stand out above the
+    pairs of different people."""
+    identical = int(counts.T.duplicated().sum())
+    expressed = (counts >= 10).sum(axis=1) >= counts.shape[1] / 2
+    logcpm = np.log2(counts / counts.sum(axis=0) * 1e6 + 1).loc[expressed]
+    r = logcpm.corr()
+    r = r.where(~np.eye(len(r), dtype=bool))  # ignore each sample's correlation with itself
+    table = pd.DataFrame({"most_similar": r.idxmax(), "r": r.max().round(4)})
+    table.sort_values("r", ascending=False).to_csv(out / "sample_similarity.csv")
+    print(f"similarity check: {identical} identical count columns; {int(expressed.sum())} genes; "
+          f"highest pair r {table['r'].max():.4f} ({table['r'].idxmax()} - "
+          f"{table.loc[table['r'].idxmax(), 'most_similar']}); median nearest r "
+          f"{table['r'].median():.4f}")
+
+
 def sensitivity_run() -> None:
     """PCA without config.SENSITIVITY_EXCLUDE: same rlog values and same 500 genes as the main
     run, refitted on the remaining samples, so that only the samples change. A variant that
@@ -458,6 +477,7 @@ def main() -> None:
 
     describe_pca(pcs, pct, meta, lib, OUT, "rlog of GEO counts")
     sex_check(counts, meta, OUT)
+    similarity_check(counts, OUT)
     print("figures written to", OUT)
     print("\nNext: fill worksheets/step2_qc.md")
 
