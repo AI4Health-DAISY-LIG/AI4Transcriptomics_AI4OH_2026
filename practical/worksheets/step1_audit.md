@@ -106,7 +106,7 @@ Instrument and tissue are technical. GEO gives every sample the same sequencer m
 | All       |       2 |        5 |       14 |        13 |       9 |  43 |
 
 
-Sex and age (biological) are missing in GEO for all 9 controls, so their balance cannot be checked sample by sample. The paper's summary for the controls (mean age 35 years, 6/9 women) compared with the GEO sample table for the sequenced FSHD participants (mean age 53.6 years, 12/34 women) shows that controls were younger on average and more often female. GEO lacks the individual control values needed to adjust for either variable.
+Sex and age (biological) are missing in GEO for all 9 controls, so their balance cannot be checked sample by sample. The paper's summary for the controls (mean age 35 years, 6/9 women) compared with the GEO sample table for the sequenced FSHD participants (mean age 53.6 years, 12/34 women) shows that controls were younger on average and more often female. GEO lacks the individual control values needed to adjust for either variable. Step 2 recovers each control's sex from expression (6 women, 3 men, as the paper reports) and finds one FSHD label, 32-0004, that contradicts the expression data (`results/step2_qc/sex_check.csv`).
 
 
 ## What the paper says about the samples and GEO does not

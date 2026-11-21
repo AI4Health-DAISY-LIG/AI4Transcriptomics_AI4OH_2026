@@ -36,6 +36,7 @@ feeds Part 2 of your report.
   summaries for the controls, and GEO leaves both fields blank for all
   nine. The deposited metadata cannot support individual age or sex
   adjustment in the FSHD–control comparison.
+  Sex can be recovered from the expression data (Step 2, `results/step2_qc/sex_check.csv`): 6 women and 3 men, as in the paper. Age cannot, so individual age adjustment remains impossible.
 - **Sample handling and RNA integrity.** The paper gives the freezing
   protocol and storage temperature, but the paper and public sample
   records examined do not provide per-sample collection or preparation

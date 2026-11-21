@@ -12,6 +12,8 @@ Outputs (results/step2_qc/):
   pca_logcpm_comparison.csv         PC1 and PC2 variance of log2(CPM + 1) PCAs, for comparison
   pca_associations.csv              association of PC1 to PC3 with each plotted variable
   paper_group_by_batch.csv          number of samples per paper group and batch
+  sex_check.csv                     sex inferred from XIST and 6 Y genes vs GEO label
+  sex_check.png                     XIST vs Y genes, colour = GEO label, shape = condition
   pca_genes.txt                     the 500 genes of the PCA, reused by the sensitivity run
   pca_top_genes.csv                 the 20 genes with the largest weight on PC1 to PC3, with symbols
   data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
@@ -223,6 +225,74 @@ def write_top_genes(mat: pd.DataFrame, genes, pcs: pd.DataFrame, out, n: int = 2
                          "gene_name": symbols.get(gene, ""), "loading": round(float(w[gene]), 4)})
     pd.DataFrame(rows).to_csv(out / "pca_top_genes.csv", index=False)
 
+Y_GENES = ["RPS4Y1", "DDX3Y", "KDM5D", "UTY", "EIF1AY", "USP9Y"]
+
+
+def sex_check(counts: pd.DataFrame, meta: pd.DataFrame, out) -> pd.DataFrame:
+    """Sex inferred from expression, compared with the GEO label (FSHD only; controls have none).
+
+    XIST is expressed from the inactive X, so only in women; the six Y-chromosome genes only
+    in men. Rule, fixed before looking at the data: male when the mean log2(CPM + 1) of the
+    Y genes is above XIST's log2(CPM + 1). `margin` is that difference; values near 0 would
+    be ambiguous.
+    """
+    symbol_to_id = (pd.read_csv(config.GENE_NAMES).drop_duplicates("gene_name")
+                    .set_index("gene_name")["gene_id"])
+    logcpm = np.log2(counts / counts.sum(axis=0) * 1e6 + 1)
+    table = pd.DataFrame({"condition": meta["condition"],
+                          "geo_gender": meta["char:gender"],
+                          "XIST": logcpm.loc[symbol_to_id["XIST"]]})
+    for gene in Y_GENES:
+        table[gene] = logcpm.loc[symbol_to_id[gene]]
+    table["Y_mean"] = table[Y_GENES].mean(axis=1)
+    table["margin"] = table["Y_mean"] - table["XIST"]
+    table["inferred_sex"] = np.where(table["margin"] > 0, "male", "female")
+    labelled = table["geo_gender"].notna()
+    table["agrees_with_geo"] = (table["inferred_sex"] == table["geo_gender"]).where(labelled)
+    table.round(3).sort_values(["condition", "inferred_sex", "margin"]).to_csv(
+        out / "sex_check.csv")
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+    colours = {"female": "tab:orange", "male": "tab:green"}
+    for condition, marker in MARKERS.items():
+        for label, colour in [*colours.items(), ("not given", "lightgrey")]:
+            gender = table["geo_gender"].fillna("not given")
+            idx = (table["condition"] == condition) & (gender == label)
+            if idx.any():
+                ax.scatter(table.loc[idx, "XIST"], table.loc[idx, "Y_mean"], marker=marker,
+                           s=45, color=colour, edgecolors="black", linewidths=0.5,
+                           label=f"{condition}, GEO: {label}")
+    # Biopsies whose GEO label disagrees: redrawn on top in their GEO colour, ringed in red
+    # and labelled with an arrow, so they stay visible inside the other sex's cluster.
+    wrong = table["agrees_with_geo"] == False  # noqa: E712
+    for sample in table.index[wrong]:
+        x, y = table.loc[sample, "XIST"], table.loc[sample, "Y_mean"]
+        ax.scatter(x, y, marker=MARKERS[table.loc[sample, "condition"]], s=60, zorder=4,
+                   color=colours.get(table.loc[sample, "geo_gender"], "lightgrey"),
+                   edgecolors="black", linewidths=0.5)
+        ax.annotate(f"{sample} (GEO: {table.loc[sample, 'geo_gender']})", (x, y),
+                    xytext=(60, -60), textcoords="offset points", fontsize=8, color="red",
+                    arrowprops={"arrowstyle": "->", "color": "red"})
+    ax.scatter(table.loc[wrong, "XIST"], table.loc[wrong, "Y_mean"], s=160, facecolors="none",
+               edgecolors="red", linewidths=1.2, zorder=5, label="label disagrees")
+    ax.set_xlabel("XIST, log2(CPM + 1)")
+    ax.set_ylabel("mean of 6 Y genes, log2(CPM + 1)")
+    ax.set_title("Sex from expression vs GEO label")
+    ax.legend(fontsize=6)
+    fig.tight_layout()
+    fig.savefig(out / "sex_check.png", dpi=150)
+    plt.close(fig)
+
+    fshd = table[labelled]
+    disagree = list(fshd.index[fshd["agrees_with_geo"] == False])  # noqa: E712
+    controls = table.loc[table["condition"] == "Control", "inferred_sex"].value_counts()
+    print(f"sex check: {int(fshd['agrees_with_geo'].sum())}/{len(fshd)} GEO labels agree "
+          f"with expression; disagree: {', '.join(disagree) or 'none'}; smallest |margin| "
+          f"{table['margin'].abs().min():.2f}; controls inferred: "
+          f"{controls.get('female', 0)} female, {controls.get('male', 0)} male")
+    return table
+
+
 def sensitivity_run() -> None:
     """PCA without config.SENSITIVITY_EXCLUDE: same rlog values and same 500 genes as the main
     run, refitted on the remaining samples, so that only the samples change. A variant that
@@ -374,6 +444,7 @@ def main() -> None:
     pd.DataFrame(rows).to_csv(OUT / "pca_logcpm_comparison.csv", index=False)
 
     describe_pca(pcs, pct, meta, lib, OUT, "rlog of GEO counts")
+    sex_check(counts, meta, OUT)
     print("figures written to", OUT)
     print("\nNext: fill worksheets/step2_qc.md")
 
