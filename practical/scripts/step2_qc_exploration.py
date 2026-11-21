@@ -12,6 +12,8 @@ Outputs (results/step2_qc/):
   pca_logcpm_comparison.csv         PC1 and PC2 variance of log2(CPM + 1) PCAs, for comparison
   pca_associations.csv              association of PC1 to PC3 with each plotted variable
   paper_group_by_batch.csv          number of samples per paper group and batch
+  pca_genes.txt                     the 500 genes of the PCA, reused by the sensitivity run
+  pca_top_genes.csv                 the 20 genes with the largest weight on PC1 to PC3, with symbols
   data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
   data/processed/metadata.csv          one row per sample column of the counts, with condition
 
@@ -26,9 +28,16 @@ Run, from practical/:
   pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R
   pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R
   uv run python scripts/step2_qc_exploration.py
+
+Sensitivity run (after the main run), without the low-mapping biopsies of
+config.SENSITIVITY_EXCLUDE: same rlog values, same 500 genes, PCA refitted on the remaining
+samples. Writes to results/step2_qc/sensitivity_40/ and leaves data/processed/ untouched:
+  uv run python scripts/step2_qc_exploration.py --sensitivity
 """
 
 from __future__ import annotations
+
+import argparse
 
 import matplotlib
 import numpy as np
@@ -130,6 +139,139 @@ def scatter_by(pcs: pd.DataFrame, values: pd.Series, conditions: pd.Series, name
     plt.close(fig)
 
 
+def describe_pca(pcs: pd.DataFrame, pct, meta: pd.DataFrame, lib: pd.Series, out, label: str) -> None:
+    """Figures (colour = variable, shape = condition), paper group by batch, and the association
+    of PC1 to PC3 with each plotted variable, written to `out`."""
+    # Paper groups as in Figure 3 (controls are in group 1 by construction of the authors'
+    # clustering).
+    rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
+    paper_group = rank.map(lambda r: f"Group{int(r)}_FSHD" if pd.notna(r) else None)
+    paper_group[meta["condition"] == "Control"] = "Group1_Control"
+    # Paper groups against batch: which groups each sequencing run holds (worksheets/step2_qc.md).
+    pd.crosstab(paper_group, meta["char:batch"]).to_csv(out / "paper_group_by_batch.csv")
+    variables = {
+        "condition": meta["condition"],
+        "paper_group": paper_group,
+        "batch": meta["char:batch"],
+        "instrument_model": meta["instrument_model"],
+        "tissue": meta["char:tissue"],
+        "library_size_millions": lib / 1e6,
+    }
+    rates_file = OUT / "mapping_rates.csv"
+    if rates_file.exists():
+        rates = pd.read_csv(rates_file, index_col="geo_title")["mapping_rate_pct"]
+        variables["mapping_rate_pct"] = rates.reindex(meta.index)
+    for var in config.BIOLOGICAL_VARS + config.PATHOLOGY_VARS:
+        if var in meta.columns and var != config.GROUP_COL:
+            variables[var.replace("char:", "").replace(".", "_")] = meta[var]
+    for name, values in variables.items():
+        scatter_by(pcs, values, meta["condition"], name, pct,
+                   f"PCA, {label}, top {N_TOP} genes: colour = {name}",
+                   out / f"pca_by_{name}.png")
+
+    # Association of PC1 to PC3 with each plotted variable, to name what separates the
+    # samples: Spearman rho for numeric variables, and for categorical ones the share of the
+    # PC's variance explained by the levels (R^2). Descriptive only: batch and group overlap.
+    rows = []
+    for name, values in variables.items():
+        ok = values.notna()
+        numeric = pd.to_numeric(values[ok], errors="coerce")
+        for pc in ["PC1", "PC2", "PC3"]:
+            y = pcs.loc[ok[ok].index, pc]
+            if numeric.notna().all():
+                rho, p = spearmanr(y, numeric)
+                rows.append({"pc": pc, "variable": name, "measure": "spearman_rho",
+                             "value": round(rho, 3), "p_value": float(f"{p:.3g}"),
+                             "n": int(ok.sum())})
+            else:
+                within = ((y - y.groupby(values[ok]).transform("mean")) ** 2).sum()
+                r2 = 1 - within / ((y - y.mean()) ** 2).sum()
+                rows.append({"pc": pc, "variable": name, "measure": "r2_between_levels",
+                             "value": round(r2, 3), "p_value": None, "n": int(ok.sum())})
+    pd.DataFrame(rows).to_csv(out / "pca_associations.csv", index=False)
+
+
+def write_pca(pcs: pd.DataFrame, pct, out) -> None:
+    names = [f"PC{i + 1}" for i in range(10)]
+    pd.DataFrame({"component": names, "variance_explained_pct": pct.round(4)}).to_csv(
+        out / "pca_variance.csv", index=False)
+    pcs.round(6).to_csv(out / "pca_scores.csv")
+
+
+def orient(pcs: pd.DataFrame, reference: pd.DataFrame) -> pd.DataFrame:
+    """Flip PC1 and PC2 when they point opposite to the reference scores (shared samples)."""
+    shared = pcs.index.intersection(reference.index)
+    for pc in ["PC1", "PC2"]:
+        if np.corrcoef(pcs.loc[shared, pc], reference.loc[shared, pc])[0, 1] < 0:
+            pcs[pc] = -pcs[pc]
+    return pcs
+
+def write_top_genes(mat: pd.DataFrame, genes, pcs: pd.DataFrame, out, n: int = 20) -> None:
+    """The n genes with the largest weight on PC1 to PC3, with symbols. A gene's weight is
+    proportional to its covariance with the PC scores; scaled to unit length, it equals the
+    PCA loading, with the sign of the oriented axis."""
+    x = mat.loc[list(genes), pcs.index].T
+    x = x - x.mean(axis=0)
+    symbols = (pd.read_csv(config.GENE_NAMES).drop_duplicates("gene_id")
+               .set_index("gene_id")["gene_name"])
+    rows = []
+    for pc in ["PC1", "PC2", "PC3"]:
+        w = x.T @ pcs[pc]
+        w = w / np.sqrt((w ** 2).sum())
+        for rank, gene in enumerate(w.abs().nlargest(n).index, start=1):
+            rows.append({"pc": pc, "rank": rank, "gene_id": gene,
+                         "gene_name": symbols.get(gene, ""), "loading": round(float(w[gene]), 4)})
+    pd.DataFrame(rows).to_csv(out / "pca_top_genes.csv", index=False)
+
+def sensitivity_run() -> None:
+    """PCA without config.SENSITIVITY_EXCLUDE: same rlog values and same 500 genes as the main
+    run, refitted on the remaining samples, so that only the samples change. A variant that
+    re-selects the 500 genes on the remaining samples is reported alongside."""
+    out = OUT / "sensitivity_40"
+    out.mkdir(parents=True, exist_ok=True)
+    genes_file = OUT / "pca_genes.txt"
+    if not genes_file.exists():
+        raise SystemExit("missing results/step2_qc/pca_genes.txt: run the main Step 2 first")
+    counts, meta = load_counts()
+    keep = [s for s in meta.index if s not in config.SENSITIVITY_EXCLUDE]
+    meta = meta.loc[keep]
+    lib = counts[keep].sum(axis=0)
+    rlog = pd.read_csv(config.PROCESSED / "rlog_geo.csv.gz", index_col=0)[keep]
+    main_genes = genes_file.read_text(encoding="utf-8").split()
+    main_pcs = pd.read_csv(OUT / "pca_scores.csv", index_col=0)
+    main_pct = pd.read_csv(OUT / "pca_variance.csv")["variance_explained_pct"].to_numpy()
+
+    pcs, pct, _ = pca_top(rlog, N_TOP, main_genes)
+    pcs = orient(pcs, main_pcs)
+    write_pca(pcs, pct, out)
+    write_top_genes(rlog, main_genes, pcs, out)
+    label = f"without {', '.join(config.SENSITIVITY_EXCLUDE)}"
+    describe_pca(pcs, pct, meta, lib, out, label)
+
+    _, pct_new, genes_new = pca_top(rlog, N_TOP)
+    corr = [np.corrcoef(pcs[pc], main_pcs.loc[keep, pc])[0, 1] for pc in ["PC1", "PC2"]]
+    assoc = {name: pd.read_csv(d / "pca_associations.csv").set_index(["pc", "variable"])["value"]
+             for name, d in [("main", OUT), ("sensitivity", out)]}
+    lines = [
+        f"excluded: {', '.join(config.SENSITIVITY_EXCLUDE)} ({len(keep)} samples left)",
+        f"same {N_TOP} genes as the main PCA (results/step2_qc/pca_genes.txt), same rlog values",
+        f"PC1 {pct[0]:.2f}% (main {main_pct[0]:.2f}%), PC2 {pct[1]:.2f}% (main {main_pct[1]:.2f}%)",
+        f"score correlation with the main PCA on the {len(keep)} shared samples: "
+        f"PC1 {corr[0]:.4f}, PC2 {corr[1]:.4f}",
+        "PC2 highest: " + ", ".join(f"{s} ({v:.1f})" for s, v in pcs["PC2"].nlargest(3).items()),
+    ]
+    for pc, var in [("PC1", "condition"), ("PC1", "paper_group"), ("PC1", "batch"),
+                    ("PC2", "condition"), ("PC2", "batch")]:
+        lines.append(f"{pc} R^2 {var}: {assoc['sensitivity'][(pc, var)]:.3f} "
+                     f"(main {assoc['main'][(pc, var)]:.3f})")
+    lines.append(f"variant, {N_TOP} genes re-selected on the {len(keep)} samples: PC1 {pct_new[0]:.2f}%, "
+                 f"PC2 {pct_new[1]:.2f}%, {len(set(genes_new) & set(main_genes))} genes shared "
+                 "with the main PCA")
+    (out / "pca_comparison.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
+    print("written to", out)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     config.PROCESSED.mkdir(parents=True, exist_ok=True)
@@ -208,14 +350,10 @@ def main() -> None:
     if not np.allclose(pct[:2], r_pct[:2], atol=0.01):
         raise SystemExit(f"Python PCA {pct[:2].round(2)} differs from R {r_pct[:2].round(2)}")
     # Orient PC1 and PC2 as in the Figure 3 replay, so the figures read like the paper's.
-    replay = pd.read_csv(OUT / "pca_replay_scores.csv", index_col="geo_title")
-    for pc in ["PC1", "PC2"]:
-        if np.corrcoef(pcs[pc], replay.loc[pcs.index, pc])[0, 1] < 0:
-            pcs[pc] = -pcs[pc]
-    names = [f"PC{i + 1}" for i in range(10)]
-    pd.DataFrame({"component": names, "variance_explained_pct": pct.round(4)}).to_csv(
-        OUT / "pca_variance.csv", index=False)
-    pcs.round(6).to_csv(OUT / "pca_scores.csv")
+    pcs = orient(pcs, pd.read_csv(OUT / "pca_replay_scores.csv", index_col="geo_title"))
+    write_pca(pcs, pct, OUT)
+    (OUT / "pca_genes.txt").write_text("\n".join(rlog_genes) + "\n", encoding="utf-8")
+    write_top_genes(rlog, rlog_genes, pcs, OUT)
     print(f"PCA (rlog of GEO counts, top {N_TOP} genes): PC1 {pct[0]:.2f}%, PC2 {pct[1]:.2f}% "
           f"(R: {r_pct[0]:.2f}%, {r_pct[1]:.2f}%)")
 
@@ -235,56 +373,16 @@ def main() -> None:
                      "figure3_genes_included": len(set(used) & set(replay_genes))})
     pd.DataFrame(rows).to_csv(OUT / "pca_logcpm_comparison.csv", index=False)
 
-    # Figures: colour = variable, shape = condition. Paper groups as in Figure 3 (controls are
-    # in group 1 by construction of the authors' clustering).
-    rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
-    paper_group = rank.map(lambda r: f"Group{int(r)}_FSHD" if pd.notna(r) else None)
-    paper_group[meta["condition"] == "Control"] = "Group1_Control"
-        # Paper groups against batch: which groups each sequencing run holds (worksheets/step2_qc.md).
-    pd.crosstab(paper_group, meta["char:batch"]).to_csv(OUT / "paper_group_by_batch.csv")
-    variables = {
-        "condition": meta["condition"],
-        "paper_group": paper_group,
-        "batch": meta["char:batch"],
-        "instrument_model": meta["instrument_model"],
-        "tissue": meta["char:tissue"],
-        "library_size_millions": lib / 1e6,
-    }
-    rates_file = OUT / "mapping_rates.csv"
-    if rates_file.exists():
-        rates = pd.read_csv(rates_file, index_col="geo_title")["mapping_rate_pct"]
-        variables["mapping_rate_pct"] = rates.reindex(meta.index)
-    for var in config.BIOLOGICAL_VARS + config.PATHOLOGY_VARS:
-        if var in meta.columns and var != config.GROUP_COL:
-            variables[var.replace("char:", "").replace(".", "_")] = meta[var]
-    for name, values in variables.items():
-        scatter_by(pcs, values, meta["condition"], name, pct,
-                   f"PCA, rlog of GEO counts, top {N_TOP} genes: colour = {name}",
-                   OUT / f"pca_by_{name}.png")
-        
-            # Association of PC1 to PC3 with each plotted variable, to name what separates the
-    # samples: Spearman rho for numeric variables, and for categorical ones the share of the
-    # PC's variance explained by the levels (R^2). Descriptive only: batch and group overlap.
-    rows = []
-    for name, values in variables.items():
-        ok = values.notna()
-        numeric = pd.to_numeric(values[ok], errors="coerce")
-        for pc in ["PC1", "PC2", "PC3"]:
-            y = pcs.loc[ok[ok].index, pc]
-            if numeric.notna().all():
-                rho, p = spearmanr(y, numeric)
-                rows.append({"pc": pc, "variable": name, "measure": "spearman_rho",
-                             "value": round(rho, 3), "p_value": float(f"{p:.3g}"),
-                             "n": int(ok.sum())})
-            else:
-                within = ((y - y.groupby(values[ok]).transform("mean")) ** 2).sum()
-                r2 = 1 - within / ((y - y.mean()) ** 2).sum()
-                rows.append({"pc": pc, "variable": name, "measure": "r2_between_levels",
-                             "value": round(r2, 3), "p_value": None, "n": int(ok.sum())})
-    pd.DataFrame(rows).to_csv(OUT / "pca_associations.csv", index=False)
+    describe_pca(pcs, pct, meta, lib, OUT, "rlog of GEO counts")
     print("figures written to", OUT)
     print("\nNext: fill worksheets/step2_qc.md")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Step 2: QC and exploration")
+    parser.add_argument("--sensitivity", action="store_true",
+                        help="PCA without config.SENSITIVITY_EXCLUDE (after the main run)")
+    if parser.parse_args().sensitivity:
+        sensitivity_run()
+    else:
+        main()

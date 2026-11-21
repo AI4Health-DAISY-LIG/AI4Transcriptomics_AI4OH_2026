@@ -46,4 +46,8 @@ PATHOLOGY_VARS = ["char:stir", "char:active", "char:inflam", "char:path.score",
 BIOMARKERS = ["LEUTX", "KHDC1L", "PRAMEF2", "TRIM43"]
 # The authors' group (1 to 4) and score for each FSHD biopsy, as deposited on GEO.
 GROUP_COL = "char:rnaseq.rank"
+# Biopsies excluded in the sensitivity runs: mapping rate below 90%, all FSHD from batch II
+# (32-0008 67.73%, 01-0037 76.52%, 32-0009 85.60%; every other biopsy 94.85% or more,
+# results/step2_qc/mapping_rates.csv). The main analysis keeps all 43 biopsies.
+SENSITIVITY_EXCLUDE = ["32-0008", "01-0037", "32-0009"]
 SCORE_COL = "char:rnaseq.score"
