@@ -81,7 +81,9 @@ names of the count file against the GEO samples.
 
 **Step 2, QC and exploration.** Filter low-count genes, plot library sizes,
 compute a PCA on log2 CPM and colour it by condition, batch, sex, age and the
-authors' variables.
+authors' variables. In this fork, the PCA uses the authors' method (DESeq2
+rlog, 500 most variable genes; see "Running this fork's analysis"), and log2
+CPM is kept only as a comparison.
 
 **Step 3, differential expression.** PyDESeq2 on the filtered raw counts: all
 FSHD biopsies against the controls, then each of the authors' four groups
@@ -239,6 +241,7 @@ pixi install --manifest-path r/pixi.toml
 pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R      # Figure 3 replay, sample link, mapping rates
 pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R   # rlog recomputed from the GEO counts
 uv run --locked python scripts/step2_qc_exploration.py
+uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA without the 3 low-mapping libraries
 ```
 
 Optional, with the paper's supplementary archive unzipped in `doc/supp/`:

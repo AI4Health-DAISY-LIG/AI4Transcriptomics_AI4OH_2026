@@ -334,6 +334,13 @@ def sensitivity_run() -> None:
                     ("PC2", "condition"), ("PC2", "batch")]:
         lines.append(f"{pc} R^2 {var}: {assoc['sensitivity'][(pc, var)]:.3f} "
                      f"(main {assoc['main'][(pc, var)]:.3f})")
+    # Batch R^2 of the main run's PC2 scores on the remaining samples, before refitting:
+    # separates the effect of removing samples from the effect of refitting the PCA.
+    y = main_pcs.loc[keep, "PC2"]
+    within = ((y - y.groupby(meta["char:batch"]).transform("mean")) ** 2).sum()
+    r2_kept = 1 - within / ((y - y.mean()) ** 2).sum()
+    lines.append(f"PC2 R^2 batch, main run's PC2 scores of the {len(keep)} samples, "
+                 f"not refitted: {r2_kept:.3f}")
     lines.append(f"variant, {N_TOP} genes re-selected on the {len(keep)} samples: PC1 {pct_new[0]:.2f}%, "
                  f"PC2 {pct_new[1]:.2f}%, {len(set(genes_new) & set(main_genes))} genes shared "
                  "with the main PCA")
@@ -389,6 +396,9 @@ def main() -> None:
     totals = counts.sum(axis=1)
     keep = totals > min_total
     filtered = counts.loc[keep]
+    # For comparison only: the starter's default rule, not applied (worksheets/step2_qc.md).
+    starter_min_samples = int(meta["condition"].value_counts().min())
+    starter_keep = (counts >= 10).sum(axis=1) >= starter_min_samples
     names = pd.read_csv(config.GENE_NAMES)
     symbol_to_id = dict(zip(names["gene_name"], names["gene_id"]))
     marker_lines = [
@@ -401,6 +411,9 @@ def main() -> None:
         f"(authors' makeSE.R line 164, commit 90cd343)\n"
         f"smallest gene total in the deposited file: {int(totals.min())}\n"
         f"genes before: {len(counts)}\ngenes after: {len(filtered)}\n"
+        f"starter default, not applied (>= 10 counts in >= {starter_min_samples} samples, "
+        f"the smallest group): would keep {int(starter_keep.sum())}, "
+        f"remove {int((~starter_keep).sum())}\n"
         "biomarkers:\n" + "\n".join(marker_lines) + "\n",
         encoding="utf-8",
     )

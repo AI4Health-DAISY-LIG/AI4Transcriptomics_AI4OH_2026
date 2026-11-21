@@ -8,4 +8,5 @@ PC1 R^2 paper_group: 0.752 (main 0.608)
 PC1 R^2 batch: 0.381 (main 0.363)
 PC2 R^2 condition: 0.002 (main 0.004)
 PC2 R^2 batch: 0.077 (main 0.330)
+PC2 R^2 batch, main run's PC2 scores of the 40 samples, not refitted: 0.222
 variant, 500 genes re-selected on the 40 samples: PC1 37.23%, PC2 10.65%, 432 genes shared with the main PCA

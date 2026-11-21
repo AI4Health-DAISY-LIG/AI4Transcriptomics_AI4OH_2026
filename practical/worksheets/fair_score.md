@@ -36,7 +36,7 @@ feeds Part 2 of your report.
   summaries for the controls, and GEO leaves both fields blank for all
   nine. The deposited metadata cannot support individual age or sex
   adjustment in the FSHD–control comparison.
-  Sex can be recovered from the expression data (Step 2, `results/step2_qc/sex_check.csv`): 6 women and 3 men, as in the paper. Age cannot, so individual age adjustment remains impossible.
+  Expression-inferred sex is available for all 43 biopsies (Step 2, `results/step2_qc/sex_check.csv`); the controls come out as 6 women and 3 men, matching the paper's totals. Age cannot be inferred, so individual age adjustment remains impossible.
 - **Sample handling and RNA integrity.** The paper gives the freezing
   protocol and storage temperature, but the paper and public sample
   records examined do not provide per-sample collection or preparation
@@ -86,8 +86,9 @@ feeds Part 2 of your report.
   reproduces the authors' size factors exactly and their prior width at
   the reported precision (1.07696). The rlog values agree with a median
   absolute difference of 4 × 10⁻⁷; 9 genes differ by more than 0.1, all
-  sparse (zero in 25 to 42 samples, `rlog_geo_differing_genes.csv`). With
-  all genes the PCA gives 37.32% / 13.61%, with the same two PC2
+    sparse (zero in 25 to 42 samples, `rlog_geo_differing_genes.csv`).
+  Selecting the 500 most variable genes from the full rlog matrix, the
+  PCA gives 37.32% / 13.61%, with the same two PC2
   outliers (32-0016, 01-0037) and score correlations above 0.9997;
   without the 9 genes, both PCAs give 38.38% / 13.91% to two decimals
   (`results/step2_qc/rlog_geo_comparison.txt`).

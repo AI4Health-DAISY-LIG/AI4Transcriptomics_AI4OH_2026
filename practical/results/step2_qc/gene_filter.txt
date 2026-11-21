@@ -2,6 +2,7 @@ rule: total counts > 20 across 43 samples (authors' makeSE.R line 164, commit 90
 smallest gene total in the deposited file: 21
 genes before: 27506
 genes after: 27506
+starter default, not applied (>= 10 counts in >= 9 samples, the smallest group): would keep 19258, remove 8248
 biomarkers:
   LEUTX (ENSG00000213921.6): total 902, kept True
   KHDC1L (ENSG00000256980.4): total 2212, kept True
