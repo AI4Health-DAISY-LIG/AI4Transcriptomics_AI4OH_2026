@@ -30,5 +30,6 @@ Compare your PCA with Figure 3 of the paper. The same or not, and why:
 -
 
 ## Decisions I made
+1.- I matched count columns to GEO metadata using `title` instead of `char:sample_id`, because all 43 samples matched by title, while one sample (`01-0022-1`) did not match by sample_id. This allowed us to retain all 43 samples without dropping any.
 
 -
