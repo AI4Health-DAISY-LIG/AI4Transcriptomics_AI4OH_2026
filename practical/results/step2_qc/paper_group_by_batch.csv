@@ -1,0 +1,6 @@
+char:rnaseq.rank,I,II,III,IV
+Group1_Control,0,0,6,3
+Group1_FSHD,0,2,4,4
+Group2_FSHD,0,1,4,0
+Group3_FSHD,1,2,6,4
+Group4_FSHD,4,0,2,0

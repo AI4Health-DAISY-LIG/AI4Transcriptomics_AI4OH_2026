@@ -11,6 +11,7 @@ Outputs (results/step2_qc/):
   pca_by_<variable>.png             PC1 vs PC2, colour = variable, shape = condition
   pca_logcpm_comparison.csv         PC1 and PC2 variance of log2(CPM + 1) PCAs, for comparison
   pca_associations.csv              association of PC1 to PC3 with each plotted variable
+  paper_group_by_batch.csv          number of samples per paper group and batch
   data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
   data/processed/metadata.csv          one row per sample column of the counts, with condition
 
@@ -239,6 +240,8 @@ def main() -> None:
     rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
     paper_group = rank.map(lambda r: f"Group{int(r)}_FSHD" if pd.notna(r) else None)
     paper_group[meta["condition"] == "Control"] = "Group1_Control"
+        # Paper groups against batch: which groups each sequencing run holds (worksheets/step2_qc.md).
+    pd.crosstab(paper_group, meta["char:batch"]).to_csv(OUT / "paper_group_by_batch.csv")
     variables = {
         "condition": meta["condition"],
         "paper_group": paper_group,
