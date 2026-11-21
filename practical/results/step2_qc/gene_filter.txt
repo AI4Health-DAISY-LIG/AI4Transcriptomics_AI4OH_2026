@@ -1,0 +1,9 @@
+rule: total counts > 20 across 43 samples (authors' makeSE.R line 164, commit 90cd343)
+smallest gene total in the deposited file: 21
+genes before: 27506
+genes after: 27506
+biomarkers:
+  LEUTX (ENSG00000213921.6): total 902, kept True
+  KHDC1L (ENSG00000256980.4): total 2212, kept True
+  PRAMEF2 (ENSG00000120952.4): total 1723, kept True
+  TRIM43 (ENSG00000144015.4): total 2550, kept True

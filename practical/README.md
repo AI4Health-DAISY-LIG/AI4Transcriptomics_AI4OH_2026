@@ -216,6 +216,37 @@ uv run python scripts/step4_compare_with_paper.py
 The four scripts run as they are, in a few minutes on a laptop. Commit your
 scripts, `results/` and `worksheets/` each time you stop working.
 
+### Running this fork's analysis
+
+Step 2 here reproduces the paper's PCA with the authors' method (DESeq2 rlog), so it
+needs R through a locked [Pixi](https://pixi.sh) environment in `r/`, and two inputs
+beyond the default Step 1 downloads. From `practical/`:
+
+```bash
+uv sync --locked
+uv run --locked python scripts/step1_fetch_and_audit.py --optional   # adds FPKM, normalised counts and the GEO R object
+```
+
+```bash
+mkdir -p data/raw/authors
+curl -fL -o data/raw/authors/sanitized.rlg.rda \
+  https://raw.githubusercontent.com/TapscottLab/FSHD-Biopsy-RNA-seq/90cd343b3d60a696a35041a33015131ab9908164/data/sanitized.rlg.rda
+sha256sum data/raw/authors/sanitized.rlg.rda   # 70b1758029229dbb89c33f3f0abc2dea5165d43f61e0da102566994c2dc18239
+```
+
+```bash
+pixi install --manifest-path r/pixi.toml
+pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R      # Figure 3 replay, sample link, mapping rates
+pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R   # rlog recomputed from the GEO counts
+uv run --locked python scripts/step2_qc_exploration.py
+```
+
+Optional, with the paper's supplementary archive unzipped in `doc/supp/`:
+
+```bash
+uv run --locked python scripts/check_paper_sample_ids.py "doc/supp/Supplemental Table S1.docx"
+```
+
 ## A pace that fits the milestones
 
 | Date | Milestone in the root README | Where you should be |
@@ -249,7 +280,7 @@ practical/
 ## Before you trust a result
 
 - Read `results/step1_audit/counts_header_check.txt` before any join between the
-  counts and the sample table. Step 2 prints a warning if it drops a column.
+  counts and the sample table. In this fork, Step 2 joins on GEO title and stops with an error if a count column has no GEO record.
 - Look at `missing_values.csv`. Some variables exist for one condition only.
 - Compare the paper's description of the biopsies with the fields GEO records
   for them.
