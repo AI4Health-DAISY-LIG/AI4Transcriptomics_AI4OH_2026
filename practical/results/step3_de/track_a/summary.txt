@@ -1,0 +1,31 @@
+R 4.5.3, DESeq2 1.50.2 (authors: R 3.4.3, DESeq2 1.16.1)
+full-cohort size factors, max abs difference deposited vs recomputed: 0
+
+[S4_G1_outliers] samples: FSHD 2, Control 9 (01-0037 32-0016)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 23566, padj < 0.05: 12945
+  padj < 0.05 and |log2FC| >= 2: 5680 (up 3066, down 2614); published 5680, difference +0
+[S5_G1] samples: FSHD 10, Control 9 (01-0023 01-0032 01-0036 01-0037 01-0038 32-0011 32-0012 32-0014 32-0015 32-0016)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 21042, padj < 0.05: 1956
+  padj < 0.05 and |log2FC| >= 2: 393 (up 382, down 11); published 393, difference +0
+[G1_no_outliers] samples: FSHD 8, Control 9 (01-0023 01-0032 01-0036 01-0038 32-0011 32-0012 32-0014 32-0015)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 19403, padj < 0.05: 280
+  padj < 0.05 and |log2FC| >= 2: 40 (up 34, down 6); published 40, difference +0
+[S6_G2] samples: FSHD 5, Control 9 (01-0024 01-0030 01-0033 32-0007 32-0013)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 20229, padj < 0.05: 1989
+  padj < 0.05 and |log2FC| >= 2: 303 (up 277, down 26); published 303, difference +0
+[G2_active] samples: FSHD 3, Control 9 (01-0030 32-0007 32-0013)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 20187, padj < 0.05: 2867
+  padj < 0.05 and |log2FC| >= 2: 540 (up 490, down 50); published 540, difference +0
+[S8_G3] samples: FSHD 13, Control 9 (01-0021 01-0022-1 01-0026 01-0027 01-0034 01-0035 32-0002 32-0008 32-0009 32-0010 32-0017 32-0018 32-0019)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 22696, padj < 0.05: 5108
+  padj < 0.05 and |log2FC| >= 2: 816 (up 792, down 24); published 816, difference +0
+[S10_G4] samples: FSHD 6, Control 9 (01-0025 01-0029 32-0003 32-0004 32-0005 32-0006)
+  size factors: full-cohort values before DESeq TRUE, after TRUE; pre-existing message: TRUE
+  genes: 27506, with padj: 26369, padj < 0.05: 12183
+  padj < 0.05 and |log2FC| >= 2: 2826 (up 2516, down 310); published 2826, difference +0
