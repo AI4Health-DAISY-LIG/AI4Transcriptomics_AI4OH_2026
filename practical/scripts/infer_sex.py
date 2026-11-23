@@ -22,8 +22,11 @@ def verify_sample_sex(
 
     # Keep samples present in both count data and metadata
     samples = counts.columns.intersection(meta.index)
+
     if len(samples) == 0:
         raise ValueError("No sample IDs are shared between counts and metadata.")
+
+    print(samples)
 
     count_data = counts.loc[:, samples].copy()
     sample_meta = meta.loc[samples].copy()
@@ -87,7 +90,7 @@ def verify_sample_sex(
     )
     female_cluster = cluster_score.idxmax()
 
-    results["infer_gender"] = np.where(
+    results["char:infer_gender"] = np.where(
         results["cluster"] == female_cluster, "Female", "Male"
     )
     results.drop(columns="cluster", inplace=True)
@@ -108,7 +111,7 @@ def verify_sample_sex(
 
     results["has_reported_gender"] = results["reported_gender"].notna()
     results["sex_mismatch"] = results["has_reported_gender"] & (
-        results["infer_gender"] != results["reported_gender"]
+        results["char:infer_gender"] != results["reported_gender"]
     )
 
     # Keep condition information
@@ -128,14 +131,14 @@ def verify_sample_sex(
 
     # Add inferred gender to metadata
     meta_updated = meta.copy()
-    meta_updated["infer_gender"] = results["infer_gender"].reindex(meta.index)
+    meta_updated["char:infer_gender"] = results["char:infer_gender"].reindex(meta.index)
 
     # Print summary
     mismatches = results[results["sex_mismatch"]]
     unknown = results[~results["has_reported_gender"]]
 
     print(f"Checked {len(results)} samples.")
-    print("Inferred gender:", results["infer_gender"].value_counts().to_dict())
+    print("Inferred gender:", results["char:infer_gender"].value_counts().to_dict())
     print(f"Samples without reported gender: {len(unknown)}")
     print(f"Gender mismatches: {len(mismatches)}")
 
@@ -143,7 +146,7 @@ def verify_sample_sex(
         print("\nGender mismatches:")
         print(
             mismatches[
-                ["reported_gender", "infer_gender", "XIST_logCPM", "Y_mean_logCPM"]
+                ["reported_gender", "char:infer_gender", "XIST_logCPM", "Y_mean_logCPM"]
             ]
         )
     else:
@@ -161,7 +164,7 @@ def verify_sample_sex(
         # Samples with known gender and matching metadata
         for gender, color in [("Female", "orange"), ("Male", "green")]:
             subset = results[
-                (results["infer_gender"] == gender)
+                (results["char:infer_gender"] == gender)
                 & (~results["sex_mismatch"])
                 & results["has_reported_gender"]
             ]

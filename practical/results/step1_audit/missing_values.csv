@@ -11,5 +11,6 @@ char:fat.fraction,0,34,43
 char:tissue,9,34,43
 char:rnaseq.score,0,34,43
 char:rnaseq.rank,0,34,43
-char:sample_id,9,34,43
 char:batch,9,34,43
+char:infer_gender,9,34,43
+char:site,9,34,43
