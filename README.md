@@ -4,6 +4,7 @@ Working repository for the practical sessions of *From Nucleus to Neural
 Networks: Foundations of AI in Transcriptomics*, AI4Health@DAISY group, LIG,
 Université Grenoble Alpes.
 
+
 In the practical you redo parts of a published analysis of FSHD muscle biopsies
 (Wang et al., Hum Mol Genet 2019, GEO series GSE115650) from the counts the
 authors deposited. This page tells you how to set up, how to submit and how you
