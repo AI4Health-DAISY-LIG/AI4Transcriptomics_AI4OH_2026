@@ -50,4 +50,14 @@ GROUP_COL = "char:rnaseq.rank"
 # (32-0008 67.73%, 01-0037 76.52%, 32-0009 85.60%; every other biopsy 94.85% or more,
 # results/step2_qc/mapping_rates.csv). The main analysis keeps all 43 biopsies.
 SENSITIVITY_EXCLUDE = ["32-0008", "01-0037", "32-0009"]
+# Step 3, Track B (own analysis, not the reproduction): sample rules fixed after QC and before
+# any DE result (consensus of 23 Nov). (a) 32-0004: unresolved disagreement between recorded sex
+# and the expression profile (results/step2_qc/sex_check.csv); a provenance flag, not a proven
+# swap. (b) mapping rate below 90% (SENSITIVITY_EXCLUDE). Biological extremes (32-0016) are kept.
+TRACK_B_EXCLUDE = SENSITIVITY_EXCLUDE + ["32-0004"]
+# Recruitment site from the participant ID prefix. 32 = Seattle in the authors' follow-up
+# workbook (FredHutch/RWellstone_FSHD_muscle_biopsy @ 27e705c, Sheet1, Visit 1); 01 = Rochester,
+# inferred from that roster and the paper's 18 participants per site. The nine controls were
+# banked at the University of Rochester (paper, Materials and Methods).
+SITE_BY_PREFIX = {"01": "Rochester", "32": "Seattle"}
 SCORE_COL = "char:rnaseq.score"

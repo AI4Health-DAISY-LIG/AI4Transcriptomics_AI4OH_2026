@@ -242,6 +242,9 @@ pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R      # Figure 3 repl
 pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R   # rlog recomputed from the GEO counts
 uv run --locked python scripts/step2_qc_exploration.py
 uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA without the 3 low-mapping libraries
+pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Step 3 Track A: the authors' DE, per contrast
+uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs supplementary tables S4-S10
+uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: our own DE, 9 planned fits
 ```
 
 Optional, with the paper's supplementary archive unzipped in `doc/supp/`:

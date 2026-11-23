@@ -1,0 +1,54 @@
+[primary] design: ~ batch + sex + condition  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD=30; genes refitted after Cook's outlier replacement: 113
+  FSHD_vs_Control: finite p-value 27471, finite padj 20021, Cook's-filtered 35, independently filtered 7450; padj < 0.05: 2577 (up 2078, down 499); also |log2FC| >= 1: 1409, >= 2: 417
+[ladder_none] design: ~ condition  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD=30; genes refitted after Cook's outlier replacement: 336
+  FSHD_vs_Control: finite p-value 27505, finite padj 22172, Cook's-filtered 0, independently filtered 5333; padj < 0.05: 5509 (up 4115, down 1394); also |log2FC| >= 1: 2570, >= 2: 855
+[ladder_batch] design: ~ batch + condition  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD=30; genes refitted after Cook's outlier replacement: 188
+  FSHD_vs_Control: finite p-value 27485, finite padj 21092, Cook's-filtered 20, independently filtered 6393; padj < 0.05: 4315 (up 3278, down 1037); also |log2FC| >= 1: 1977, >= 2: 555
+[site] design: ~ batch + sex + site + condition  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD=30; genes refitted after Cook's outlier replacement: 183
+  FSHD_vs_Control: finite p-value 27467, finite padj 21613, Cook's-filtered 39, independently filtered 5854; padj < 0.05: 583 (up 525, down 58); also |log2FC| >= 1: 472, >= 2: 218
+[all43] design: ~ batch + sex + condition  samples: 43  excluded: none
+  Control=9, FSHD=34; genes refitted after Cook's outlier replacement: 108
+  FSHD_vs_Control: finite p-value 27444, finite padj 20533, Cook's-filtered 62, independently filtered 6911; padj < 0.05: 2107 (up 1788, down 319); also |log2FC| >= 1: 1347, >= 2: 435
+[restore_32_0004] design: ~ batch + sex + condition  samples: 40  excluded: 32-0008, 01-0037, 32-0009
+  Control=9, FSHD=31; genes refitted after Cook's outlier replacement: 107
+  FSHD_vs_Control: finite p-value 27467, finite padj 20549, Cook's-filtered 39, independently filtered 6918; padj < 0.05: 2654 (up 2143, down 511); also |log2FC| >= 1: 1451, >= 2: 435
+[omit_32_0016] design: ~ batch + sex + condition  samples: 38  excluded: 32-0008, 01-0037, 32-0009, 32-0004, 32-0016
+  Control=9, FSHD=29; genes refitted after Cook's outlier replacement: 119
+  FSHD_vs_Control: finite p-value 27477, finite padj 20023, Cook's-filtered 29, independently filtered 7454; padj < 0.05: 2415 (up 1847, down 568); also |log2FC| >= 1: 1125, >= 2: 298
+[groups] design: ~ batch + sex + group  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, G1=9, G2=5, G3=11, G4=5; genes refitted after Cook's outlier replacement: 0
+  G1_vs_Control: finite p-value 27407, finite padj 19968, Cook's-filtered 99, independently filtered 7439; padj < 0.05: 1002 (up 866, down 136); also |log2FC| >= 1: 719, >= 2: 235
+  G2_vs_Control: finite p-value 27407, finite padj 19968, Cook's-filtered 99, independently filtered 7439; padj < 0.05: 518 (up 463, down 55); also |log2FC| >= 1: 454, >= 2: 222
+  G3_vs_Control: finite p-value 27407, finite padj 20498, Cook's-filtered 99, independently filtered 6909; padj < 0.05: 639 (up 564, down 75); also |log2FC| >= 1: 519, >= 2: 235
+  G4_vs_Control: finite p-value 27407, finite padj 22090, Cook's-filtered 99, independently filtered 5317; padj < 0.05: 5409 (up 3212, down 2197); also |log2FC| >= 1: 3721, >= 2: 1727
+  G4_vs_G1: finite p-value 27407, finite padj 21561, Cook's-filtered 99, independently filtered 5846; padj < 0.05: 458 (up 310, down 148); also |log2FC| >= 1: 397, >= 2: 239
+[groups_none] design: ~ group  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, G1=9, G2=5, G3=11, G4=5; genes refitted after Cook's outlier replacement: 165
+  G1_vs_Control: finite p-value 27437, finite padj 21051, Cook's-filtered 68, independently filtered 6386; padj < 0.05: 1945 (up 1768, down 177); also |log2FC| >= 1: 1321, >= 2: 423
+  G2_vs_Control: finite p-value 27437, finite padj 20518, Cook's-filtered 68, independently filtered 6919; padj < 0.05: 649 (up 580, down 69); also |log2FC| >= 1: 561, >= 2: 293
+  G3_vs_Control: finite p-value 27437, finite padj 21051, Cook's-filtered 68, independently filtered 6386; padj < 0.05: 1702 (up 1373, down 329); also |log2FC| >= 1: 1000, >= 2: 390
+  G4_vs_Control: finite p-value 27437, finite padj 24241, Cook's-filtered 68, independently filtered 3196; padj < 0.05: 10552 (up 5935, down 4617); also |log2FC| >= 1: 6368, >= 2: 2565
+[rochester] design: ~ batch + sex + condition  samples: 24  excluded: 32-0008, 01-0037, 32-0009, 32-0004; Rochester only
+  Control=9, FSHD=15; genes refitted after Cook's outlier replacement: 15409
+  FSHD_vs_Control: finite p-value 27495, finite padj 19497, Cook's-filtered 6, independently filtered 7998; padj < 0.05: 1450 (up 1227, down 223); also |log2FC| >= 1: 823, >= 2: 251
+[groups_g3_check] design: ~ batch + sex + group  samples: 41  excluded: 01-0037, 32-0004
+  Control=9, G1=9, G2=5, G3=13, G4=5; genes refitted after Cook's outlier replacement: 0
+  G1_vs_Control: finite p-value 27339, finite padj 20966, Cook's-filtered 167, independently filtered 6373; padj < 0.05: 347 (up 326, down 21); also |log2FC| >= 1: 311, >= 2: 149
+  G2_vs_Control: finite p-value 27339, finite padj 20437, Cook's-filtered 167, independently filtered 6902; padj < 0.05: 184 (up 168, down 16); also |log2FC| >= 1: 175, >= 2: 117
+  G3_vs_Control: finite p-value 27339, finite padj 19905, Cook's-filtered 167, independently filtered 7434; padj < 0.05: 1669 (up 1345, down 324); also |log2FC| >= 1: 1082, >= 2: 415
+  G4_vs_Control: finite p-value 27339, finite padj 21497, Cook's-filtered 167, independently filtered 5842; padj < 0.05: 5844 (up 3466, down 2378); also |log2FC| >= 1: 4197, >= 2: 1982
+robustness: 2577 genes with padj < 0.05 in primary; robust 2385 (2298 autosomal); holds without sex 2565, site 2416, all43 2577, 32-0004 restored 2576, 32-0016 omitted 2577, Rochester only 2436; same direction and size in ~ condition (reported only) 2560
+sensitive to 32-0016 (padj < 0.05 only without it): 187
+paired comparison with primary (genes significant in primary for ratios):
+            fit  finite_padj  significant  both  primary_only  fit_only  lfc_spearman_primary_genes  median_lfc_ratio  median_se_ratio
+   ladder_batch        21092         4315  2465           112      1850                      0.9779             1.043            0.952
+           site        21613          583   549          2028        34                      0.9032             0.914            1.150
+          all43        20533         2107  2064           513        43                      0.9989             1.010            1.025
+restore_32_0004        20549         2654  2549            28       105                      1.0000             1.000            0.990
+   omit_32_0016        20023         2415  2228           349       187                      0.9938             0.934            0.967
+      rochester        19497         1450  1151          1426       299                      0.9032             0.956            1.102
+    ladder_none        22172         5509  2445           132      3064                      0.9501             1.128            0.973

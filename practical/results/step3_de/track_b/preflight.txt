@@ -1,0 +1,12 @@
+genes in the input: 27506; samples: 43
+primary: n=39 (Control=9, FSHD=30); design rank 6/6; all-zero genes 0
+ladder_none: n=39 (Control=9, FSHD=30); design rank 2/2; all-zero genes 0
+ladder_batch: n=39 (Control=9, FSHD=30); design rank 5/5; all-zero genes 0
+site: n=39 (Control=9, FSHD=30); design rank 7/7; all-zero genes 0
+all43: n=43 (Control=9, FSHD=34); design rank 6/6; all-zero genes 0
+restore_32_0004: n=40 (Control=9, FSHD=31); design rank 6/6; all-zero genes 0
+omit_32_0016: n=38 (Control=9, FSHD=29); design rank 6/6; all-zero genes 0
+groups: n=39 (Control=9, G1=9, G2=5, G3=11, G4=5); design rank 9/9; all-zero genes 0
+groups_none: n=39 (Control=9, G1=9, G2=5, G3=11, G4=5); design rank 5/5; all-zero genes 0
+rochester: n=24 (Control=9, FSHD=15); design rank 5/5; all-zero genes 3
+groups_g3_check: n=41 (Control=9, G1=9, G2=5, G3=13, G4=5); design rank 9/9; all-zero genes 0

@@ -1,0 +1,3 @@
+[omit_32_0016] design: ~ batch + sex + condition  samples: 38  excluded: 32-0008, 01-0037, 32-0009, 32-0004, 32-0016
+  Control=9, FSHD=29; genes refitted after Cook's outlier replacement: 119
+  FSHD_vs_Control: finite p-value 27477, finite padj 20023, Cook's-filtered 29, independently filtered 7454; padj < 0.05: 2415 (up 1847, down 568); also |log2FC| >= 1: 1125, >= 2: 298

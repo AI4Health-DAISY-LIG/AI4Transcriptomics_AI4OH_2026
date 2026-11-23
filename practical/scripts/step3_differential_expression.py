@@ -1,18 +1,62 @@
-"""Step 3: differential expression with PyDESeq2 on raw counts.
+"""Step 3, Track B: our own differential expression with PyDESeq2, on raw counts.
 
-Inputs:  data/processed/counts_filtered.csv and metadata.csv (from step 2)
-Outputs (results/step3_de/):
-  de_FSHD_vs_Control.csv        all FSHD biopsies against the controls
-  de_G<k>_vs_Control.csv        each group of the paper (1 to 4) against the controls
-  summary.txt                   design, samples per level, genes tested and significant
-  ma_<tag>.png, volcano_<tag>.png, pvalue_histogram_<tag>.png
+Track A (r/de_reproduction.R) reproduces the authors' tables. This script is our own analysis,
+with the design and the sample rules agreed before any DE result (consensus of 23 Nov):
 
-Decisions marked TODO(student) are yours. Record them in worksheets/step3_de.md.
+  primary          39 biopsies   ~ batch + sex + condition         main result
+  ladder_none      39            ~ condition                       worksheet: without batch
+  ladder_batch     39            ~ batch + condition               worksheet: with batch; no-sex sensitivity
+  site             39            ~ batch + sex + site + condition  site sensitivity
+  all43            43            ~ batch + sex + condition         nothing excluded
+  restore_32_0004  40            ~ batch + sex + condition         32-0004 put back
+  omit_32_0016     38            ~ batch + sex + condition         planned outlier sensitivity
+  groups           39            ~ batch + sex + group             G1-G4 vs controls, descriptive
+  groups_none      39            ~ group                           worksheet: groups without batch
+  rochester        24            ~ batch + sex + condition         Rochester biopsies only (same site)
+  groups_g3_check  41            ~ batch + sex + group             32-0008 and 32-0009 put back
 
-Run:  uv run python scripts/step3_differential_expression.py
+rochester and groups_g3_check were added on 23 Nov after the first run of the nine fits above,
+before any gene-level result was examined: rochester removes the case/control site difference
+(it cannot remove the banking of the controls); groups_g3_check tests whether the low-mapping
+libraries 32-0008 and 32-0009 explain the gap with the published G3 count. The groups fit also
+gives G4 vs G1 (DUX4-high vs DUX4-negative FSHD biopsies), exploratory: the groups were built
+from DUX4 targets.
+
+The 39 biopsies: all 43 minus config.TRACK_B_EXCLUDE (three libraries mapped below 90%, and
+32-0004, whose recorded sex disagrees with its expression). Sex is the sex inferred from
+expression (results/step2_qc/sex_check.csv); the GEO labels stay in the sample table. Site comes
+from the ID prefix (config.SITE_BY_PREFIX). PyDESeq2 defaults: Wald test, Cook's outlier
+refitting and filtering, independent filtering at alpha = 0.05.
+
+Robustness (genes with padj < 0.05 in primary): same sign and at least 50% of the primary
+|log2FC| in each adjusted sensitivity (ladder_batch, site, all43, restore_32_0004,
+omit_32_0016, rochester), with a finite log2FC. Agreement with ladder_none is reported, not required.
+X/Y genes are flagged as not interpretable. Genes significant only without 32-0016 are listed
+apart as sensitive to its inclusion, with log2FC, standard error and dispersion in both fits.
+The groups_none vs groups difference is the combined effect of batch and sex adjustment.
+
+A fit-free preflight runs first: sample IDs unique and aligned with the counts, covariates
+complete, cohort sizes, and the rank of every design matrix.
+
+Inputs:  data/processed/counts_filtered.csv, metadata.csv, gene_names.csv (steps 1 and 2)
+         data/raw/gencode.v24.annotation.gtf.gz (chromosomes), results/step2_qc/sex_check.csv
+Outputs (results/step3_de/track_b/):
+  <fit>/de_<level>_vs_Control.csv.gz   all genes, with gene name, chromosome, type, dispersion
+  <fit>/summary.txt                    samples, genes tested, significant genes
+  <fit>/ma_*.png, volcano_*.png, pvalue_histogram_*.png   for primary and the two ladder fits
+  robustness.csv.gz, sensitive_to_32_0016.csv, sensitivity_comparison.csv, preflight.txt,
+  summary.txt
+
+Run:  uv run --locked python scripts/step3_differential_expression.py              (all fits)
+      uv run --locked python scripts/step3_differential_expression.py --fit primary (one fit)
+      uv run --locked python scripts/step3_differential_expression.py --preflight   (no fit)
 """
 
 from __future__ import annotations
+
+import argparse
+import gzip
+import re
 
 import matplotlib
 import numpy as np
@@ -25,17 +69,101 @@ from pydeseq2.ds import DeseqStats  # noqa: E402
 
 import config  # noqa: E402
 
-OUT = config.RESULTS / "step3_de"
+OUT = config.RESULTS / "step3_de" / "track_b"
 ALPHA = 0.05
+REF = config.REFERENCE_LEVEL
+MAIN = "~ batch + sex + condition"
+FITS = {
+    "primary":         {"exclude": config.TRACK_B_EXCLUDE, "design": MAIN},
+    "ladder_none":     {"exclude": config.TRACK_B_EXCLUDE, "design": "~ condition"},
+    "ladder_batch":    {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + condition"},
+    "site":            {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + site + condition"},
+    "all43":           {"exclude": [], "design": MAIN},
+    "restore_32_0004": {"exclude": config.SENSITIVITY_EXCLUDE, "design": MAIN},
+    "omit_32_0016":    {"exclude": config.TRACK_B_EXCLUDE + ["32-0016"], "design": MAIN},
+    "groups":          {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + group"},
+    "groups_none":     {"exclude": config.TRACK_B_EXCLUDE, "design": "~ group"},
+    "rochester":       {"exclude": config.TRACK_B_EXCLUDE, "design": MAIN, "site": "Rochester"},
+    "groups_g3_check": {"exclude": ["01-0037", "32-0004"], "design": "~ batch + sex + group"},
+}
+EXTRA_CONTRASTS = {"groups": [("G4", "G1")]}
+ROBUSTNESS_FITS = ["ladder_batch", "site", "all43", "restore_32_0004", "omit_32_0016", "rochester"]
+INFO_FITS = ["ladder_none"]
+PLOT_FITS = {"primary", "ladder_none", "ladder_batch"}
+TABLE = "de_FSHD_vs_Control.csv.gz"
 
-# TODO(student): the design. False fits "~ <factor>" and ignores the batch; True fits
-# "~ batch + <factor>". Look at results/step1_audit/crosstab_batch.csv and at your PCA
-# before you decide, run both, and report what changes.
-ADJUST_FOR_BATCH = False
+
+def gene_annotation() -> pd.DataFrame:
+    """gene_name and gene_type from step 1, chromosome from the GENCODE v24 GTF."""
+    annot = (pd.read_csv(config.GENE_NAMES).drop_duplicates("gene_id")
+             .set_index("gene_id")[["gene_name", "gene_type"]])
+    chrom = {}
+    with gzip.open(config.RAW / config.ANNOTATION_FILE, "rt") as fh:
+        for line in fh:
+            if line.startswith("#"):
+                continue
+            fields = line.split("\t", 9)
+            if fields[2] == "gene":
+                chrom[fields[8].split('gene_id "', 1)[1].split('"', 1)[0]] = fields[0]
+    annot["chromosome"] = pd.Series(chrom)
+    return annot
 
 
-def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str) -> None:
-    label = res["gene_name"] if "gene_name" in res.columns else res.index.to_series()
+def sample_table() -> tuple[pd.DataFrame, pd.DataFrame]:
+    counts = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
+    meta = pd.read_csv(config.PROCESSED / "metadata.csv", index_col=0)
+    sex = pd.read_csv(config.RESULTS / "step2_qc" / "sex_check.csv", index_col=0)["inferred_sex"]
+    for label, ids in [("counts", counts.columns), ("metadata", meta.index),
+                       ("sex_check", sex.index)]:
+        if not ids.is_unique or set(ids) != set(counts.columns):
+            raise SystemExit(f"{label}: sample IDs not unique or not the same 43 as the counts")
+    meta = meta.loc[counts.columns]
+    meta = pd.DataFrame({
+        "condition": meta["condition"].astype(str),
+        "batch": meta["char:batch"].astype(str),
+        "sex": sex.reindex(meta.index),
+        "site": meta.index.str[:2].map(config.SITE_BY_PREFIX),
+        "group": pd.to_numeric(meta[config.GROUP_COL], errors="coerce"),
+    }, index=meta.index)
+    meta["group"] = ("G" + meta["group"].astype("Int64").astype(str)).where(meta["group"].notna())
+    meta.loc[meta["condition"] == REF, "group"] = REF
+    if meta.isna().any().any():
+        raise SystemExit(f"missing covariates:\n{meta[meta.isna().any(axis=1)]}")
+    return counts.T.round().astype(int), meta
+
+
+def fit_samples(meta: pd.DataFrame, spec: dict) -> pd.DataFrame:
+    """The biopsies of one fit: all minus its exclusions, restricted to one site if given."""
+    m = meta.drop(index=spec["exclude"])
+    return m[m["site"] == spec["site"]] if "site" in spec else m
+
+
+def design_matrix(m: pd.DataFrame, variables: list[str]) -> pd.DataFrame:
+    """Intercept plus treatment-coded dummies (first level as reference), as the fit uses."""
+    dummies = [pd.get_dummies(m[v], prefix=v, drop_first=True, dtype=float) for v in variables]
+    return pd.concat([pd.Series(1.0, index=m.index, name="intercept")] + dummies, axis=1)
+
+
+def preflight(x: pd.DataFrame, meta: pd.DataFrame) -> list[str]:
+    """Cohort sizes and design ranks for every fit, without fitting anything."""
+    lines = [f"genes in the input: {x.shape[1]}; samples: {x.shape[0]}"]
+    for name, spec in FITS.items():
+        m = fit_samples(meta, spec)
+        variables = re.findall(r"[a-z_]+", spec["design"])
+        mat = design_matrix(m, variables)
+        rank = np.linalg.matrix_rank(mat.to_numpy())
+        zero = int((x.loc[m.index].sum(axis=0) == 0).sum())
+        sizes = ", ".join(f"{k}={v}" for k, v in
+                          m[variables[-1]].value_counts().sort_index().items())
+        lines.append(f"{name}: n={len(m)} ({sizes}); design rank {rank}/{mat.shape[1]}; "
+                     f"all-zero genes {zero}")
+        if rank < mat.shape[1]:
+            raise SystemExit("\n".join(lines) + f"\n{name}: design matrix not full rank")
+    return lines
+
+
+def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
+    label = res["gene_name"].fillna(res.index.to_series())
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.scatter(np.log10(res["baseMean"] + 1), res["log2FoldChange"], s=4, c="lightgrey")
     ax.scatter(np.log10(sig["baseMean"] + 1), sig["log2FoldChange"], s=4, c="tab:red")
@@ -44,7 +172,7 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str) -> None:
     ax.set_ylabel(f"log2 fold change {tag}")
     ax.set_title(f"MA plot ({len(sig)} genes with padj < {ALPHA})")
     fig.tight_layout()
-    fig.savefig(OUT / f"ma_{tag}.png", dpi=150)
+    fig.savefig(out / f"ma_{tag}.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(6, 5))
@@ -56,7 +184,7 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str) -> None:
     ax.set_xlabel(f"log2 fold change {tag}")
     ax.set_ylabel("-log10 p-value")
     fig.tight_layout()
-    fig.savefig(OUT / f"volcano_{tag}.png", dpi=150)
+    fig.savefig(out / f"volcano_{tag}.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -65,65 +193,162 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str) -> None:
     ax.set_ylabel("genes")
     ax.set_title(tag)
     fig.tight_layout()
-    fig.savefig(OUT / f"pvalue_histogram_{tag}.png", dpi=150)
+    fig.savefig(out / f"pvalue_histogram_{tag}.png", dpi=150)
     plt.close(fig)
 
 
-def run(x: pd.DataFrame, meta: pd.DataFrame, factor: str, names: pd.Series | None) -> list[str]:
-    """Fit one model for `factor` and test each of its levels against the controls."""
-    meta = meta[meta[factor].notna()]
-    x = x.loc[meta.index]
-    design = f"~ batch + {factor}" if ADJUST_FOR_BATCH else f"~ {factor}"
-    dds = DeseqDataSet(counts=x, metadata=meta[[factor, "batch"]], design=design, quiet=True)
+def gene_vector(dds: DeseqDataSet, key: str, default=None) -> pd.Series:
+    """A per-gene result of the fit: PyDESeq2 0.5 keeps these in dds.var, older ones in varm."""
+    if key in dds.var.columns:
+        return dds.var[key]
+    if key in dds.varm.keys():
+        return pd.Series(np.asarray(dds.varm[key]), index=dds.var_names)
+    if default is not None:
+        return pd.Series(default, index=dds.var_names)
+    raise SystemExit(f"{key} not found; var: {list(dds.var.columns)}; varm: {list(dds.varm.keys())}")
+
+
+def run_fit(name: str, x: pd.DataFrame, meta: pd.DataFrame, annot: pd.DataFrame) -> None:
+    spec = FITS[name]
+    out = OUT / name
+    out.mkdir(parents=True, exist_ok=True)
+    m = fit_samples(meta, spec)
+    variables = re.findall(r"[a-z_]+", spec["design"])
+    factor = variables[-1]
+    dds = DeseqDataSet(counts=x.loc[m.index], metadata=m[variables], design=spec["design"],
+                       refit_cooks=True, quiet=True)
     dds.deseq2()
-    lines = [f"design: {design}",
-             "samples per level: " + ", ".join(f"{k}={v}" for k, v in meta[factor].value_counts().sort_index().items())]
-    for level in sorted(set(meta[factor]) - {config.REFERENCE_LEVEL}):
-        tag = f"{level}_vs_{config.REFERENCE_LEVEL}"
-        stats = DeseqStats(dds, contrast=[factor, level, config.REFERENCE_LEVEL], alpha=ALPHA, quiet=True)
+    dispersion = gene_vector(dds, "dispersions")
+    if "cooks" not in dds.layers.keys():
+        raise SystemExit(f"no Cook's distances; layers: {list(dds.layers.keys())}")
+    cooks = pd.DataFrame(np.asarray(dds.layers["cooks"]), index=dds.obs_names,
+                         columns=dds.var_names)
+    max_cooks_sample = cooks.fillna(-np.inf).idxmax(axis=0)
+    refitted = int(gene_vector(dds, "refitted", default=False).astype(bool).sum())
+
+    lines = [f"[{name}] design: {spec['design']}  samples: {len(m)}  excluded: "
+             f"{', '.join(spec['exclude']) or 'none'}"
+             + (f"; {spec['site']} only" if "site" in spec else ""),
+             "  " + ", ".join(f"{k}={v}" for k, v in m[factor].value_counts().sort_index().items())
+             + f"; genes refitted after Cook's outlier replacement: {refitted}"]
+    pairs = [(level, REF) for level in sorted(set(m[factor]) - {REF})]
+    for level, ref in pairs + EXTRA_CONTRASTS.get(name, []):
+        tag = f"{level}_vs_{ref}"
+        stats = DeseqStats(dds, contrast=[factor, level, ref], alpha=ALPHA, quiet=True)
         stats.summary()
-        res = stats.results_df
-        if names is not None:
-            res.insert(0, "gene_name", names.reindex(res.index))
+        res = annot.reindex(stats.results_df.index).join(stats.results_df)
+        res["dispersion"] = dispersion
+        res["max_cooks_sample"] = max_cooks_sample
         res = res.sort_values("padj")
-        res.to_csv(OUT / f"de_{tag}.csv", float_format="%.5g")
+        res.to_csv(out / f"de_{tag}.csv.gz", float_format="%.6g", index_label="gene_id")
         sig = res[res["padj"] < ALPHA]
         n_up = int((sig["log2FoldChange"] > 0).sum())
-        lines.append(f"[{tag}] genes tested: {len(res)}  padj < {ALPHA}: {len(sig)}  "
-                     f"up: {n_up}  down: {len(sig) - n_up}")
-        plots(res, sig, tag)
-    return lines
+        cooks_na = int((res["pvalue"].isna() & (res["baseMean"] > 0)).sum())
+        filtered = int((res["pvalue"].notna() & res["padj"].isna()).sum())
+        lines.append(
+            f"  {tag}: finite p-value {int(res['pvalue'].notna().sum())}, finite padj "
+            f"{int(res['padj'].notna().sum())}, Cook's-filtered {cooks_na}, independently "
+            f"filtered {filtered}; padj < {ALPHA}: {len(sig)} "
+            f"(up {n_up}, down {len(sig) - n_up}); also |log2FC| >= 1: "
+            f"{int((sig['log2FoldChange'].abs() >= 1).sum())}, >= 2: "
+            f"{int((sig['log2FoldChange'].abs() >= 2).sum())}")
+        if name in PLOT_FITS:
+            plots(res, sig, tag, out)
+    (out / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
+
+
+def robustness() -> list[str]:
+    needed = ["primary"] + ROBUSTNESS_FITS + INFO_FITS
+    missing = [f for f in needed if not (OUT / f / TABLE).exists()]
+    if missing:
+        return [f"robustness: skipped, fits not run yet: {', '.join(missing)}"]
+    tables = {f: pd.read_csv(OUT / f / TABLE, index_col=0) for f in needed}
+    primary = tables["primary"]
+    sig = primary[primary["padj"] < ALPHA]
+    table = sig[["gene_name", "chromosome", "gene_type", "baseMean", "log2FoldChange", "padj"]].copy()
+    table = table.rename(columns={"log2FoldChange": "lfc_primary", "padj": "padj_primary"})
+    checks = []
+    for f in ROBUSTNESS_FITS + INFO_FITS:
+        lfc = tables[f]["log2FoldChange"].reindex(sig.index)
+        table[f"lfc_{f}"] = lfc
+        ok = lfc.notna() & (np.sign(lfc) == np.sign(sig["log2FoldChange"])) & \
+             (lfc.abs() >= 0.5 * sig["log2FoldChange"].abs())
+        table[f"holds_{f}"] = ok
+        if f in ROBUSTNESS_FITS:
+            checks.append(ok)
+    table["robust"] = pd.concat(checks, axis=1).all(axis=1)
+    table["x_or_y"] = table["chromosome"].isin(["chrX", "chrY"])
+    table["biomarker"] = table["gene_name"].isin(config.BIOMARKERS)
+    table.to_csv(OUT / "robustness.csv.gz", float_format="%.6g", index_label="gene_id")
+
+    omit = tables["omit_32_0016"]
+    only = omit.index[(omit["padj"] < ALPHA) & ~(primary["padj"].reindex(omit.index) < ALPHA)]
+    cols = ["log2FoldChange", "lfcSE", "dispersion", "padj"]
+    masked = (omit.loc[only, ["gene_name", "chromosome"] + cols]
+              .join(primary.loc[only, cols], lsuffix="_without_32_0016", rsuffix="_primary"))
+    masked.sort_values("padj_without_32_0016").to_csv(OUT / "sensitive_to_32_0016.csv",
+                                                      float_format="%.6g", index_label="gene_id")
+    comparison = []
+    for f in ROBUSTNESS_FITS + INFO_FITS:
+        other = tables[f]
+        in_primary = primary["padj"] < ALPHA
+        in_other = other["padj"].reindex(primary.index) < ALPHA
+        paired = sig.index
+        comparison.append({
+            "fit": f,
+            "finite_padj": int(other["padj"].notna().sum()),
+            "significant": int((other["padj"] < ALPHA).sum()),
+            "both": int((in_primary & in_other).sum()),
+            "primary_only": int((in_primary & ~in_other).sum()),
+            "fit_only": int((~in_primary & in_other).sum()),
+            "lfc_spearman_primary_genes": round(float(sig["log2FoldChange"].corr(
+                other["log2FoldChange"].reindex(paired), method="spearman")), 4),
+            "median_lfc_ratio": round(float((other["log2FoldChange"].reindex(paired)
+                                            / sig["log2FoldChange"]).median()), 3),
+            "median_se_ratio": round(float((other["lfcSE"].reindex(paired)
+                                           / sig["lfcSE"]).median()), 3),
+        })
+    comparison = pd.DataFrame(comparison)
+    comparison.to_csv(OUT / "sensitivity_comparison.csv", index=False)
+
+    autosomal = ~table["x_or_y"]
+    return [f"robustness: {len(table)} genes with padj < {ALPHA} in primary; robust "
+            f"{int(table['robust'].sum())} ({int((table['robust'] & autosomal).sum())} autosomal); "
+            f"holds without sex {int(table['holds_ladder_batch'].sum())}, site "
+            f"{int(table['holds_site'].sum())}, all43 {int(table['holds_all43'].sum())}, 32-0004 "
+            f"restored {int(table['holds_restore_32_0004'].sum())}, 32-0016 omitted "
+            f"{int(table['holds_omit_32_0016'].sum())}, Rochester only "
+            f"{int(table['holds_rochester'].sum())}; same direction and size in ~ condition "
+            f"(reported only) {int(table['holds_ladder_none'].sum())}",
+            f"sensitive to 32-0016 (padj < {ALPHA} only without it): {len(masked)}",
+            "paired comparison with primary (genes significant in primary for ratios):",
+            comparison.to_string(index=False)]
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--fit", action="append", choices=list(FITS),
+                        help="run only this fit (repeatable); default: all fits")
+    parser.add_argument("--preflight", action="store_true", help="checks only, no fit")
+    args = parser.parse_args()
+    fits = args.fit or list(FITS)
     OUT.mkdir(parents=True, exist_ok=True)
-    counts = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
-    meta = pd.read_csv(config.PROCESSED / "metadata.csv", index_col=0).loc[counts.columns]
-    names = None
-    if config.GENE_NAMES.exists():
-        names = pd.read_csv(config.GENE_NAMES, index_col="gene_id")["gene_name"]
-
-    # PyDESeq2 wants samples in rows, genes in columns, integer counts.
-    x = counts.T.round().astype(int)
-    meta = meta.copy()
-    meta["condition"] = meta["condition"].astype(str)
-    meta["batch"] = meta["char:batch"].astype(str)
-
-    # The paper does not test all FSHD biopsies against the controls. It splits them into
-    # four groups by biomarker expression and tests each group against the controls.
-    # TODO(student): the groups below are the authors' own (rnaseq.rank on GEO). They were
-    # built from DUX4 target genes. Say in your report what that does to a test of DUX4
-    # target genes between a group and the controls.
-    rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
-    meta["group"] = ("G" + rank.astype("Int64").astype(str)).where(rank.notna())
-    meta.loc[meta["condition"] == config.REFERENCE_LEVEL, "group"] = config.REFERENCE_LEVEL
-
-    summary = [f"samples: {x.shape[0]}  genes: {x.shape[1]}", ""]
-    summary += run(x, meta, "condition", names) + [""]
-    summary += run(x, meta, "group", names)
-    (OUT / "summary.txt").write_text("\n".join(summary), encoding="utf-8")
-    print("\n".join(summary))
-    print("\nNext: fill worksheets/step3_de.md. Run a second design before you conclude")
+    x, meta = sample_table()
+    checks = preflight(x, meta)
+    (OUT / "preflight.txt").write_text("\n".join(checks) + "\n", encoding="utf-8")
+    print("\n".join(checks))
+    if args.preflight:
+        return
+    annot = gene_annotation()
+    for name in fits:
+        run_fit(name, x, meta, annot)
+    lines = [(OUT / f / "summary.txt").read_text(encoding="utf-8").rstrip()
+             for f in FITS if (OUT / f / "summary.txt").exists()]
+    robustness_lines = robustness()
+    lines += robustness_lines
+    (OUT / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(robustness_lines))
 
 
 if __name__ == "__main__":
