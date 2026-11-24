@@ -1,0 +1,6 @@
+R 4.5.3, DESeq2 1.50.2
+varianceStabilizingTransformation(blind = TRUE, fitType = 'parametric'), design ~ 1,
+deposited full-cohort size factors (unchanged by the transformation: TRUE)
+dispersion trend: asymptDisp 0.22555, extraPois 3.24352
+S1 (Yao 2014 Table S1, mapped): 142 features; S3 (authors' mk.rda): 54 of 55 in the counts; panel: 31 genes; exported: 173 genes x 43 biopsies
+S1 and S3 overlap: 54 features

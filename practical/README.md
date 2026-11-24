@@ -249,6 +249,10 @@ pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # S
 uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs supplementary tables S4-S10
 uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: independent DE, all planned fits
 pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R          # Step 4 Track A: the authors' score, groups, Figure 2, correlations
+uv run --locked python scripts/step4_compare_with_paper.py                    # Step 4 course parts: Python score, paper claims
+uv run --locked python scripts/step4_track_b.py --panel                       # Step 4 Track B: Translator panel genes
+pixi run --manifest-path r/pixi.toml Rscript r/vst_track_b.R                  # Step 4 Track B: blind VST, selected genes
+uv run --locked python scripts/step4_track_b.py                               # Step 4 Track B: alternative score, tissue state
 # Bonus: first extract the reference-list snapshot into data/raw/bonus_lists/ (bonus_lists/README.md)
 uv run --locked python scripts/bonus_select_genes.py                          # Bonus: Translator genes, rule in worksheets/bonus_translator.md
 ```
