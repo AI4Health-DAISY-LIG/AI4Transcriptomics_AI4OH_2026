@@ -127,6 +127,7 @@ Then take one conclusion of the paper and say how far your analysis supports it.
 
 **Limits:**
 - 34 biopsies, in muscles chosen for their MRI signal, at one time point.
+- Batch I contains four of the six highest-scoring biopsies under both score definitions, and the only biopsies rated STIR 3 or 4 (`track_b/stir_vs_scores.png`). Across the other 29 biopsies the STIR association is still positive (Spearman ρ = 0.445 for the deposited score, 0.471 for the S1 score without the markers), but they cover only STIR ratings 0–2.
 - No correction for the number of correlations tested.
 - An association between MRI and RNA cannot say which comes first.
 - The sharper MRI-normal against STIR-positive contrast (Figure 2) reproduces in its means, but its test cannot be identified.

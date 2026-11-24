@@ -4,7 +4,7 @@ Snapshot prepared 24 November 2026 for the AI for Omics transcriptomics practica
 
 **Where the files live.** The lists are data, so they stay out of git, like everything in `data/`; the course asks that the pull request contain no data. Extract the full snapshot (all six files and this manifest) into `practical/data/raw/bonus_lists/`, which is where `scripts/bonus_select_genes.py` reads them. The repository tracks only this README, `sources.tsv` (source URL, version, retrieval date, method, record count and SHA-256 of each file) and `SHA256SUMS`.
 
-**Getting them again, exactly.** The five files read by `scripts/bonus_select_genes.py` were committed once, at commit `23edfb7`, before data left the repository; the Yao workbook comes from its archived PMC address. From `practical/`:
+**Getting them again, exactly.** The five files read by `scripts/bonus_select_genes.py` were committed once, at commit `23edfb7`, before data left the repository; the Yao workbook comes from the EBI BioStudies mirror of its PMC supplement (the PMC address in `sources.tsv` may answer with a browser challenge instead of the file). From `practical/`:
 
 ```bash
 mkdir -p data/raw/bonus_lists
@@ -13,7 +13,7 @@ for f in EpiGenes_main.csv QuickGO_GO0043403_human.tsv TF_names_v_1.01.txt \
   git show 23edfb7:practical/bonus_lists/$f > data/raw/bonus_lists/$f
 done
 curl -fL -o data/raw/bonus_lists/supp_ddu251_ddu251supp_table1.xls \
-  https://pmc.ncbi.nlm.nih.gov/articles/instance/4168822/bin/supp_ddu251_ddu251supp_table1.xls
+  https://www.ebi.ac.uk/biostudies/files/S-EPMC4168822/supp_ddu251_ddu251supp_table1.xls
 (cd data/raw/bonus_lists && sha256sum -c ../../../bonus_lists/SHA256SUMS)
 ```
 

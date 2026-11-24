@@ -223,11 +223,18 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
     label = res["gene_name"].fillna(res.index.to_series())
     lfc = res["log2FoldChange"]
     limit = 1.05 * float(sig["log2FoldChange"].abs().max()) if len(sig) else float(lfc.abs().max())
-    outside = int((lfc.abs() > limit).sum())
-    extreme = lfc.abs().idxmax()
-    note = (f"{outside} feature(s) beyond ±{limit:.1f} not shown; largest: "
-            f"{label.loc[extreme]}, log2FC {lfc.loc[extreme]:.2f}, base mean "
-            f"{res.loc[extreme, 'baseMean']:.2f}")
+
+    def note(drawn: pd.Series) -> str:
+        """Points of this plot (finite values) left outside the zoom."""
+        beyond = lfc[drawn & (lfc.abs() > limit)]
+        if beyond.empty:
+            return f"no point beyond ±{limit:.1f}"
+        extreme = beyond.abs().idxmax()
+        return (f"{len(beyond)} point(s) beyond ±{limit:.1f} not shown; largest: "
+                f"{label.loc[extreme]}, log2FC {lfc.loc[extreme]:.2f}, base mean "
+                f"{res.loc[extreme, 'baseMean']:.2f}")
+    ma_note = note(lfc.notna() & res["baseMean"].notna())
+    volcano_note = note(lfc.notna() & res["pvalue"].notna())
     other = res.drop(index=sig.index)
     top = sig.sort_values("padj").index[:10]
 
@@ -246,7 +253,7 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
         if zoom:
             ax.set_ylim(-limit, limit)
             ax.set_title(f"zoom on ±{limit:.1f}", fontsize=9)
-            ax.text(0.01, 0.01, note, transform=ax.transAxes, fontsize=6, va="bottom")
+            ax.text(0.01, 0.01, ma_note, transform=ax.transAxes, fontsize=6, va="bottom")
         else:
             ax.set_title(f"MA plot, full scale ({len(sig)} genes with padj < {ALPHA})", fontsize=9)
         legend(ax)
@@ -263,7 +270,7 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
         if zoom:
             ax.set_xlim(-limit, limit)
             ax.set_title(f"zoom on ±{limit:.1f}; 10 smallest padj labelled", fontsize=9)
-            ax.text(0.01, 0.99, note, transform=ax.transAxes, fontsize=6, va="top")
+            ax.text(0.01, 0.99, volcano_note, transform=ax.transAxes, fontsize=6, va="top")
             # Labels stacked in a column on the left, joined to their points by thin lines,
             # so that they never overlap however close the points are.
             ymax = float((-np.log10(sig["pvalue"])).max())

@@ -22,6 +22,7 @@ import sys
 import warnings
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 import config
@@ -53,9 +54,20 @@ def main() -> None:
         geo = pd.read_csv(config.RAW / geo_file, index_col=0)
         genes = s2.index.intersection(geo.index)
         samples = s2.columns.intersection(geo.columns)
-        diff = (s2.loc[genes, samples] - geo.loc[genes, samples]).abs()
+        # Every S2 gene and biopsy must be found in GEO, and every paired value must be finite,
+        # so that no identifier or unreadable cell drops silently out of the maximum.
+        if len(genes) != len(s2.index) or len(samples) != len(s2.columns):
+            raise SystemExit(f"{sheet}: genes not in GEO {sorted(set(s2.index) - set(genes))}, "
+                             f"biopsies not in GEO {sorted(set(s2.columns) - set(samples))}")
+        a, b = s2.loc[genes, samples], geo.loc[genes, samples]
+        bad = int((~np.isfinite(a.to_numpy(dtype=float))).sum()
+                  + (~np.isfinite(b.to_numpy(dtype=float))).sum())
+        if bad:
+            raise SystemExit(f"{sheet}: {bad} non-finite values")
+        diff = (a - b).abs()
         rows.append({"sheet": sheet, "geo_file": geo_file, "genes_in_s2": len(s2),
                      "genes_matched": len(genes), "samples_matched": len(samples),
+                     "values_compared": int(diff.size),
                      "max_abs_difference": float(diff.max().max())})
     out = config.RESULTS / "step1_audit" / "table_s2_check.csv"
     table = pd.DataFrame(rows)
