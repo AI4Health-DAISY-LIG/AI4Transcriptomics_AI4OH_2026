@@ -28,6 +28,9 @@
 #   groups_crosstab.txt    raw cut and recomputed groups against GEO
 #   controls_fpkm.csv      FPKM of the four markers in the nine controls
 #   figure2.csv            score by MRI status: n, mean, population and sample SD
+#   expression_by_stir.csv biopsies counted as expressing DUX4 targets, by STIR status, under
+#                          three criteria: published groups 2-4 (after the manual relabelling),
+#                          outside the raw cluster holding the controls, any marker above 2
 #   correlations.csv       Spearman correlations with the paper's values, by subset
 #   dux4_targets_de.csv    DE status of each DUX4 candidate in groups 3 and 4
 #   figure1_style.png      Figure 1 scatter panel: sum by biopsy, colour = recomputed group,
@@ -108,7 +111,7 @@ literal <- relabel(raw[sorted], 2, 1, c(3, 4))
 by_level <- relabel(level[as.character(raw[sorted])], 1, 2, c(3, 4))
 geo_group <- num(geo[["char:rnaseq.rank"]])
 dep_group <- num(as.character(dds$RNA.Cluster))
-say("groups: raw cluster sizes %s; recomputed groups equal GEO for the 34 FSHD: %s; controls all in group 1: %s; equal to RNA.Cluster for all 43: %s; literal numeric rule gives the same: %s",
+say("groups: raw cluster sizes %s (in cutree's numbering); recomputed groups equal GEO for the 34 FSHD: %s; controls all in group 1: %s; equal to RNA.Cluster for all 43: %s; literal numeric rule gives the same: %s",
     paste(table(raw), collapse = "/"), identical(by_level[fshd], geo_group[fshd]),
     all(by_level[ctrl] == 1), identical(by_level, dep_group), identical(literal, by_level))
 say("groups: sizes among FSHD (1-4) %s; paper 10/5/13/6",
@@ -171,6 +174,18 @@ say("STIR+ biopsies in groups 2-4 (the paper's definition of expressing DUX4 tar
     sum(pos & in_g24), sum(pos), sum(pos & in_g24 & no16), sum(pos & no16))
 say("STIR+ biopsies with at least one marker above relative rlog 2 (Figure 1 calls >= 1), another definition: %d/%d",
     sum(pos & calls >= 1), sum(pos))
+zero <- fshd & !is.na(stir) & stir == 0
+criteria <- list(published_groups_2_4 = by_level %in% 2:4,
+                 outside_raw_cluster_of_controls = !(raw %in% unique(raw[ctrl])),
+                 any_marker_above_2 = calls >= 1)
+frac <- function(a, b) sprintf("%d/%d", sum(a & b), sum(b))
+by_stir <- do.call(rbind, lapply(names(criteria), function(k) data.frame(
+  criterion = k, stir_positive = frac(criteria[[k]], pos), stir_zero = frac(criteria[[k]], zero),
+  mri_normal = frac(criteria[[k]], normal))))
+write.csv(by_stir, file.path(out, "expression_by_stir.csv"), row.names = FALSE)
+say("expressing DUX4 targets, STIR+ / STIR 0 / MRI-normal: %s",
+    paste(sprintf("%s %s, %s, %s", by_stir$criterion, by_stir$stir_positive, by_stir$stir_zero,
+                  by_stir$mri_normal), collapse = "; "))
 say("Figure 2 groups: MRI-normal (STIR 0 and T1 0) %d, STIR+ %d, in neither: %s",
     sum(normal), sum(pos), paste(colnames(dds)[fshd & !pos & !normal], collapse = " "))
 sdp <- function(v) sqrt(mean((v - mean(v))^2))
@@ -238,8 +253,9 @@ for (contrast in c("S8_G3", "S10_G4")) {
 }
 write.csv(de_tab, file.path(out, "dux4_targets_de.csv"), row.names = FALSE)
 keep54 <- de_tab$in_counts
-say("DUX4 candidates (mk.rda): %d features, %d in the counts, TRIM43CP present: %s; not in the counts: %s",
+say("DUX4 candidates (mk.rda): %d features, %d in the counts; TRIM43CP in the candidate list: %s, in the counts: %s; not in the counts: %s",
     nrow(de_tab), sum(de_tab$in_counts), any(de_tab$is_trim43cp),
+    any(de_tab$is_trim43cp & de_tab$in_counts),
     paste(de_tab$gene_id[!de_tab$in_counts], collapse = " "))
 say("DE (padj < 0.05, |log2FC| >= 2) among the %d candidates in the counts: group 3 %d, group 4 %d (paper 47/54, 54/54); not assessed: %s",
     sum(keep54), sum(de_tab$de_S8_G3[keep54]), sum(de_tab$de_S10_G4[keep54]),

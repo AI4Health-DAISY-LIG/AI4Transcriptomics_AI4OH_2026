@@ -24,13 +24,23 @@ PyDESeq2 has no rlog. Substitute: a blind PyDESeq2 VST (design `~1`), fitted on 
 
 | Item | Paper or GEO | Me | Agree? |
 |------|--------------|-----|--------|
-| Biopsies in groups 1, 2, 3 and 4 | Paper and GEO: 10, 5, 13, 6 | Track A: 10, 5, 13, 6, the same biopsies as GEO, and the 9 controls in group 1 (`track_a/groups_crosstab.txt`). The raw tree cut is 24/13/5/1 (controls included); the authors' relabelling, applied as written, gives the published groups. Clustering the Python VST values instead puts 3 group 3 biopsies with the controls (`score_clusters.txt`) | Yes (Track A); the clusters depend on the transformation |
+| Biopsies in groups 1, 2, 3 and 4 | Paper and GEO: 10, 5, 13, 6 | Track A: 10, 5, 13, 6, the same biopsies as GEO, and the 9 controls in group 1 (`track_a/groups_crosstab.txt`). The raw tree cut is 24/13/5/1 with the low-score cluster first (13/24/5/1 in cutree's numbering; controls included); the authors' relabelling, applied as written, gives the published groups. Clustering the Python VST values instead puts 3 group 3 biopsies with the controls (`score_clusters.txt`) | Yes (Track A); the clusters depend on the transformation |
 | My score against the deposited score (Spearman) | GEO `rnaseq.score`, 34 FSHD | Python VST: 0.996; log2(normalised + 0.5): 0.994; values differ by up to 5.1 (VST and rlog scales differ). Track A: ρ = 1, max difference 4.7e-05 | Ranks yes; values only in Track A |
 | Biomarker expression in the controls | Results: zero or < 0.1 RPKM | Max FPKM in the 9 controls: PRAMEF2 0.000, TRIM43 0.020, KHDC1L 0.019, LEUTX 0.016; 0 of 36 values ≥ 0.1 (`track_a/controls_fpkm.csv`) | Yes |
 | STIR-positive biopsies that express DUX4 targets | 20/23 (87%); 91% without 32-0016 | 20/23 and 20/22 with the paper's definition (groups 2–4); 15/23 if "expressing" means at least one marker above relative rlog 2 (Figure 1 dot size) | Yes, with the paper's definition |
 | Mean score in MRI-normal and in STIR-positive muscles | 1.4 (SD 2.4) and 7.7 (SD 5.7), P < 0.001, test not named | 1.383 and 7.666 (n = 10 and 23; one biopsy, 01-0022-1, is STIR 0 but T1 3, in neither group). SD: population 2.45 and 5.73, sample 2.58 and 5.85 (`track_a/figure2.csv`). Two-sided candidate tests: Welch p = 0.00017, exact Wilcoxon rank-sum p = 0.00064 (no ties), normal approximation p = 0.0012 | Means yes; SDs partly (5.7 only); the test cannot be identified |
 | Score against STIR rating (Spearman) | Results 0.61 (P < 0.001); Fig. S7 0.54 | 0.555 (n = 34, p = 0.00065); group: 0.544 against 0.63 | No |
 | Score against pathology score (Spearman) | Results 0.63 (P < 0.001) | 0.584 (n = 32, p = 0.00045) | No |
+
+**What the manual relabelling changes** (`track_a/expression_by_stir.csv`). FSHD biopsies counted as expressing DUX4 targets, by STIR status:
+
+| Criterion | STIR-positive | STIR 0 | MRI-normal (STIR 0 and T1 0) |
+|---|---|---|---|
+| Published groups 2–4 (after the relabelling) | 20/23 | 4/11 | 3/10 |
+| Outside the raw tree cluster that holds the nine controls | 17/23 | 2/11 | 1/10 |
+| At least one marker above relative rlog 2 (Figure 1 dot size) | 15/23 | 2/11 | 1/10 |
+
+The relabelling moves biopsies out of the controls' cluster: it adds 3 STIR-positive and 2 STIR-0 biopsies to the "expressing" count. Under all three criteria the proportion is higher among STIR-positive muscles, so the direction of the paper's finding does not depend on the relabelling, while its 87% does. The STIR-0 biopsy outside the MRI-normal set (01-0022-1) is T1-positive and in group 3.
 
 All correlations: `track_a/correlations.csv`. The same pattern holds for T1 (0.392 against 0.49) and fat fraction (0.226 against 0.34). Two labelled diagnostics:
 - **Without 32-0016**, which the paper itself sets aside for the 91% figure: the values move up (STIR 0.590, T1 0.456).
@@ -76,7 +86,7 @@ List each missing element and classify it:
 **Stated in the paper but not matching the deposited data**
 - **Spearman correlations.** The reported values are all higher than the deposited data give: STIR 0.61 against 0.555, T1 0.49 against 0.392, fat fraction 0.34 against 0.226, pathology 0.63 against 0.584. The STIR value also differs between the Results (0.61) and Fig. S7 (0.54).
 - **Figure 2 SD for MRI-normal muscles:** 2.4, against 2.45 (population) or 2.58 (sample).
-- **The Methods attribute the four groups to hierarchical clustering.** The clustering alone gives other groups (raw cut 24/13/5/1). The published groups need a relabelling by hand that the paper does not describe.
+- **The Methods attribute the four groups to hierarchical clustering.** The clustering alone gives other groups (raw cut 24/13/5/1, low-score cluster first). The published groups need a relabelling by hand that the paper does not describe.
 
 **Not stated anywhere, decided by me**
 - **The test behind Figure 2's P < 0.001.** I report Welch's t-test and the exact Wilcoxon rank-sum test, both two-sided and both below 0.001, and the normal approximation (0.0012); none is confirmed.

@@ -159,6 +159,12 @@ Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), 
   without these three to see how sensitive the conclusions are. The
   Step 2 rerun is done (`step2_qc.md`, "Samples I excluded"); the
   Step 3 and Step 4 reruns are still planned.
+  *Follow-up, 24 November 2026:* both are done. Step 3: the three
+  libraries are excluded from Track B and restored in the `all43`
+  sensitivity fit (`step3_de.md`, "Decisions I made"). Step 4: the
+  Track B score correlations are recomputed without them
+  (`results/step4_comparison/track_b/delta_rho.csv`, subset
+  `without_low_mapping`).
 - Keep versioned Ensembl IDs as gene identifiers and use GENCODE v24 to
   annotate gene symbols and types. All 27,506 deposited gene IDs matched
   this annotation release.
@@ -171,3 +177,6 @@ Total: 22/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0/2), 
   comparisons. The split and merge rules the authors applied after
   clustering are documented in `fair_score.md`; a sensitivity analysis
   with an unmodified tree cut is planned for Step 4.
+  *Follow-up, 24 November 2026:* done in Step 4 (`step4_comparison.md`,
+  "What the manual relabelling changes";
+  `results/step4_comparison/track_a/expression_by_stir.csv`).
