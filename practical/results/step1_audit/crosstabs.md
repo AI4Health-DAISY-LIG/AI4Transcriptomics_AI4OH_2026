@@ -1,4 +1,4 @@
-# Condition against sample variables
+# Cross-tabulations: condition against sample variables
 
 ## char:batch
 
