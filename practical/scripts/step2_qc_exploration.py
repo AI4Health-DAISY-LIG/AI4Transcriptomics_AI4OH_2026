@@ -36,6 +36,17 @@ Sensitivity run (after the main run), without the low-mapping biopsies of
 config.SENSITIVITY_EXCLUDE: same rlog values, same 500 genes, PCA refitted on the remaining
 samples. Writes to results/step2_qc/sensitivity_40/ and leaves data/processed/ untouched:
   uv run python scripts/step2_qc_exploration.py --sensitivity
+
+Figures only: redraws every pca_by_<variable>.png of both runs from the saved scores and
+variances (pca_scores.csv, pca_variance.csv), without the counts; nothing else changes:
+  uv run python scripts/step2_qc_exploration.py --figures
+
+Figure conventions: shape = condition (FSHD orange circle, control blue triangle); a variable
+with a single value (instrument, GEO tissue label) is stated in the subtitle and the points
+are coloured by condition; continuous variables share the colour limits of the 43-biopsy
+cohort in both runs; ordered ratings (STIR, T1, active, inflammation) use an ordered palette
+with integer levels; the mapping rate is shown in five ordered bins (BINNED); missing values
+are grey.
 """
 
 from __future__ import annotations
@@ -59,7 +70,17 @@ AUDIT = config.RESULTS / "step1_audit"
 # Samples labelled on the figures: low mapping rate (32-0008, 01-0037, 32-0009) and the
 # paper's two PCA outliers (01-0037, 32-0016). Only those present in the data are labelled.
 WATCH = ["32-0008", "01-0037", "32-0009", "32-0016"]
+LABEL_LEFT = {"32-0009"}   # labels placed left of the point (the right frame crosses them)
 MARKERS = {"FSHD": "o", "Control": "^"}
+CONDITION_COLOURS = {"FSHD": "tab:orange", "Control": "tab:blue"}
+ORDINAL = {"stir", "t1", "active", "inflam"}       # ordered clinical ratings
+# Mapping rate: most libraries lie between 94.85% and 97.20%, so a continuous scale over the
+# full range (67.73-97.20%) shows them in nearly one colour. Binned instead: below 90% (the
+# three libraries of config.SENSITIVITY_EXCLUDE), then the quartiles of the libraries at 90% or
+# more, with edges fixed on the full cohort.
+BINNED = {"mapping_rate_pct": 90.0}
+CONSTANT_NOTE = {"instrument_model": "All {n} samples were sequenced on an {value}",
+                 "tissue": "GEO records every sample as '{value}'"}
 N_TOP = 500  # genes in the PCA, as DESeq2's plotPCA default used for Figure 3
 
 
@@ -92,34 +113,76 @@ def pca_top(mat: pd.DataFrame, n_top: int, genes=None):
 
 
 def scatter_by(pcs: pd.DataFrame, values: pd.Series, conditions: pd.Series, name: str,
-               pct, title: str, path) -> None:
-    """PC1 against PC2: colour = one variable (colour scale if numeric with many values,
-    grey when missing), shape = condition, watched samples labelled."""
+               pct, title: str, path, limits: dict | None = None) -> None:
+    """PC1 against PC2: shape = condition; colour = the variable (see the module docstring for
+    constant, continuous and ordered variables); watched samples labelled. `limits` gives the
+    colour range of a continuous variable, or the levels of an ordered one, taken from the full
+    cohort so that the main and sensitivity figures share them."""
     from matplotlib.lines import Line2D
 
-    fig, ax = plt.subplots(figsize=(6.5, 5))
+    fig, ax = plt.subplots(figsize=(7.5, 5))
     numeric = pd.to_numeric(values, errors="coerce")
-    continuous = bool(numeric.notna().any()) and numeric.nunique() > 8
+    present = values.dropna().astype(str).unique()
+    constant = len(present) == 1
+    binned = name in BINNED and name in (limits or {})
+    ordinal = (name in ORDINAL or binned) and bool(numeric.notna().any())
+    continuous = not ordinal and bool(numeric.notna().any()) and numeric.nunique() > 8
     style = dict(s=45, edgecolors="black", linewidths=0.5)
     handles = []
-    if continuous:
+
+    def condition_handles():
+        return [Line2D([0], [0], marker=MARKERS[c], color="w", markerfacecolor=col,
+                       markeredgecolor="black", markersize=7, label=c)
+                for c, col in CONDITION_COLOURS.items()]
+
+    if name == "condition" or constant:
+        for condition, marker in MARKERS.items():
+            idx = conditions == condition
+            ax.scatter(pcs.loc[idx, "PC1"], pcs.loc[idx, "PC2"],
+                       color=CONDITION_COLOURS[condition], marker=marker, **style)
+        handles = condition_handles()
+        legend_title = "condition"
+        if constant and name in CONSTANT_NOTE:
+            title += "\n" + CONSTANT_NOTE[name].format(n=len(pcs), value=present[0])
+    elif continuous:
+        vmin, vmax = (limits or {}).get(name, (numeric.min(), numeric.max()))
         sc = None
         for condition, marker in MARKERS.items():
             idx = conditions == condition
             na, ok = idx & numeric.isna(), idx & numeric.notna()
             ax.scatter(pcs.loc[na, "PC1"], pcs.loc[na, "PC2"], c="lightgrey", marker=marker, **style)
             sc = ax.scatter(pcs.loc[ok, "PC1"], pcs.loc[ok, "PC2"], c=numeric[ok], cmap="viridis",
-                            vmin=numeric.min(), vmax=numeric.max(), marker=marker, **style)
+                            vmin=vmin, vmax=vmax, marker=marker, **style)
         fig.colorbar(sc, ax=ax, label=name)
         if numeric.isna().any():
             handles.append(Line2D([0], [0], marker="s", color="w", markerfacecolor="lightgrey",
                                   markeredgecolor="black", label="no value"))
+        handles += [Line2D([0], [0], marker=m, color="w", markerfacecolor="white",
+                           markeredgecolor="black", label=c) for c, m in MARKERS.items()]
+        legend_title = name
     else:
-        levels = values.astype(object).where(values.notna(), "no value").astype(str)
-        order = sorted(levels.unique())
-        colours = dict(zip(order, plt.cm.tab10.colors))
-        if "no value" in colours:
-            colours["no value"] = "lightgrey"
+        if binned:
+            edges, labels = limits[name]
+            cmap = plt.get_cmap("viridis", len(labels))
+            colours = {lab: cmap(i) for i, lab in enumerate(labels)}
+            levels = pd.cut(numeric, edges, labels=labels, include_lowest=True) \
+                .astype(object).where(numeric.notna(), "no value").astype(str)
+            order = list(colours)
+        elif ordinal:
+            levels_all = (limits or {}).get(name, sorted(numeric.dropna().unique()))
+            cmap = plt.get_cmap("viridis", len(levels_all))
+            colours = {f"{int(v)}": cmap(i) for i, v in enumerate(levels_all)}
+            levels = numeric.map(lambda v: f"{int(v)}" if pd.notna(v) else "no value")
+            order = list(colours)
+        else:
+            levels = values.astype(object).where(values.notna(), "no value").astype(str)
+            order = sorted(set(levels) - {"no value"})
+            colours = dict(zip(order, plt.cm.tab10.colors))
+        colours["no value"] = "lightgrey"
+        # Colours stay fixed by the full cohort; the legend lists only the levels present.
+        order = [lv for lv in order if (levels == lv).any()]
+        if (levels == "no value").any():
+            order = order + ["no value"]
         for condition, marker in MARKERS.items():
             for level in order:
                 sel = (conditions == condition) & (levels == level)
@@ -127,13 +190,20 @@ def scatter_by(pcs: pd.DataFrame, values: pd.Series, conditions: pd.Series, name
                            marker=marker, **style)
         handles += [Line2D([0], [0], marker="s", color="w", markerfacecolor=colours[lv],
                            markeredgecolor="black", label=lv) for lv in order]
-    handles += [Line2D([0], [0], marker=m, color="w", markerfacecolor="white",
-                       markeredgecolor="black", label=c) for c, m in MARKERS.items()]
-    ax.legend(handles=handles, fontsize=7, title=name, title_fontsize=7, loc="best")
+        handles += [Line2D([0], [0], marker=m, color="w", markerfacecolor="white",
+                           markeredgecolor="black", label=c) for c, m in MARKERS.items()]
+        legend_title = name
+    if continuous:   # the colour bar sits on the right: shape legend inside the axes
+        ax.legend(handles=handles, fontsize=7, title=legend_title, title_fontsize=7, loc="best")
+    else:            # outside the axes, so that it never hides a point
+        ax.legend(handles=handles, fontsize=7, title=legend_title, title_fontsize=7,
+                  loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
     for sample in WATCH:
         if sample in pcs.index:
+            left = sample in LABEL_LEFT
             ax.annotate(sample, (pcs.loc[sample, "PC1"], pcs.loc[sample, "PC2"]), fontsize=6,
-                        xytext=(4, 2), textcoords="offset points")
+                        xytext=(-4 if left else 4, 2), textcoords="offset points",
+                        ha="right" if left else "left")
     ax.set_xlabel(f"PC1 ({pct[0]:.1f}%)")
     ax.set_ylabel(f"PC2 ({pct[1]:.1f}%)")
     ax.set_title(title, fontsize=9)
@@ -142,23 +212,20 @@ def scatter_by(pcs: pd.DataFrame, values: pd.Series, conditions: pd.Series, name
     plt.close(fig)
 
 
-def describe_pca(pcs: pd.DataFrame, pct, meta: pd.DataFrame, lib: pd.Series, out, label: str) -> None:
-    """Figures (colour = variable, shape = condition), paper group by batch, and the association
-    of PC1 to PC3 with each plotted variable, written to `out`."""
+def pca_variables(meta: pd.DataFrame, lib: pd.Series) -> dict[str, pd.Series]:
+    """The variables the PCA figures are coloured by."""
     # Paper groups as in Figure 3 (controls are in group 1 by construction of the authors'
     # clustering).
     rank = pd.to_numeric(meta[config.GROUP_COL], errors="coerce")
     paper_group = rank.map(lambda r: f"Group{int(r)}_FSHD" if pd.notna(r) else None)
     paper_group[meta["condition"] == "Control"] = "Group1_Control"
-    # Paper groups against batch: which groups each sequencing run holds (worksheets/step2_qc.md).
-    pd.crosstab(paper_group, meta["char:batch"]).to_csv(out / "paper_group_by_batch.csv")
     variables = {
         "condition": meta["condition"],
         "paper_group": paper_group,
         "batch": meta["char:batch"],
         "instrument_model": meta["instrument_model"],
         "tissue": meta["char:tissue"],
-        "library_size_millions": lib / 1e6,
+        "library_size_millions": lib.reindex(meta.index) / 1e6,
     }
     rates_file = OUT / "mapping_rates.csv"
     if rates_file.exists():
@@ -167,10 +234,63 @@ def describe_pca(pcs: pd.DataFrame, pct, meta: pd.DataFrame, lib: pd.Series, out
     for var in config.BIOLOGICAL_VARS + config.PATHOLOGY_VARS:
         if var in meta.columns and var != config.GROUP_COL:
             variables[var.replace("char:", "").replace(".", "_")] = meta[var]
+    return variables
+
+
+def colour_limits(variables: dict[str, pd.Series]) -> dict:
+    """Full-cohort colour range of each numeric variable and levels of each ordered rating."""
+    limits = {}
+    for name, values in variables.items():
+        numeric = pd.to_numeric(values, errors="coerce").dropna()
+        if numeric.empty:
+            continue
+        if name in BINNED:
+            high = numeric[numeric >= BINNED[name]]
+            edges = [float(numeric.min()), BINNED[name]] + \
+                [round(float(q), 2) for q in high.quantile([0.25, 0.5, 0.75])] + \
+                [float(numeric.max())]
+            bins = pd.cut(numeric, edges, include_lowest=True)
+            # Each label gives the observed range of its bin in the full cohort.
+            labels = [f"{numeric[bins == b].min():.2f}-{numeric[bins == b].max():.2f}%"
+                      for b in bins.cat.categories]
+            labels[0] = f"below {BINNED[name]:.0f}% ({labels[0]})"
+            limits[name] = (edges, labels)
+        elif name in ORDINAL:
+            limits[name] = sorted(numeric.unique())
+        else:
+            limits[name] = (float(numeric.min()), float(numeric.max()))
+    return limits
+
+
+def full_cohort_limits() -> dict:
+    meta = load_sample_table()
+    lib = pd.read_csv(OUT / "library_sizes.csv", index_col=0)["lib_size"]
+    return colour_limits(pca_variables(meta, lib))
+
+
+def load_sample_table() -> pd.DataFrame:
+    """GEO sample table indexed by title (the count-matrix column names), 43 biopsies."""
+    meta = pd.read_csv(AUDIT / "sample_table.csv").set_index("title")
+    return meta[meta["condition"].notna()]
+
+
+def pca_figures(pcs: pd.DataFrame, pct, meta: pd.DataFrame, lib: pd.Series, out, label: str,
+                limits: dict) -> dict[str, pd.Series]:
+    variables = pca_variables(meta, lib)
     for name, values in variables.items():
         scatter_by(pcs, values, meta["condition"], name, pct,
                    f"PCA, {label}, top {N_TOP} genes: colour = {name}",
-                   out / f"pca_by_{name}.png")
+                   out / f"pca_by_{name}.png", limits)
+    return variables
+
+
+def describe_pca(pcs: pd.DataFrame, pct, meta: pd.DataFrame, lib: pd.Series, out, label: str,
+                 limits: dict) -> None:
+    """Figures (colour = variable, shape = condition), paper group by batch, and the association
+    of PC1 to PC3 with each plotted variable, written to `out`."""
+    variables = pca_figures(pcs, pct, meta, lib, out, label, limits)
+    # Paper groups against batch: which groups each sequencing run holds (worksheets/step2_qc.md).
+    pd.crosstab(variables["paper_group"], meta["char:batch"]).to_csv(out / "paper_group_by_batch.csv")
 
     # Association of PC1 to PC3 with each plotted variable, to name what separates the
     # samples: Spearman rho for numeric variables, and for categorical ones the share of the
@@ -335,7 +455,7 @@ def sensitivity_run() -> None:
     write_pca(pcs, pct, out)
     write_top_genes(rlog, main_genes, pcs, out)
     label = f"without {', '.join(config.SENSITIVITY_EXCLUDE)}"
-    describe_pca(pcs, pct, meta, lib, out, label)
+    describe_pca(pcs, pct, meta, lib, out, label, full_cohort_limits())
 
     _, pct_new, genes_new = pca_top(rlog, N_TOP)
     corr = [np.corrcoef(pcs[pc], main_pcs.loc[keep, pc])[0, 1] for pc in ["PC1", "PC2"]]
@@ -475,18 +595,38 @@ def main() -> None:
                      "figure3_genes_included": len(set(used) & set(replay_genes))})
     pd.DataFrame(rows).to_csv(OUT / "pca_logcpm_comparison.csv", index=False)
 
-    describe_pca(pcs, pct, meta, lib, OUT, "rlog of GEO counts")
+    describe_pca(pcs, pct, meta, lib, OUT, "rlog of GEO counts",
+                 colour_limits(pca_variables(meta, lib)))
     sex_check(counts, meta, OUT)
     similarity_check(counts, OUT)
     print("figures written to", OUT)
     print("\nNext: fill worksheets/step2_qc.md")
 
 
+def figures_only() -> None:
+    """Redraw the PCA figures of both runs from the saved scores and variances."""
+    limits = full_cohort_limits()
+    meta_all = load_sample_table()
+    lib = pd.read_csv(OUT / "library_sizes.csv", index_col=0)["lib_size"]
+    for out, label in [(OUT, "rlog of GEO counts"),
+                       (OUT / "sensitivity_40",
+                        f"without {', '.join(config.SENSITIVITY_EXCLUDE)}")]:
+        pcs = pd.read_csv(out / "pca_scores.csv", index_col=0)
+        pct = pd.read_csv(out / "pca_variance.csv")["variance_explained_pct"].to_numpy()
+        pca_figures(pcs, pct, meta_all.loc[pcs.index], lib, out, label, limits)
+        print(f"redrawn: {out} ({len(pcs)} samples)")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Step 2: QC and exploration")
     parser.add_argument("--sensitivity", action="store_true",
                         help="PCA without config.SENSITIVITY_EXCLUDE (after the main run)")
-    if parser.parse_args().sensitivity:
+    parser.add_argument("--figures", action="store_true",
+                        help="redraw the PCA figures of both runs from the saved scores")
+    args = parser.parse_args()
+    if args.sensitivity:
         sensitivity_run()
+    elif args.figures:
+        figures_only()
     else:
         main()
