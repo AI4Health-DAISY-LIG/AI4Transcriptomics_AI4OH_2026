@@ -2,7 +2,7 @@ endpoint,subset,score,n,delta_rho,ci_low,ci_high,label,undefined_resamples
 stir,all,S1,34,0.0132,-0.1153,0.1536,difference unresolved,0
 stir,all,S1_z,34,0.0132,-0.1054,0.1409,difference unresolved,0
 stir,all,S1_lfo,34,0.0132,-0.1153,0.1536,difference unresolved,0
-stir,all,S1_lfo_z,34,0.0071,-0.1144,0.1373,difference unresolved,0
+stir,all,S1_lfo_z,34,0.001,-0.1277,0.1347,difference unresolved,0
 stir,all,S3,34,0.0229,-0.0907,0.1499,difference unresolved,0
 stir,all,S3_z,34,0.0229,-0.0907,0.1499,difference unresolved,0
 stir,all,S3_lfo,34,0.0168,-0.0986,0.1458,difference unresolved,0
@@ -10,7 +10,7 @@ stir,all,S3_lfo_z,34,0.0168,-0.0986,0.1458,difference unresolved,0
 stir,without_low_mapping,S1,31,0.0318,-0.1097,0.1884,difference unresolved,0
 stir,without_low_mapping,S1_z,31,0.0318,-0.0968,0.1711,difference unresolved,0
 stir,without_low_mapping,S1_lfo,31,0.0318,-0.1097,0.1884,difference unresolved,0
-stir,without_low_mapping,S1_lfo_z,31,0.0244,-0.1125,0.1684,difference unresolved,0
+stir,without_low_mapping,S1_lfo_z,31,0.0171,-0.1295,0.1663,difference unresolved,0
 stir,without_low_mapping,S3,31,0.0473,-0.0718,0.1836,difference unresolved,0
 stir,without_low_mapping,S3_z,31,0.0473,-0.0718,0.1836,difference unresolved,0
 stir,without_low_mapping,S3_lfo,31,0.04,-0.0819,0.1788,difference unresolved,0
@@ -18,7 +18,7 @@ stir,without_low_mapping,S3_lfo_z,31,0.04,-0.0819,0.1788,difference unresolved,0
 stir,without_32_0004,S1,33,0.0144,-0.1141,0.156,difference unresolved,0
 stir,without_32_0004,S1_z,33,0.0144,-0.1063,0.1443,difference unresolved,0
 stir,without_32_0004,S1_lfo,33,0.0144,-0.1141,0.156,difference unresolved,0
-stir,without_32_0004,S1_lfo_z,33,0.0079,-0.1165,0.1421,difference unresolved,0
+stir,without_32_0004,S1_lfo_z,33,0.0014,-0.1307,0.1378,difference unresolved,0
 stir,without_32_0004,S3,33,0.0244,-0.0949,0.1505,difference unresolved,0
 stir,without_32_0004,S3_z,33,0.0244,-0.0949,0.1505,difference unresolved,0
 stir,without_32_0004,S3_lfo,33,0.018,-0.1017,0.1466,difference unresolved,0
@@ -26,7 +26,7 @@ stir,without_32_0004,S3_lfo_z,33,0.018,-0.1017,0.1466,difference unresolved,0
 t1,all,S1,34,0.0036,-0.1068,0.1253,difference unresolved,0
 t1,all,S1_z,34,-0.0009,-0.11,0.124,difference unresolved,0
 t1,all,S1_lfo,34,0.0036,-0.1068,0.1253,difference unresolved,0
-t1,all,S1_lfo_z,34,-0.0059,-0.1189,0.1229,difference unresolved,0
+t1,all,S1_lfo_z,34,-0.0109,-0.1307,0.1201,difference unresolved,0
 t1,all,S3,34,0.0057,-0.1027,0.1256,difference unresolved,0
 t1,all,S3_z,34,-0.001,-0.1076,0.1146,difference unresolved,0
 t1,all,S3_lfo,34,0.0057,-0.1027,0.1256,difference unresolved,0
@@ -34,7 +34,7 @@ t1,all,S3_lfo_z,34,-0.001,-0.1076,0.1146,difference unresolved,0
 t1,without_low_mapping,S1,31,-0.0114,-0.1336,0.1228,difference unresolved,0
 t1,without_low_mapping,S1_z,31,-0.0172,-0.14,0.121,difference unresolved,0
 t1,without_low_mapping,S1_lfo,31,-0.0114,-0.1336,0.1228,difference unresolved,0
-t1,without_low_mapping,S1_lfo_z,31,-0.0231,-0.1544,0.1184,difference unresolved,0
+t1,without_low_mapping,S1_lfo_z,31,-0.0289,-0.1648,0.1163,difference unresolved,0
 t1,without_low_mapping,S3,31,-0.0101,-0.1289,0.1246,difference unresolved,0
 t1,without_low_mapping,S3_z,31,-0.0181,-0.1342,0.1111,difference unresolved,0
 t1,without_low_mapping,S3_lfo,31,-0.0101,-0.1289,0.1246,difference unresolved,0
@@ -42,7 +42,7 @@ t1,without_low_mapping,S3_lfo_z,31,-0.0181,-0.1342,0.1111,difference unresolved,
 t1,without_32_0004,S1,33,0.0086,-0.1179,0.1342,difference unresolved,0
 t1,without_32_0004,S1_z,33,0.004,-0.1209,0.1369,difference unresolved,0
 t1,without_32_0004,S1_lfo,33,0.0086,-0.1179,0.1342,difference unresolved,0
-t1,without_32_0004,S1_lfo_z,33,-0.0013,-0.1334,0.1322,difference unresolved,0
+t1,without_32_0004,S1_lfo_z,33,-0.0067,-0.1453,0.1297,difference unresolved,0
 t1,without_32_0004,S3,33,0.0059,-0.1189,0.1356,difference unresolved,0
 t1,without_32_0004,S3_z,33,-0.0011,-0.1223,0.1221,difference unresolved,0
 t1,without_32_0004,S3_lfo,33,0.0059,-0.1189,0.1356,difference unresolved,0
@@ -50,7 +50,7 @@ t1,without_32_0004,S3_lfo_z,33,-0.0011,-0.1223,0.1221,difference unresolved,0
 fat_fraction,all,S1,34,0.0629,-0.041,0.1845,difference unresolved,0
 fat_fraction,all,S1_z,34,0.0486,-0.0646,0.1777,difference unresolved,0
 fat_fraction,all,S1_lfo,34,0.0706,-0.0371,0.197,difference unresolved,0
-fat_fraction,all,S1_lfo_z,34,0.0471,-0.0671,0.1774,difference unresolved,0
+fat_fraction,all,S1_lfo_z,34,0.0498,-0.0634,0.1813,difference unresolved,0
 fat_fraction,all,S3,34,0.0605,-0.0368,0.1806,difference unresolved,0
 fat_fraction,all,S3_z,34,0.0584,-0.0374,0.1757,difference unresolved,0
 fat_fraction,all,S3_lfo,34,0.0574,-0.0411,0.1768,difference unresolved,0
@@ -58,7 +58,7 @@ fat_fraction,all,S3_lfo_z,34,0.0553,-0.0421,0.1722,difference unresolved,0
 fat_fraction,without_low_mapping,S1,31,0.0593,-0.0469,0.185,difference unresolved,0
 fat_fraction,without_low_mapping,S1_z,31,0.0387,-0.0818,0.1724,difference unresolved,0
 fat_fraction,without_low_mapping,S1_lfo,31,0.0681,-0.0437,0.2,difference unresolved,0
-fat_fraction,without_low_mapping,S1_lfo_z,31,0.0375,-0.0851,0.1694,difference unresolved,0
+fat_fraction,without_low_mapping,S1_lfo_z,31,0.0407,-0.0801,0.1724,difference unresolved,0
 fat_fraction,without_low_mapping,S3,31,0.052,-0.0532,0.1756,difference unresolved,0
 fat_fraction,without_low_mapping,S3_z,31,0.0496,-0.053,0.1716,difference unresolved,0
 fat_fraction,without_low_mapping,S3_lfo,31,0.0488,-0.0574,0.1728,difference unresolved,0
@@ -66,7 +66,7 @@ fat_fraction,without_low_mapping,S3_lfo_z,31,0.0464,-0.0566,0.169,difference unr
 fat_fraction,without_32_0004,S1,33,0.0752,-0.0335,0.2016,difference unresolved,0
 fat_fraction,without_32_0004,S1_z,33,0.0602,-0.0567,0.1875,difference unresolved,0
 fat_fraction,without_32_0004,S1_lfo,33,0.0832,-0.0262,0.2117,difference unresolved,0
-fat_fraction,without_32_0004,S1_lfo_z,33,0.0585,-0.0601,0.1867,difference unresolved,0
+fat_fraction,without_32_0004,S1_lfo_z,33,0.0615,-0.0547,0.1901,difference unresolved,0
 fat_fraction,without_32_0004,S3,33,0.0652,-0.0406,0.1893,difference unresolved,0
 fat_fraction,without_32_0004,S3_z,33,0.0628,-0.0383,0.1864,difference unresolved,0
 fat_fraction,without_32_0004,S3_lfo,33,0.0618,-0.0437,0.1856,difference unresolved,0
@@ -74,7 +74,7 @@ fat_fraction,without_32_0004,S3_lfo_z,33,0.0595,-0.0426,0.1812,difference unreso
 pathology,all,S1,32,0.0354,-0.0624,0.159,difference unresolved,0
 pathology,all,S1_z,32,0.0415,-0.0517,0.1643,difference unresolved,0
 pathology,all,S1_lfo,32,0.0354,-0.0624,0.159,difference unresolved,0
-pathology,all,S1_lfo_z,32,0.0459,-0.0466,0.1692,difference unresolved,0
+pathology,all,S1_lfo_z,32,0.0503,-0.0421,0.1758,difference unresolved,0
 pathology,all,S3,32,0.0444,-0.0419,0.1643,difference unresolved,0
 pathology,all,S3_z,32,0.0426,-0.0384,0.1542,difference unresolved,0
 pathology,all,S3_lfo,32,0.0491,-0.0391,0.1673,difference unresolved,0
@@ -82,7 +82,7 @@ pathology,all,S3_lfo_z,32,0.0472,-0.0354,0.1607,difference unresolved,0
 pathology,without_low_mapping,S1,29,0.0349,-0.0603,0.1706,difference unresolved,0
 pathology,without_low_mapping,S1_z,29,0.0354,-0.0626,0.1771,difference unresolved,0
 pathology,without_low_mapping,S1_lfo,29,0.0349,-0.0603,0.1706,difference unresolved,0
-pathology,without_low_mapping,S1_lfo_z,29,0.0411,-0.0577,0.1829,difference unresolved,0
+pathology,without_low_mapping,S1_lfo_z,29,0.0469,-0.0523,0.192,difference unresolved,0
 pathology,without_low_mapping,S3,29,0.0354,-0.059,0.1795,difference unresolved,0
 pathology,without_low_mapping,S3_z,29,0.0327,-0.0561,0.1684,difference unresolved,0
 pathology,without_low_mapping,S3_lfo,29,0.0416,-0.0553,0.187,difference unresolved,0
@@ -90,7 +90,7 @@ pathology,without_low_mapping,S3_lfo_z,29,0.0389,-0.0536,0.1749,difference unres
 pathology,without_32_0004,S1,31,0.0349,-0.0721,0.1689,difference unresolved,0
 pathology,without_32_0004,S1_z,31,0.0412,-0.0555,0.1765,difference unresolved,0
 pathology,without_32_0004,S1_lfo,31,0.0349,-0.0721,0.1689,difference unresolved,0
-pathology,without_32_0004,S1_lfo_z,31,0.0461,-0.0509,0.18,difference unresolved,0
+pathology,without_32_0004,S1_lfo_z,31,0.051,-0.0468,0.1857,difference unresolved,0
 pathology,without_32_0004,S3,31,0.0477,-0.0421,0.1768,difference unresolved,0
 pathology,without_32_0004,S3_z,31,0.0461,-0.0389,0.1693,difference unresolved,0
 pathology,without_32_0004,S3_lfo,31,0.0524,-0.0394,0.1807,difference unresolved,0

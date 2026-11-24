@@ -1,5 +1,5 @@
 bootstrap: 5000 resamples, seed 20261124; descriptive, not adjusted for multiple testing
-scores: S1 142 features (markers removed 0), Spearman with GEO 0.9517, FSHD above the highest control 31/34; S1_lfo 138 features (markers removed 4), Spearman with GEO 0.9481, FSHD above the highest control 31/34; S3 54 features (markers removed 0), Spearman with GEO 0.9597, FSHD above the highest control 32/34; S3_lfo 50 features (markers removed 4), Spearman with GEO 0.9594, FSHD above the highest control 32/34
+scores: S1 142 features (markers removed 0), Spearman with GEO 0.9517, FSHD above the highest control 31/34; S1_lfo 137 features (markers removed 5), Spearman with GEO 0.9481, FSHD above the highest control 31/34; S3 54 features (markers removed 0), Spearman with GEO 0.9597, FSHD above the highest control 32/34; S3_lfo 50 features (markers removed 4), Spearman with GEO 0.9594, FSHD above the highest control 32/34
 headline, change in rho against the GEO score (all endpoint-complete FSHD):
   stir         S1_lfo  n 34  delta +0.013 [-0.115, +0.154]  difference unresolved
   stir         S3_lfo  n 34  delta +0.017 [-0.099, +0.146]  difference unresolved

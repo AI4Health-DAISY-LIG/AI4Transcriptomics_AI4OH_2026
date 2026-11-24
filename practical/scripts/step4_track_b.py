@@ -8,7 +8,8 @@ Not the reproduction (r/score_reproduction.R). Three parts, all descriptive:
                (results/bonus/translator/yao2014_matching.csv)
      S3        the authors' own mapping of Yao Table S3 (data/raw/authors/mk.rda, via the R step)
      *_lfo     the same without every feature of LEUTX, KHDC1L, PRAMEF2 and TRIM43 (the four
-               markers that define the published score); S1_lfo is the headline score
+               markers that define the published score), by deposited or source symbol;
+               S1_lfo is the headline score
      *_z       sensitivity: floored z-scores, each control SD floored at the median of the positive
              control SDs of the panel
    Each score is compared with the deposited GEO score: Spearman with MRI and pathology on the
@@ -183,7 +184,11 @@ def load() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 def scores(vst: pd.DataFrame, features: pd.DataFrame, control: pd.Series) -> tuple[pd.DataFrame, list[dict]]:
     centred = vst.sub(vst.loc[:, control].median(axis=1), axis=0)
     sd = vst.loc[:, control].std(axis=1, ddof=1)
-    markers = features["gene_name"].isin(config.BIOMARKERS)
+    # Marker features: the deposited symbol, or the symbol in Yao's source table (Yao lists
+    # KHDC1L under two IDs; ENSG00000243501 carries the deposited symbol RP11-257K9.8).
+    yao = pd.read_csv(BONUS / "yao2014_matching.csv")
+    source_markers = set(yao.loc[yao["source_gene_symbol"].isin(config.BIOMARKERS), "feature"])
+    markers = features["gene_name"].isin(config.BIOMARKERS) | features.index.isin(source_markers)
     out, info = {}, []
     for panel in ["S1", "S3"]:
         members = features.index[features[f"in_{panel}"]]

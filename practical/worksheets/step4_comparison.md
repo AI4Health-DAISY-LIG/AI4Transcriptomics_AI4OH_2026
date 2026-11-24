@@ -110,7 +110,7 @@ Then take one conclusion of the paper and say how far your analysis supports it.
 **Supported:**
 - 20/23 STIR-positive biopsies are in groups 2–4.
 - The STIR–score association is clearly present: ρ = 0.555, 95% bootstrap interval [0.27, 0.77], n = 34. It is weaker than the reported 0.61.
-- It does not depend on the four markers. A broad DUX4-target score (Yao 2014 Table S1, 138 genes without the four markers) gives ρ = 0.569. The change against the deposited score is +0.013 [−0.115, +0.154], so a weakening larger than about 0.12 is excluded.
+- A broad DUX4-target score without the four markers gives a similar positive association: Yao 2014 Table S1, 137 features after removing the five features carrying the four marker names, ρ = 0.569. The change against the deposited score is +0.013 [−0.115, +0.154]: the interval spans zero and allows a modest change in either direction, so the two scores are not shown to be equivalent.
 - The same holds without the three low-mapping libraries, and without 32-0004 (`track_b/delta_rho.csv`).
 
 **Limits:**

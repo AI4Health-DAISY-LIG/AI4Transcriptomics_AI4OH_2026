@@ -1,5 +1,5 @@
 score,features,markers_removed,floored_sd,sd_floor,fshd_above_highest_control,spearman_with_geo_fshd
 S1,142,0,106,0.36891,31,0.9517
-S1_lfo,138,4,102,0.36891,31,0.9481
+S1_lfo,137,5,101,0.36891,31,0.9481
 S3,54,0,41,0.31617,32,0.9597
 S3_lfo,50,4,38,0.31617,32,0.9594
