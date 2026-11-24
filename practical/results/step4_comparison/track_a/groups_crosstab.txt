@@ -1,0 +1,15 @@
+raw cut (rows) vs GEO group (columns; 0 = control):
+   geo
+raw  0  1  2  3  4
+  1  0  0  0 13  0
+  2  9 10  5  0  0
+  3  0  0  0  0  5
+  4  0  0  0  0  1
+
+recomputed group (rows) vs GEO group (columns; 0 = control):
+          geo
+recomputed  0  1  2  3  4
+         1  9 10  0  0  0
+         2  0  0  5  0  0
+         3  0  0  0 13  0
+         4  0  0  0  0  6

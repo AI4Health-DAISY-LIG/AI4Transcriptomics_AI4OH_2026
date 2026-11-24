@@ -1,0 +1,5 @@
+"group","score","n","mean","sd_population","sd_sample","paper_mean","paper_sd"
+"MRI_normal","score_geo",10,1.383412,2.45062903866252,2.58318982077414,1.4,2.4
+"STIR_positive","score_geo",23,7.6660247826087,5.72624415332626,5.85493986608579,7.7,5.7
+"MRI_normal","score_recomputed",10,1.38341142978097,2.45062811012849,2.58318884201333,1.4,2.4
+"STIR_positive","score_recomputed",23,7.66602448800644,5.72624624347326,5.85494200320824,7.7,5.7

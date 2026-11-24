@@ -234,6 +234,9 @@ mkdir -p data/raw/authors
 curl -fL -o data/raw/authors/sanitized.rlg.rda \
   https://raw.githubusercontent.com/TapscottLab/FSHD-Biopsy-RNA-seq/90cd343b3d60a696a35041a33015131ab9908164/data/sanitized.rlg.rda
 sha256sum data/raw/authors/sanitized.rlg.rda   # 70b1758029229dbb89c33f3f0abc2dea5165d43f61e0da102566994c2dc18239
+curl -fL -o data/raw/authors/mk.rda \
+  https://raw.githubusercontent.com/TapscottLab/FSHD-Biopsy-RNA-seq/90cd343b3d60a696a35041a33015131ab9908164/data/mk.rda
+sha256sum data/raw/authors/mk.rda              # d385c0cbf167fbe9d1da7f9c4465d3c9a98c7510e68f177ef855fbe69621f08b
 ```
 
 ```bash
@@ -245,6 +248,7 @@ uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA wit
 pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Step 3 Track A: the authors' DE, per contrast
 uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs supplementary tables S4-S10
 uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: independent DE, all planned fits
+pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R          # Step 4 Track A: the authors' score, groups, Figure 2, correlations
 # Bonus: first extract the reference-list snapshot into data/raw/bonus_lists/ (bonus_lists/README.md)
 uv run --locked python scripts/bonus_select_genes.py                          # Bonus: Translator genes, rule in worksheets/bonus_translator.md
 ```
