@@ -1,0 +1,11 @@
+Columns in counts file: 43
+GEO samples: 43
+
+[title] columns matched: 43
+[title] columns without a GEO record: 
+[title] GEO records without a column: 
+
+[char:sample_id] columns matched: 42
+[char:sample_id] columns without a GEO record: 01-0022-1
+[char:sample_id] GEO records without a column: 01-0022
+First columns: 01-0021, 01-0022-1, 01-0023, 01-0024, 01-0025, 01-0026, 01-0027, 01-0029
