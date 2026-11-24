@@ -22,7 +22,7 @@ Outputs (results/bonus/translator/):
                              the rank of every such gene in every run (no effect on the choice)
   selected_genes_across_fits.csv   the chosen genes in every Track B fit and contrast
   normalised_counts_selected.csv   their counts / full-cohort size factors, per biopsy
-  counts_<gene>.png                those counts by group, colour = batch, shape = sex
+  counts_<gene>.png                those counts by group, colour = batch, shape = inferred sex
   selection.txt              the chosen genes and their Translator question
 
 Run:  uv run --locked python scripts/bonus_select_genes.py
@@ -84,7 +84,7 @@ def flags(table: pd.DataFrame, lists: dict[str, set[str]]) -> pd.DataFrame:
     out["immediate_early"] = name.isin(lists["immediate_early"])
     out["composition"] = name.isin(lists["composition"]) | name.str.startswith("HLA-")
     # Yao 2014: the count features mapped in yao_mapping() (by Ensembl ID, or by a unique symbol
-    # for IDs absent from the deposited counts, e.g. DUXA and five PRAMEF genes).
+    # for IDs absent from the deposited counts: DUXA, PRAMEF5, PRAMEF13, PRAMEF18 and two RP11 clones).
     out["yao2014_target"] = table.index.isin(lists["yao2014_features"])
     for key in ["transcription_factor", "chromatin", "regeneration", "known_regulator"]:
         out[key] = name.isin(lists[key])
@@ -207,14 +207,15 @@ def across_fits(genes: dict[str, str]) -> pd.DataFrame:
 
 def count_plots(genes: dict[str, str]) -> pd.DataFrame:
     """Counts / full-cohort size factors (Track A) for the chosen genes, per biopsy, plotted by
-    group; colour = batch, marker = inferred sex, open markers = excluded from Track B."""
+    group; colour = batch, marker = inferred sex, open markers = excluded from the primary Track B
+    model. The median line of each group uses every biopsy shown."""
     counts = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
     size = pd.read_csv(config.RESULTS / "step3_de" / "track_a" / "size_factors.csv",
                        index_col="sample")["size_factor_deposited"]
     _, meta = de.sample_table()
     norm = counts.loc[list(genes.values())] / size[counts.columns]
     table = meta[["group", "batch", "sex", "site", "score"]].copy()
-    table["excluded_from_track_b"] = table.index.isin(config.TRACK_B_EXCLUDE)
+    table["excluded_from_primary_track_b"] = table.index.isin(config.TRACK_B_EXCLUDE)
     for label, gene in genes.items():
         table[label] = norm.loc[gene, table.index]
     order = [de.REF, "G1", "G2", "G3", "G4"]
@@ -226,7 +227,7 @@ def count_plots(genes: dict[str, str]) -> pd.DataFrame:
         for i, group in enumerate(order):
             sub = table[table["group"] == group]
             x = i + rng.uniform(-0.15, 0.15, len(sub))
-            for (batch, sex, excl), part in sub.groupby(["batch", "sex", "excluded_from_track_b"]):
+            for (batch, sex, excl), part in sub.groupby(["batch", "sex", "excluded_from_primary_track_b"]):
                 idx = sub.index.get_indexer(part.index)
                 ax.scatter(x[idx], part[label] + 1, marker="o" if sex == "female" else "^",
                            s=40, facecolors="none" if excl else colours[batch],
@@ -237,12 +238,12 @@ def count_plots(genes: dict[str, str]) -> pd.DataFrame:
         ax.set_ylabel(f"{label}, normalised count + 1")
         handles = [plt.Line2D([], [], marker="s", ls="", color=c, label=f"batch {b}")
                    for b, c in colours.items()]
-        handles += [plt.Line2D([], [], marker="o", ls="", mfc="none", mec="k", label="female"),
-                    plt.Line2D([], [], marker="^", ls="", mfc="none", mec="k", label="male"),
+        handles += [plt.Line2D([], [], marker="o", ls="", mfc="none", mec="k", label="female (inferred)"),
+                    plt.Line2D([], [], marker="^", ls="", mfc="none", mec="k", label="male (inferred)"),
                     plt.Line2D([], [], marker="o", ls="", mfc="none", mec="grey",
-                               label="open = excluded from Track B")]
+                               label="open = excluded from the primary Track B model")]
         ax.legend(handles=handles, fontsize=6, loc="upper left")
-        ax.set_title(f"{label}: median per group (line)")
+        ax.set_title(f"{label}: median of all biopsies shown, per group (line)")
         fig.tight_layout()
         fig.savefig(OUT / f"counts_{label}.png", dpi=150)
         plt.close(fig)

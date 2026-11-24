@@ -18,12 +18,12 @@ Design formula: `~ batch + sex + condition` (primary, FSHD vs control). The grou
 Covariates included and why, or why not:
 - **Batch (4 runs).** Library size and the instrument follow batch (`results/step2_qc/`). Batch explains 36% of PC1 and 33% of PC2 (`pca_associations.csv`).
 - **Sex, inferred from expression** (`results/step2_qc/sex_check.csv`). GEO gives no sex for the controls. Sex is imbalanced: controls are 6 women and 3 men, while G4 is 0 women and 5 men. Sex genes sit on PC2. The recorded GEO labels stay unchanged in the sample table, and X/Y genes are not interpreted.
-- **Site, sensitivity only** (`~ batch + sex + site + condition`). All 9 controls are from Rochester (banked biopsies), so the site effect is learned from FSHD biopsies alone. `32` = Seattle (authors' follow-up workbook); `01` = Rochester, inferred from that roster and the paper's 18 participants per site (`scripts/config.py`, `SITE_BY_PREFIX`).
-- **Library size and mapping rate are not covariates.** Size factors and batch absorb them. The three libraries below 90% mapping are excluded instead.
+- **Site, sensitivity only** (`~ batch + sex + site + condition`). All 9 controls are from Rochester (banked biopsies), so the site effect is learned from FSHD biopsies alone. Within Rochester, the controls still differ from the cases in how they were banked and handled. `32` = Seattle (authors' follow-up workbook); `01` = Rochester, inferred from that roster and the paper's 18 participants per site (`scripts/config.py`, `SITE_BY_PREFIX`).
+- **Library size and mapping rate are not covariates.** Size factors correct for sequencing depth, and batch captures average differences between runs; mapping differences specific to one library can remain. The three libraries below 90% mapping are therefore excluded (restored in `all43`).
 
 Covariates you wanted and could not include, and why:
 - **Age:** missing for every control in GEO.
-- **Biopsied muscle:** all controls are quadriceps, so it cannot be separated from condition.
+- **Biopsied muscle:** not in GEO (Table S1 only). All controls are quadriceps, as are 6 of the 34 FSHD biopsies (paper, Results). Muscle is therefore not fully confounded with condition, but it cannot be adjusted for in the full design; only a quadriceps-only comparison would separate the two, and it was not run.
 - **Relatedness of controls to patients:** not recorded in GEO.
 - **Tissue composition (fat, inflammation, blood):** deliberately not adjusted, because it is part of the disease.
 
@@ -45,8 +45,8 @@ Figures: MA plot, volcano plot and p-value histogram, in `results/step3_de/track
 
 Track A, the reproduction of the paper's tables, is exact (`results/step3_de/track_a/published_comparison.txt`):
 - S4 (the two G1 outliers) 5,680, S5 (G1) 393, S6 (G2) 303, S8 (G3) 816, S10 (G4) 2,826 genes at padj < 0.05 and |log2FC| ≥ 2;
-- the same genes as the published tables (0 missing, 0 extra), with shared log2FC within 0.0004;
-- the notebook-only contrasts also match: G1 without its two outliers 40, G2 active 540.
+- the same genes as the five published tables (0 missing, 0 extra); the largest absolute log2FC difference is 0.000408 (S4);
+- the two contrasts that exist only in the authors' notebook give the same numbers of genes as the notebook: G1 without its two outliers 40, G2 active 540. No published list exists to compare the genes themselves.
 
 Top 10 genes by adjusted p-value, primary FSHD vs Control (`primary/de_FSHD_vs_Control.csv.gz`):
 
@@ -68,16 +68,16 @@ These are extracellular matrix and fibrosis genes (COMP, TNMD, PRG4, CTGF), stre
 ## Checks
 
 - **Describe the p-value histogram: a flat part with a spike near 0, or another shape?**
-  A large spike in the first bin (about 4,200 genes with p < 0.02), then a flat part from about 0.3 to 1 (about 350–450 genes per bin). Between them, a gentle decline from 0.02 to about 0.3 shows many small effects (`primary/pvalue_histogram_FSHD_vs_Control.png`). There is no hump near 1 and no U shape, so the model does not look misspecified. The unadjusted model has the same shape with a higher spike, about 6,500 genes (`ladder_none/`).
+  A large spike in the first bin (about 4,200 genes with p < 0.02), then a flat part from about 0.3 to 1 (about 350–450 genes per bin). Between them, a gradual decline from 0.02 to about 0.3 (`primary/pvalue_histogram_FSHD_vs_Control.png`). There is no hump near 1 and no U shape, two common signs of a misspecified model; the histogram alone does not show that the model is adequate. The unadjusted model has the same shape with a higher spike, about 6,500 genes (`ladder_none/`).
 
 - **Run the analysis with and without batch in the design. Report how many genes are significant in both, and in one only.**
-  On the same 39 biopsies, `~ condition` gives 5,509 genes and `~ batch + condition` gives 4,315. That is 4,166 genes in both, 1,343 only without batch and 149 only with batch. Adding batch removes about a quarter of the calls, but the effects of the genes kept are stable. Of the 2,577 primary genes, 2,560 keep their direction and at least half their log2FC without any adjustment, and 2,565 without sex (`sensitivity_comparison.csv`, `robustness.csv.gz`). Adding sex brings the count down to 2,577. The full ladder of models and the other sensitivity runs (site, all 43, 32-0004 restored, 32-0016 omitted, Rochester only) are in `sensitivity_comparison.csv`. Effects hold in 2,416–2,577 of the 2,577 genes; site mostly widens the standard errors (median SE ratio 1.15).
+  On the same 39 biopsies, `~ condition` gives 5,509 genes and `~ batch + condition` gives 4,315. That is 4,166 genes in both, 1,343 only without batch and 149 only with batch (`batch_overlap.csv`). Adding batch removes about a quarter of the calls, but the effects of the genes kept are stable. Of the 2,577 primary genes, 2,560 keep their direction and at least half their log2FC without any adjustment, and 2,565 without sex (`sensitivity_comparison.csv`, `robustness.csv.gz`). Adding sex brings the count down to 2,577. The full ladder of models and the other sensitivity runs (site, all 43, 32-0004 restored, 32-0016 omitted, Rochester only) are in `sensitivity_comparison.csv`. Effects hold in 2,416–2,577 of the 2,577 genes; site mostly widens the standard errors (median SE ratio 1.15).
 
 - **Group 1 biopsies show almost no expression of the biomarkers. Count the genes that differ between group 1 and the controls, and list the explanations you can think of other than the disease.**
   Track B, `~ batch + sex + group`: 1,002 genes (866 up, 136 down); 1,945 without batch and sex (`groups_none`). Track A, the paper's design: 393 at |log2FC| ≥ 2, but only 40 once the two G1 outliers, 01-0037 and 32-0016, are removed (`track_a/summary.txt`). Explanations other than the disease:
-  - **Two outlier libraries.** 01-0037 maps at 76.5%; 32-0016 is a fat-rich biopsy. They carry most of the paper's G1 signal.
-  - **How the biopsies were collected and stored.** The controls are banked Rochester biopsies, so needle, handling and ischaemia time may differ; the immediate early genes are a sign of this. Site and banking are confounded with condition.
-  - **Muscle and age.** All controls are quadriceps and younger (mean 35 vs 53.6 years), while G1 biopsies come from several muscles.
+  - **Two outlier libraries.** 01-0037 maps at 76.5%; 32-0016 is a fat-rich biopsy. The number of G1 calls depends heavily on these two (393 with them, 40 without); that count does not measure how much biological signal they carry.
+  - **How the biopsies were collected and stored.** The controls are banked Rochester biopsies, so needle, handling and ischaemia time may differ. The raised immediate early genes (FOS, FOSB) are compatible with a handling difference of unknown size. Banking is confounded with condition, since every control is banked; site only partly, since Rochester has both cases and controls.
+  - **Muscle and age.** All controls are quadriceps, while the G1 biopsies come from several muscles. The controls are younger: mean 35 years (paper, Methods; not in GEO), against 54.7 for the 10 published G1 biopsies and 54.0 for the 9 G1 biopsies of Track B.
   - **Sex and batch imbalance**, adjusted only in Track B.
   - **Relatedness:** controls are spouses, parents or siblings of patients.
   - **Tissue composition** (fat, fibrous tissue, immune cells): it changes bulk expression whatever its cause.
@@ -93,7 +93,7 @@ These are extracellular matrix and fibrosis genes (COMP, TNMD, PRG4, CTGF), stre
   - exclude 32-0004, a provenance flag, not a proven swap;
   - keep the biological extreme 32-0016.
 
-  Each exclusion is undone in a sensitivity run: `all43`, `restore_32_0004` and `omit_32_0016`.
+  `all43` restores all four excluded biopsies together, and `restore_32_0004` restores 32-0004 alone. `omit_32_0016` tests the opposite case: removing a biopsy kept in the primary model.
 - **Primary design `~ batch + sex + condition` with inferred sex.** Site is a sensitivity only, because all controls come from one site.
 - **Robustness rule:** same sign and at least 50% of the primary |log2FC| in each adjusted sensitivity. Significance is required in the primary only, because smaller fits lose power. Result: 2,408 robust genes over the five planned sensitivities (2,319 on chr1–22), and 2,385 with Rochester (2,297 on chr1–22).
 - **Rochester-only fit added**, to remove the site difference between cases and controls. Its effects hold for 2,436 of 2,577 genes. They do not depend on Cook's replacement: 2,440 without it (`rochester_norefit`).

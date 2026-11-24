@@ -73,8 +73,8 @@ def main() -> None:
             row[f"{stat}_max_abs_diff"] = float((a - b).abs().max())
         cols = sample_columns(published)
         pub_norm = published.loc[shared, list(cols)].astype(float).rename(columns=cols)
-        ours_norm = normalised.loc[shared, pub_norm.columns]
-        rel = ((pub_norm - ours_norm).abs() / ours_norm.where(ours_norm > 0)).stack()
+        recomputed_norm = normalised.loc[shared, pub_norm.columns]
+        rel = ((pub_norm - recomputed_norm).abs() / recomputed_norm.where(recomputed_norm > 0)).stack()
         row["norm_samples"] = len(cols)
         row["norm_max_rel_diff"] = float(rel.max())
         rows.append(row)

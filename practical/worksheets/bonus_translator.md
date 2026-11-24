@@ -37,7 +37,7 @@ This is exploratory, for the bonus. No comparison of biopsies taken at a single 
   - every `HLA-` symbol;
   - adipocyte genes: ADIPOQ, LEP, PLIN1, PLIN4, CIDEA, CIDEC, FABP4;
   - neutrophil genes: S100A8, S100A9, S100A12, FCGR3B, CXCR1, CXCR2, CSF3R, ELANE, MPO, CAMP, LTF;
-  - immunoglobulins are already excluded as not protein-coding.
+  - features with a GENCODE immunoglobulin gene type are excluded by the protein-coding filter (`gene_type == "protein_coding"`).
 - **View B pick only:** the 213 robust DUX4-induced genes of Yao et al. 2014, Supplementary Table S1. Each row is mapped to at most one count feature:
   - by Ensembl ID without version (136 rows);
   - otherwise by symbol, only if the symbol names exactly one feature not already assigned (6 rows, including DUXA and three PRAMEF genes). Ambiguous symbols are dropped, not chosen.

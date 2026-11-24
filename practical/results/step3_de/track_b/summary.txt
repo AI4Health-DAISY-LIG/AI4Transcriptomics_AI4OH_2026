@@ -71,4 +71,5 @@ paired comparison with primary (genes significant in primary for ratios):
         rochester        19497         1450  1151          1426       299                      0.9032             0.956            1.102
       ladder_none        22172         5509  2445           132      3064                      0.9501             1.128            0.973
 rochester_norefit        19444         1445  1149          1428       296                      0.9070             0.957            1.103
+batch overlap (padj < 0.05, ~ condition vs ~ batch + condition): without_batch 5509, with_batch 4315, both 4166, only_without_batch 1343, only_with_batch 149
 score (view B): 144 genes with padj < 0.05; robust 141; robust with |log2FC across the span| >= 1 140; holds without sex 143, all 34 142, without 32-0006 144, without 01-0025 144, same sign in G4 vs G1 144

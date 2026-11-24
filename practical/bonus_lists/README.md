@@ -7,7 +7,7 @@ Snapshot prepared 24 November 2026 for the AI for Omics transcriptomics practica
 **Getting them again.**
 - Download the three original files from the URLs in `sources.tsv`: the Lambert TF list, EpiFactors and the Yao workbook.
 - Rebuild the three extracts as described in the `acquisition_and_scope` column: the Tullai ESBL table, the QuickGO human annotations, and the two-column Yao TSV.
-- Then check them from `practical/data/raw/bonus_lists/` with `sha256sum -c SHA256SUMS`.
+- Then check them against the tracked manifest. From `practical/`: `(cd data/raw/bonus_lists && sha256sum -c ../../../bonus_lists/SHA256SUMS)`.
 
 All five reference datasets are included. Yao Supplementary Table S1 is provided as the original workbook and an extracted two-column TSV.
 

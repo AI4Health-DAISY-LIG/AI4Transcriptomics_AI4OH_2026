@@ -59,10 +59,14 @@ Outputs (results/step3_de/track_b/):
   robustness.csv.gz, sensitive_to_32_0016.csv, sensitivity_comparison.csv, preflight.txt,
   score_robustness.csv.gz (view B: same sign and >= 50% of the slope in score_nosex,
   score_all34 and both omissions; same sign in G4 vs G1), summary.txt
+  batch_overlap.csv               genes at padj < 0.05 with and without batch (ladder_none vs
+                                  ladder_batch): both, only one, and the totals
 
 Run:  uv run --locked python scripts/step3_differential_expression.py              (all fits)
       uv run --locked python scripts/step3_differential_expression.py --fit primary (one fit)
       uv run --locked python scripts/step3_differential_expression.py --preflight   (no fit)
+      uv run --locked python scripts/step3_differential_expression.py --no-fit      (summaries
+                                                    and comparisons from the saved fits only)
 """
 
 from __future__ import annotations
@@ -84,6 +88,7 @@ import config  # noqa: E402
 
 OUT = config.RESULTS / "step3_de" / "track_b"
 ALPHA = 0.05
+GZIP = {"method": "gzip", "mtime": 0}  # byte-stable gzip output on reruns
 REF = config.REFERENCE_LEVEL
 MAIN = "~ batch + sex + condition"
 SCORE = "~ batch + sex + score"
@@ -338,7 +343,8 @@ def robustness() -> list[str]:
     table["robust_with_rochester"] = table["robust_planned"] & table["holds_rochester"]
     table["autosomal"] = table["chromosome"].isin(AUTOSOMES)
     table["biomarker"] = table["gene_name"].isin(config.BIOMARKERS)
-    table.to_csv(OUT / "robustness.csv.gz", float_format="%.6g", index_label="gene_id")
+    table.to_csv(OUT / "robustness.csv.gz", float_format="%.6g", index_label="gene_id",
+                 compression=GZIP)
 
     omit = tables["omit_32_0016"]
     only = omit.index[(omit["padj"] < ALPHA) & ~(primary["padj"].reindex(omit.index) < ALPHA)]
@@ -388,6 +394,23 @@ def robustness() -> list[str]:
             comparison.to_string(index=False)]
 
 
+def batch_overlap() -> list[str]:
+    """Worksheet check: genes at padj < 0.05 without batch (ladder_none, ~ condition) and with
+    batch (ladder_batch, ~ batch + condition), on the same 39 biopsies."""
+    paths = {f: OUT / f / TABLE for f in ["ladder_none", "ladder_batch"]}
+    missing = [f for f, path in paths.items() if not path.exists()]
+    if missing:
+        return [f"batch overlap: skipped, not run yet: {', '.join(missing)}"]
+    sig = {f: set(pd.read_csv(path, index_col=0).query("padj < @ALPHA").index)
+           for f, path in paths.items()}
+    none, batch = sig["ladder_none"], sig["ladder_batch"]
+    row = {"without_batch": len(none), "with_batch": len(batch), "both": len(none & batch),
+           "only_without_batch": len(none - batch), "only_with_batch": len(batch - none)}
+    pd.DataFrame([row]).to_csv(OUT / "batch_overlap.csv", index=False)
+    return ["batch overlap (padj < 0.05, ~ condition vs ~ batch + condition): "
+            + ", ".join(f"{k} {v}" for k, v in row.items())]
+
+
 def score_robustness() -> list[str]:
     """View B: genes with padj < 0.05 for the score slope, checked in the four score
     sensitivities (same sign, >= 50% of the slope) and against G4 vs G1 (same sign)."""
@@ -411,7 +434,8 @@ def score_robustness() -> list[str]:
     table["holds_g4_vs_g1"] = g4.notna() & (np.sign(g4) == np.sign(sig["log2FoldChange"]))
     table["robust_b"] = table[[c for c in table.columns if c.startswith("holds_")]].all(axis=1)
     table["autosomal"] = table["chromosome"].isin(AUTOSOMES)
-    table.to_csv(OUT / "score_robustness.csv.gz", float_format="%.6g", index_label="gene_id")
+    table.to_csv(OUT / "score_robustness.csv.gz", float_format="%.6g", index_label="gene_id",
+                 compression=GZIP)
     big = table["lfc_span"].abs() >= 1
     return [f"score (view B): {len(table)} genes with padj < {ALPHA}; robust "
             f"{int(table['robust_b'].sum())}; robust with |log2FC across the span| >= 1 "
@@ -427,6 +451,8 @@ def main() -> None:
     parser.add_argument("--fit", action="append", choices=list(FITS),
                         help="run only this fit (repeatable); default: all fits")
     parser.add_argument("--preflight", action="store_true", help="checks only, no fit")
+    parser.add_argument("--no-fit", action="store_true",
+                        help="rebuild summaries and comparisons from the saved fits only")
     args = parser.parse_args()
     fits = args.fit or list(FITS)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -437,11 +463,11 @@ def main() -> None:
     if args.preflight:
         return
     annot = gene_annotation()
-    for name in fits:
+    for name in ([] if args.no_fit else fits):
         run_fit(name, x, meta, annot)
     lines = [(OUT / f / "summary.txt").read_text(encoding="utf-8").rstrip()
              for f in FITS if (OUT / f / "summary.txt").exists()]
-    robustness_lines = robustness() + score_robustness()
+    robustness_lines = robustness() + batch_overlap() + score_robustness()
     lines += robustness_lines
     (OUT / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(robustness_lines))

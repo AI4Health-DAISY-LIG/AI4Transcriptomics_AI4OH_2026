@@ -1,4 +1,4 @@
-sample,group,batch,sex,site,score,excluded_from_track_b,RUNX1,SOX11
+sample,group,batch,sex,site,score,excluded_from_primary_track_b,RUNX1,SOX11
 01-0021,G3,IV,female,Rochester,6.79192,False,124.126,30.6064
 01-0022-1,G3,III,male,Rochester,6.4209,False,351.019,20.3686
 01-0023,G1,III,female,Rochester,0.26536,False,101.945,4.31971
