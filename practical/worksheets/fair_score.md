@@ -24,7 +24,7 @@ evidence, so do not round up.
 | R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2 |in "sample_table.csv" Column source_name_ch1|
 | R5 | The deposited files and the paper agree on the number of samples |2 |34 patients and 9 controls in deposited files, similar to paper |
 | R6 | A reader can tell which deposited file feeds which figure of the paper |1 | Not explicitly stated by the authors in the GEO series or the paper; in GEO https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE115650 we have statements such as Raw count matrices may be suitable for input into differential expression analysis tools. GSE115650_raw_counts_GRCh38.p13_NCBI.tsv.gz|
-| **Total** |26 | **/30** | |
+| **Total** || **26/30** | |
 
 ## What blocks the reproduction
 
@@ -32,4 +32,6 @@ List here what you could not find in GEO or in the paper and needed to decide
 for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
--
+-Although data are available but I didn't find any statement from the authors' to the licence to legally reuse the data.
+-I didn't find some technical and biological variables that could be used as covariates such as FSHD type, age, gender of controls, biopsy needle type, 
+
