@@ -35,7 +35,8 @@ Run, from practical/:
   uv run --locked python scripts/step4_track_b.py
 Outputs (results/step4_comparison/track_b/):
   panel_genes.csv, scores.csv, panels.csv, score_correlations.csv, delta_rho.csv,
-  tissue_state.csv, postn_correlations.csv, scores_by_batch.png, postn_pairs.png, summary.txt
+  tissue_state.csv, postn_correlations.csv, scores_by_batch.png, postn_pairs.png,
+  stir_vs_scores.png, summary.txt
 """
 
 from __future__ import annotations
@@ -341,6 +342,27 @@ def main() -> None:
     ax.legend(fontsize=7)
     fig.tight_layout()
     fig.savefig(OUT / "scores_by_batch.png", dpi=150)
+    plt.close(fig)
+
+    # STIR rating against the deposited and the headline score, coloured by batch; ratings are
+    # tied, so the points get a small fixed horizontal offset.
+    stir = pd.to_numeric(meta.loc[fshd, ENDPOINTS["stir"]], errors="coerce")
+    ok = stir.notna()
+    offset = np.random.default_rng(0).uniform(-0.15, 0.15, int(ok.sum()))
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+    for ax, (col, name) in zip(axes, [("geo", "deposited GEO score"),
+                                      ("S1_lfo", "S1 score without the four markers")]):
+        for batch in sorted(meta["batch"].unique()):
+            sel = (meta.loc[fshd_ids[ok.to_numpy()], "batch"] == batch).to_numpy()
+            ax.scatter(stir[ok].to_numpy()[sel] + offset[sel],
+                       table.loc[fshd_ids[ok.to_numpy()], col].to_numpy()[sel], s=18,
+                       label=f"batch {batch}")
+        ax.set_xlabel("STIR rating (whole muscle)")
+        ax.set_ylabel(name)
+        ax.set_title(f"{name}, {int(ok.sum())} FSHD biopsies", fontsize=9)
+    axes[0].legend(fontsize=7)
+    fig.tight_layout()
+    fig.savefig(OUT / "stir_vs_scores.png", dpi=150)
     plt.close(fig)
 
     head = delta[(delta["subset"] == "all") & (delta["score"].isin(["S1_lfo", "S3_lfo"]))]

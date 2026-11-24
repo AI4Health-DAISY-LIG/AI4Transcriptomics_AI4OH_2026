@@ -143,7 +143,8 @@ def scatter_by(pcs: pd.DataFrame, values: pd.Series, conditions: pd.Series, name
         handles = condition_handles()
         legend_title = "condition"
         if constant and name in CONSTANT_NOTE:
-            title += "\n" + CONSTANT_NOTE[name].format(n=len(pcs), value=present[0])
+            title = title.replace(f"colour = {name}", "colour = condition") + "\n" + \
+                CONSTANT_NOTE[name].format(n=len(pcs), value=present[0])
     elif continuous:
         vmin, vmax = (limits or {}).get(name, (numeric.min(), numeric.max()))
         sc = None
@@ -246,7 +247,9 @@ def colour_limits(variables: dict[str, pd.Series]) -> dict:
             continue
         if name in BINNED:
             high = numeric[numeric >= BINNED[name]]
-            edges = [float(numeric.min()), BINNED[name]] + \
+            # The low bin is strictly below the QC threshold (a library at exactly 90% is kept
+            # by the QC rule, so it goes in the next bin): its upper edge sits just below 90.
+            edges = [float(numeric.min()), float(np.nextafter(BINNED[name], -np.inf))] + \
                 [round(float(q), 2) for q in high.quantile([0.25, 0.5, 0.75])] + \
                 [float(numeric.max())]
             bins = pd.cut(numeric, edges, include_lowest=True)

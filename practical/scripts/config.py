@@ -9,7 +9,8 @@ RAW = ROOT / "data" / "raw"
 PROCESSED = ROOT / "data" / "processed"
 RESULTS = ROOT / "results"
 
-# Series-level supplementary files on GEO. Only the raw gene counts feed steps 2 and 3.
+# Series-level supplementary files on GEO. The raw gene counts are the input of the Python
+# steps 2 and 3; the R object feeds the replay and reproduction scripts in r/.
 COUNTS_FILE = "GSE115650_biopsy_genecounts.csv.gz"          # raw counts, 1.6 MB
 OPTIONAL_FILES = [
     "GSE115650_biopsy_FPKM.csv.gz",                          # FPKM, 8.2 MB (not for DESeq2)
@@ -17,7 +18,8 @@ OPTIONAL_FILES = [
     "GSE115650_biopsy.dds.rda.gz",                           # R object (DESeqDataSet), 14.9 MB, needs R
 ]
 
-# The counts use GENCODE v24 gene identifiers and no file on GEO gives the gene symbols.
+# The counts use GENCODE v24 gene identifiers and no CSV file on GEO gives the gene symbols
+# (the R object carries them).
 # Step 1 downloads the annotation the authors name (38.7 MB, one request) and extracts
 # one row per gene into data/processed/gene_names.csv.
 ANNOTATION_FILE = "gencode.v24.annotation.gtf.gz"

@@ -24,9 +24,9 @@ deposited_group
 [track_a/S10_G4] claimed genes: 18  found in my results: 18
 [track_a/S10_G4] significant in my results (padj < 0.05): 18
 [track_a/S10_G4] same direction as the paper: 18
-[track_a/S4_G1_outliers] claimed genes: 18  found in my results: 18
-[track_a/S4_G1_outliers] significant in my results (padj < 0.05): 17
-[track_a/S4_G1_outliers] same direction as the paper: 18
+[track_a/S4_G1_outliers] claimed genes: 20  found in my results: 20
+[track_a/S4_G1_outliers] significant in my results (padj < 0.05): 19
+[track_a/S4_G1_outliers] same direction as the paper: 20
 [track_a/S6_G2] claimed genes: 18  found in my results: 18
 [track_a/S6_G2] significant in my results (padj < 0.05): 17
 [track_a/S6_G2] same direction as the paper: 18

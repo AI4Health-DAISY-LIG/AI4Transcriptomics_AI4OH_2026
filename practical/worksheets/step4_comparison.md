@@ -25,7 +25,7 @@ PyDESeq2 has no rlog. Substitute: a blind PyDESeq2 VST (design `~1`), fitted on 
 | Item | Paper or GEO | Me | Agree? |
 |------|--------------|-----|--------|
 | Biopsies in groups 1, 2, 3 and 4 | Paper and GEO: 10, 5, 13, 6 | Track A: 10, 5, 13, 6, the same biopsies as GEO, and the 9 controls in group 1 (`track_a/groups_crosstab.txt`). The raw tree cut is 24/13/5/1 with the low-score cluster first (13/24/5/1 in cutree's numbering; controls included); the authors' relabelling, applied as written, gives the published groups. Clustering the Python VST values instead puts 3 group 3 biopsies with the controls (`score_clusters.txt`) | Yes (Track A); the clusters depend on the transformation |
-| My score against the deposited score (Spearman) | GEO `rnaseq.score`, 34 FSHD | Python VST: 0.996; log2(normalised + 0.5): 0.994 (8 and 11 discordant biopsy pairs out of 561); values differ by up to 5.1 (VST and rlog scales differ). Track A: ρ = 1, max difference 4.7e-05 | Ranks yes; values only in Track A |
+| My score against the deposited score (Spearman) | GEO `rnaseq.score`, 34 FSHD | Python VST: 0.996; log2(normalised + 0.5): 0.994 (8 and 11 discordant biopsy pairs out of 561); values differ by up to 5.1 (VST and rlog scales differ). Track A: ρ = 1, max difference 4.7e-05 | Ranks: exactly in Track A, closely in Python (8 and 11 reversed pairs out of 561); values only in Track A |
 | Biomarker expression in the controls | Results: zero or < 0.1 RPKM | Max FPKM in the 9 controls: PRAMEF2 0.000, TRIM43 0.020, KHDC1L 0.019, LEUTX 0.016; 0 of 36 values ≥ 0.1 (`track_a/controls_fpkm.csv`) | Yes |
 | STIR-positive biopsies that express DUX4 targets | 20/23 (87%); 91% without 32-0016 | 20/23 and 20/22 with the paper's definition (groups 2–4); 15/23 if "expressing" means at least one marker above relative rlog 2 (Figure 1 dot size) | Yes, with the paper's definition |
 | Mean score in MRI-normal and in STIR-positive muscles | 1.4 (SD 2.4) and 7.7 (SD 5.7), P < 0.001, test not named | 1.383 and 7.666 with the GEO convention (the sum minus its cohort minimum); 1.159 and 7.441 before that shift (n = 10 and 23; one biopsy, 01-0022-1, is STIR 0 but T1 3, in neither group). SD: population 2.45 and 5.73, sample 2.58 and 5.85 (`track_a/figure2.csv`). Two-sided candidate tests: Welch p = 0.00017, exact Wilcoxon rank-sum p = 0.00064 (no ties), normal approximation p = 0.0012 | Means yes, after the GEO shift; SDs partly (5.7 only); the test cannot be identified |
@@ -74,7 +74,7 @@ The paper compares each RNA group with the nine controls: the two group 1 outlie
 | Design and covariates | `~ pheno_type`, fitted on each subset, no covariates | Track A: the same. Track B: `~ batch + sex + group`, all groups in one model | Yes (Track A) |
 | DUX4 target genes that differ in group 3 | 47 of 54 | 47 of 54 (Track A, `track_a/dux4_targets_de.csv`). The authors' 55 candidates include TRIM43CP, absent from the deposited counts, hence 54 | Yes |
 | DUX4 target genes that differ in group 4 | 54 of 54 | 54 of 54 | Yes |
-| Other genes the paper highlights, and their direction | 18 genes of Figures 4–5, up in the outliers and progressively in groups 2–4 | All 18 are up in every contrast. With the paper's joint criterion (padj < 0.05 and |log2FC| ≥ 2): Track A 17, 10, 15 and 18 of 18 in S4, S6, S8 and S10, the same genes as the published tables (CTLA4 is not in S4); Track B 8, 7 and 15 in groups 2, 3 and 4. With padj < 0.05 alone: Track A 17, 17, 18, 18; Track B 10, 11, 15 (`claims_vs_results_*.csv`). Group medians on the figures' scale, log10(FPKM + 0.5): all 18 above the controls in groups 2–4, but only 10/18 ordered G2 ≤ G3 ≤ G4; the rise is mostly at group 4 (`figure_genes_group_medians.csv`); the captions describe a tendency. The paper also names MYF5 and MYOD as decreased in some FSHD biopsies: in S4 (the outliers), MYF5 −9.50 and MYOD1 −10.96 | Direction yes; nondecreasing medians for 10/18 |
+| Other genes the paper highlights, and their direction | 18 genes of Figures 4–5, up in the outliers and progressively in groups 2–4 | All 18 are up in every contrast. With the paper's joint criterion (padj < 0.05 and absolute log2FC ≥ 2): Track A 17, 10, 15 and 18 of 18 in S4, S6, S8 and S10, the same genes as the published tables (CTLA4 is not in S4); Track B 8, 7 and 15 in groups 2, 3 and 4. With padj < 0.05 alone: Track A 17, 17, 18, 18; Track B 10, 11, 15 (`claims_vs_results_*.csv`). Group medians on the figures' scale, log10(FPKM + 0.5): all 18 above the controls in groups 2–4, but only 10/18 ordered G2 ≤ G3 ≤ G4; the rise is mostly at group 4 (`figure_genes_group_medians.csv`); the captions describe a tendency. The paper also names MYF5 and MYOD as decreased in some FSHD biopsies: in S4 (the outliers), MYF5 −9.50 and MYOD1 −10.96 | Direction yes; nondecreasing medians for 10/18 |
 
 ## What is missing to reproduce the paper
 
@@ -89,14 +89,16 @@ List each missing element and classify it:
 - **Figure 2 SD for MRI-normal muscles:** 2.4, against 2.45 (population) or 2.58 (sample).
 - **The Methods attribute the four groups to hierarchical clustering**, and the Results mention a further analysis of normalised read counts. The clustering alone gives other groups (raw cut 24/13/5/1, low-score cluster first); the published groups need the split of rows 20–24 and the merge of two clusters found in the code, which the paper does not describe.
 
+**Not stated in the paper, recovered from the authors' code**
+- The GEO score convention (the sum minus its cohort minimum), the rlog details (four-gene subset, local fit), and the split and merge rules of the groups. Applied as written, they reproduce the deposited score and groups.
+
 **Not stated anywhere, decided by me**
-- **The test behind Figure 2's P < 0.001.** I report Welch's t-test and the exact Wilcoxon rank-sum test, both two-sided and both below 0.001, and the normal approximation (0.0012); none is confirmed.
-- **Details supplied by the authors' code, not the paper:** the GEO score convention (the sum minus its cohort minimum), the rlog details (four-gene subset, local fit), and the split and merge rules of the groups.
+- **The test behind Figure 2's P < 0.001.** Unresolved: I report Welch's t-test and the exact Wilcoxon rank-sum test, both two-sided and both below 0.001, and the normal approximation (0.0012); none is confirmed.
 - **Which biopsies and which deposited fat-fraction values entered each published correlation.** The paper states whole-muscle measures (and groups 2–4 for the 20/23); GEO STIR and T1 match the whole-muscle ratings, the deposited fat fraction's level is unclear.
-- **Package releases.** The paper gives R 3.4 and Bioconductor 3.5, not the DESeq2 or GOseq releases. Track A runs DESeq2 1.50.2 and reproduces the score to 5e-05 and every DE list exactly.
+- **Package releases.** The paper gives R 3.4 and Bioconductor 3.5; the authors' rendered DE notebook records R 3.4.3 and DESeq2 1.16.1 (`about_cluster_deseq.nb.html`, session information). Track A runs DESeq2 1.50.2 and reproduces the score to 5e-05 and the membership of every published DE list exactly.
 
 **Stated and matching, but I could not apply it**
-- **rlog in Python.** PyDESeq2 has none; the VST substitute preserves the ranks (ρ = 0.996) but not the values, and changes the clusters. Track A applies rlog in R.
+- **rlog in Python.** PyDESeq2 has none; the VST substitute closely preserves the ranks (ρ = 0.996; 8 of 561 biopsy pairs reversed) but not the values, and changes the clusters. Track A applies rlog in R.
 
 ## What the design allows the paper to claim
 
@@ -140,11 +142,11 @@ Three questions at most.
 ## Choices I made and would defend
 
 - **Two tracks.** Track A, with the authors' object and code, reproduces the score (to 5e-05), the groups, the 20/23 and the DUX4-target counts exactly, and the Figure 2 means after the GEO shift. The MRI-normal SD and several correlations differ from the publication, and the Figure 2 test remains unidentified. Track B uses independent choices.
-- **Python substitute for rlog:** a blind, full-matrix VST, with the authors' own `log2(n + 0.5)` alternative as a check. Both preserve the ranks (0.996 and 0.994).
+- **Python substitute for rlog:** a blind, full-matrix VST, with the authors' own `log2(n + 0.5)` alternative as a check. Both closely preserve the ranks (0.996 and 0.994; 8 and 11 of 561 pairs reversed).
 - **Candidate tests reported, none chosen.** The paper does not name its test, and the threshold P < 0.001 does not discriminate.
 - **The paper's definition first, mine next to it**: groups 2–4 for "expressing DUX4 targets", with the per-marker count beside it.
 - **Alternative DUX4 score (Track B).**
-  - Construction: the mean of control-median-centred VST values over the Yao 2014 Table S1 genes, without the four markers. The authors' 54 candidates (their mapping of Yao's Table S3, 50 without the markers) form a second panel, and floored z-scores a sensitivity.
+  - Construction: the mean of control-median-centred VST values over the Yao 2014 Table S1 genes, without the four markers. The authors' 54 candidates (their mapping of Yao's Table S3, 50 without the markers) form a second panel, and floored z-scores a sensitivity. The secondary panel keeps the authors' mapping because it is their own candidate list, the one behind the 47/54 and 54/54 counts; mapping Yao's 67 S3 rows directly with the S1 rule would give a slightly larger panel, which was not run. STIR ρ: 0.569 (S1 without the markers), 0.572 (S3 without the markers), against 0.555 for the deposited score. The STIR scatterplot is in `track_b/stir_vs_scores.png`.
   - Comparison: against the deposited score as baseline, with paired bootstrap intervals (5,000 resamples, seed 20261124) and fixed wording (weaker, stronger, difference unresolved) instead of a binary rule.
   - Result: every change is "difference unresolved" and small (`track_b/delta_rho.csv`, `panels.csv`).
 - **Tissue state of the Translator panel (Track B, exploratory).** The 30 panel genes, plus POSTN chosen from the literature, are correlated with MRI and pathology, with and without adjustment for the DUX4 score. The panel's two groups were fixed from Step 3 before this analysis (`track_b/panel_genes.csv`, `tissue_state.csv`).

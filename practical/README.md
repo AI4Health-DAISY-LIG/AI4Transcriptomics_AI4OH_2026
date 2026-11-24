@@ -36,7 +36,8 @@ You hand in two things:
 
 The raw count file is your input. The FPKM and normalised files let you check
 your own normalisation against the authors'. Step 1 also downloads the GENCODE
-v24 annotation (38.7 MB), because no file on GEO gives the gene symbols.
+v24 annotation (38.7 MB), because no CSV file on GEO gives the gene symbols (the GEO R
+object carries them).
 
 ## The paper
 
@@ -219,7 +220,9 @@ uv run python scripts/step3_differential_expression.py
 uv run python scripts/step4_compare_with_paper.py
 ```
 
-The four scripts run as they are, in a few minutes on a laptop. Commit your
+These four commands are the original course workflow, kept for reference. In this fork,
+Step 2 also needs inputs written by R, so follow
+[Running this fork's analysis](#running-this-forks-analysis) instead. Commit your
 scripts, `results/` and `worksheets/` each time you stop working.
 
 ### Running this fork's analysis
@@ -265,6 +268,7 @@ uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA wit
 pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Track A: the authors' DE, per contrast
 uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs Tables S4-S10 (needs doc/supp)
 uv run --locked python scripts/step3_differential_expression.py               # Track B: independent DE, all planned fits
+uv run --locked python scripts/step3_differential_expression.py --plots       # Track B: MA, volcano and p-value plots only
 # Bonus selection (needs data/raw/bonus_lists), before Step 4 Track B
 uv run --locked python scripts/bonus_select_genes.py                          # Translator genes, rule in worksheets/bonus_translator.md
 # Step 4
@@ -279,6 +283,7 @@ Optional, with the paper's supplementary archive unzipped in `doc/supp/`:
 
 ```bash
 uv run --locked python scripts/check_paper_sample_ids.py "doc/supp/Supplemental Table S1.docx"
+uv run --locked python scripts/check_table_s2.py "doc/supp/Supplemental Table S2.xlsx"   # Table S2 vs GEO (FAIR R6)
 ```
 
 ## A pace that fits the milestones

@@ -125,3 +125,5 @@ C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in gro
 C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
 C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
 C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYF5,down,-9.502,log2FC from Table S4
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYOD1,down,-10.962,log2FC from Table S4

@@ -274,8 +274,9 @@ def main() -> None:
             f"[{tag}] significant in my results (padj < {ALPHA}): {int(found.get('my_significant', pd.Series(dtype=bool)).sum())}",
             f"[{tag}] same direction as the paper: {int(found.get('direction_agrees', pd.Series(dtype=bool)).sum())}",
         ]
-    if not claims.empty:
-        summary += figure_gene_medians(meta, claims, symbol_to_id)
+    if not claims.empty:   # Figures 4 and 5 only: their 18 genes
+        figures = claims[claims["figure_or_table"].fillna("").str.startswith("Fig")]
+        summary += figure_gene_medians(meta, figures, symbol_to_id)
     (OUT / "summary.txt").write_text("\n".join(summary) + "\n", encoding="utf-8")
     print("\n".join(summary))
     print("\nNext: fill worksheets/step4_comparison.md, then write your report")

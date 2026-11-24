@@ -65,6 +65,8 @@ Outputs (results/step3_de/track_b/):
 Run:  uv run --locked python scripts/step3_differential_expression.py              (all fits)
       uv run --locked python scripts/step3_differential_expression.py --fit primary (one fit)
       uv run --locked python scripts/step3_differential_expression.py --preflight   (no fit)
+      uv run --locked python scripts/step3_differential_expression.py --plots       (plots from
+                                                    the saved tables only)
       uv run --locked python scripts/step3_differential_expression.py --no-fit      (summaries
                                                     and comparisons from the saved fits only)
 """
@@ -214,26 +216,67 @@ def preflight(x: pd.DataFrame, meta: pd.DataFrame) -> list[str]:
 
 
 def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
+    """MA and volcano plots, each with the full scale (left) and a zoom (right): a few
+    low-count features with extreme fold changes would otherwise squeeze every other point.
+    The zoom spans the fold changes of the genes with padj < ALPHA; points outside it are
+    counted in the panel. Red = padj < ALPHA; the ten genes with the smallest padj labelled."""
     label = res["gene_name"].fillna(res.index.to_series())
-    fig, ax = plt.subplots(figsize=(6, 5))
-    ax.scatter(np.log10(res["baseMean"] + 1), res["log2FoldChange"], s=4, c="lightgrey")
-    ax.scatter(np.log10(sig["baseMean"] + 1), sig["log2FoldChange"], s=4, c="tab:red")
-    ax.axhline(0, color="k", lw=0.5)
-    ax.set_xlabel("log10(base mean + 1)")
-    ax.set_ylabel(f"log2 fold change {tag}")
-    ax.set_title(f"MA plot ({len(sig)} genes with padj < {ALPHA})")
+    lfc = res["log2FoldChange"]
+    limit = 1.05 * float(sig["log2FoldChange"].abs().max()) if len(sig) else float(lfc.abs().max())
+    outside = int((lfc.abs() > limit).sum())
+    extreme = lfc.abs().idxmax()
+    note = (f"{outside} feature(s) beyond ±{limit:.1f} not shown; largest: "
+            f"{label.loc[extreme]}, log2FC {lfc.loc[extreme]:.2f}, base mean "
+            f"{res.loc[extreme, 'baseMean']:.2f}")
+    other = res.drop(index=sig.index)
+    top = sig.sort_values("padj").index[:10]
+
+    def legend(ax):
+        ax.scatter([], [], s=8, c="lightgrey", label="other genes")
+        ax.scatter([], [], s=8, c="tab:red", label=f"padj < {ALPHA}")
+        ax.legend(fontsize=6, loc="lower right")
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.8))
+    for ax, zoom in zip(axes, [False, True]):
+        ax.scatter(np.log10(other["baseMean"] + 1), other["log2FoldChange"], s=4, c="lightgrey")
+        ax.scatter(np.log10(sig["baseMean"] + 1), sig["log2FoldChange"], s=4, c="tab:red")
+        ax.axhline(0, color="k", lw=0.5)
+        ax.set_xlabel("log10(base mean + 1)")
+        ax.set_ylabel(f"log2 fold change {tag}")
+        if zoom:
+            ax.set_ylim(-limit, limit)
+            ax.set_title(f"zoom on ±{limit:.1f}", fontsize=9)
+            ax.text(0.01, 0.01, note, transform=ax.transAxes, fontsize=6, va="bottom")
+        else:
+            ax.set_title(f"MA plot, full scale ({len(sig)} genes with padj < {ALPHA})", fontsize=9)
+        legend(ax)
     fig.tight_layout()
     fig.savefig(out / f"ma_{tag}.png", dpi=150)
     plt.close(fig)
 
-    fig, ax = plt.subplots(figsize=(6, 5))
-    ax.scatter(res["log2FoldChange"], -np.log10(res["pvalue"]), s=4, c="lightgrey")
-    ax.scatter(sig["log2FoldChange"], -np.log10(sig["pvalue"]), s=4, c="tab:red")
-    for gene in sig.index[:15]:
-        xy = (sig.loc[gene, "log2FoldChange"], -np.log10(sig.loc[gene, "pvalue"]))
-        ax.annotate(str(label.loc[gene]), xy, fontsize=6)
-    ax.set_xlabel(f"log2 fold change {tag}")
-    ax.set_ylabel("-log10 p-value")
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.8))
+    for ax, zoom in zip(axes, [False, True]):
+        ax.scatter(other["log2FoldChange"], -np.log10(other["pvalue"]), s=4, c="lightgrey")
+        ax.scatter(sig["log2FoldChange"], -np.log10(sig["pvalue"]), s=4, c="tab:red")
+        ax.set_xlabel(f"log2 fold change {tag}")
+        ax.set_ylabel("-log10 p-value")
+        if zoom:
+            ax.set_xlim(-limit, limit)
+            ax.set_title(f"zoom on ±{limit:.1f}; 10 smallest padj labelled", fontsize=9)
+            ax.text(0.01, 0.99, note, transform=ax.transAxes, fontsize=6, va="top")
+            # Labels stacked in a column on the left, joined to their points by thin lines,
+            # so that they never overlap however close the points are.
+            ymax = float((-np.log10(sig["pvalue"])).max())
+            ordered = sorted(top, key=lambda g: -np.log10(sig.loc[g, "pvalue"]), reverse=True)
+            for i, gene in enumerate(ordered):
+                xy = (sig.loc[gene, "log2FoldChange"], -np.log10(sig.loc[gene, "pvalue"]))
+                ax.annotate(str(label.loc[gene]), xy, xytext=(-0.6 * limit, ymax * (0.95 - 0.07 * i)),
+                            textcoords="data", fontsize=6, ha="right", va="center",
+                            arrowprops=dict(arrowstyle="-", lw=0.4, color="0.5"))
+        else:
+            ax.set_title(f"volcano plot, full scale ({len(sig)} genes with padj < {ALPHA})",
+                         fontsize=9)
+        legend(ax)
     fig.tight_layout()
     fig.savefig(out / f"volcano_{tag}.png", dpi=150)
     plt.close(fig)
@@ -453,9 +496,19 @@ def main() -> None:
     parser.add_argument("--preflight", action="store_true", help="checks only, no fit")
     parser.add_argument("--no-fit", action="store_true",
                         help="rebuild summaries and comparisons from the saved fits only")
+    parser.add_argument("--plots", action="store_true",
+                        help="redraw the MA, volcano and p-value plots from the saved tables")
     args = parser.parse_args()
     fits = args.fit or list(FITS)
     OUT.mkdir(parents=True, exist_ok=True)
+    if args.plots:
+        for name in PLOT_FITS:
+            for table in sorted((OUT / name).glob("de_*.csv.gz")):
+                res = pd.read_csv(table, index_col=0)
+                tag = table.name.removeprefix("de_").removesuffix(".csv.gz")
+                plots(res, res[res["padj"] < ALPHA], tag, OUT / name)
+                print(f"redrawn: {name}/{tag}")
+        return
     if not args.no_fit:  # --no-fit reads only the saved fit tables, not the counts
         x, meta = sample_table()
         checks = preflight(x, meta)

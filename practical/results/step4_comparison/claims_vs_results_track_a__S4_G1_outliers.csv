@@ -17,3 +17,5 @@ C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_
 C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,PLA2G2A,up,8.038,log2FC from Table S4,ENSG00000188257,True,8.038,1.22434602956519e-12,True,up,True
 C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,SAA1,up,5.194,log2FC from Table S4,ENSG00000173432,True,5.194,0.000312074521624508,True,up,True
 C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,SFRP2,up,7.076,log2FC from Table S4,ENSG00000145423,True,7.076,7.29778879540235e-15,True,up,True
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYF5,down,-9.502,log2FC from Table S4,ENSG00000111049,True,-9.502,5.18535830157962e-10,True,down,True
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYOD1,down,-10.962,log2FC from Table S4,ENSG00000129152,True,-10.962,8.40089334075347e-14,True,down,True

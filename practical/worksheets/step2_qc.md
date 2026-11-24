@@ -21,7 +21,7 @@ Yes. Totals over the 43 samples: LEUTX 902, KHDC1L 2,212, PRAMEF2 1,723, TRIM43 
 Figures (in `results/step2_qc/`). PCA with the authors' method: rlog of the GEO counts (`r/rlog_from_geo.R`), 500 most variable genes, centred (`scripts/step2_qc_exploration.py`); shape = condition, watched samples labelled.
 
 - PCA coloured by condition: `pca_by_condition.png`
-- PCA coloured by each technical variable: `pca_by_batch.png`, `pca_by_instrument_model.png` and `pca_by_tissue.png` (one value for all 43 samples, so they cannot separate anything), plus `pca_by_library_size_millions.png` and `pca_by_mapping_rate_pct.png`
+- PCA coloured by each technical variable: `pca_by_batch.png`, `pca_by_instrument_model.png` and `pca_by_tissue.png` (one value for all 43 samples, so they cannot separate anything: these two are coloured by condition, with the single instrument and the GEO tissue label stated in the subtitle), plus `pca_by_library_size_millions.png` and `pca_by_mapping_rate_pct.png`
 - PCA coloured by the authors' group (`rnaseq.rank`): `pca_by_paper_group.png`, with the five categories of Figure 3 (controls are in group 1 by construction of the authors' clustering)
 
 Name the variable that separates the samples on PC1, then on PC2: the condition,
