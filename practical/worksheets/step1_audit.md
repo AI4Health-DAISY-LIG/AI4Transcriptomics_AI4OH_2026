@@ -7,8 +7,10 @@ Keep it short and factual. Take each number from `results/step1_audit/`.
 ## What I downloaded
 
 | File | Size | What it holds | Why I need it (or not) |
-|------|------|---------------|------------------------|
-| | | | |
+|GSE115650_all.soft.txt|NCBI GEO|13.5 MB|Sample metadata for the GSE115650 study, used to identify the 34 FSHD and 9 control samples|
+|GSE115650_biopsy_genecounts.csv.gz|NCBI GEO|1.7 MB|Raw RNA-seq gene counts for the 43 muscle biopsy samples|
+|gencode.v24.annotation.gtf.gz|GENCODE v24, via EMBL-EBI|38.7 MB|Human gene annotation used to map gene IDs to gene names|
+
 
 ## Sample table
 
