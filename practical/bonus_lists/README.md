@@ -1,6 +1,13 @@
 # FSHD Translator reference lists
 
-Snapshot prepared 24 November 2026 for the AI for Omics transcriptomics practical. Extract the `bonus_lists` directory into `practical/data/raw/`. Keep the source snapshots and their manifest together.
+Snapshot prepared 24 November 2026 for the AI for Omics transcriptomics practical.
+
+**Where the files live.** The lists are data, so they stay out of git, like everything in `data/`; the course asks that the pull request contain no data. Extract the full snapshot (all six files and this manifest) into `practical/data/raw/bonus_lists/`, which is where `scripts/bonus_select_genes.py` reads them. The repository tracks only this README, `sources.tsv` (source URL, version, retrieval date, method, record count and SHA-256 of each file) and `SHA256SUMS`.
+
+**Getting them again.**
+- Download the three original files from the URLs in `sources.tsv`: the Lambert TF list, EpiFactors and the Yao workbook.
+- Rebuild the three extracts as described in the `acquisition_and_scope` column: the Tullai ESBL table, the QuickGO human annotations, and the two-column Yao TSV.
+- Then check them from `practical/data/raw/bonus_lists/` with `sha256sum -c SHA256SUMS`.
 
 All five reference datasets are included. Yao Supplementary Table S1 is provided as the original workbook and an extracted two-column TSV.
 

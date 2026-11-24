@@ -7,15 +7,22 @@ robust in the score checks, |log2FC across the G1-G4 span| >= 1, not a Yao 2014 
 Both views exclude non-autosomal, non-coding, biomarker, immediate-early and composition genes.
 
 Inputs:  results/step3_de/track_b/ (primary, score, groups, robustness tables)
-         bonus_lists/ (reference lists, see bonus_lists/sources.tsv)
+         data/raw/bonus_lists/ (reference lists, git-ignored like all data; their sources,
+         versions and SHA-256 are tracked in bonus_lists/sources.tsv and SHA256SUMS)
+         data/processed/counts_filtered.csv, metadata.csv; results/step2_qc/sex_check.csv;
+         results/step3_de/track_a/size_factors.csv (for the count plots)
 Outputs (results/bonus/translator/):
   list_matching.csv          symbols of each list found in our annotation
-  yao2014_matching.csv       each Yao 2014 gene: matched by Ensembl ID, by symbol, or absent
+  yao2014_matching.csv       each Yao 2014 row: matched by Ensembl ID, by a unique symbol (with
+                             the count feature it maps to), ambiguous, or absent from the counts
   pool_<view>_<filter>.csv   top 10 of each pool, with flags and the reason for each skip
   influence_checks.csv       view A refits without the largest-Cook's biopsy
   known_regulators.csv       the known DUX4 regulators in both views
   top10_by_run_<view>.csv    exploration: each run's own top 10 after the gene filters, and
                              the rank of every such gene in every run (no effect on the choice)
+  selected_genes_across_fits.csv   the chosen genes in every Track B fit and contrast
+  normalised_counts_selected.csv   their counts / full-cohort size factors, per biopsy
+  counts_<gene>.png                those counts by group, colour = batch, shape = sex
   selection.txt              the chosen genes and their Translator question
 
 Run:  uv run --locked python scripts/bonus_select_genes.py
@@ -23,13 +30,17 @@ Run:  uv run --locked python scripts/bonus_select_genes.py
 
 from __future__ import annotations
 
+import matplotlib
 import numpy as np
 import pandas as pd
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
 
 import config
 import step3_differential_expression as de
 
-LISTS = config.ROOT / "bonus_lists"
+LISTS = config.RAW / "bonus_lists"
 OUT = config.RESULTS / "bonus" / "translator"
 TRACK_B = config.RESULTS / "step3_de" / "track_b"
 ALPHA = 0.05
@@ -61,7 +72,6 @@ def reference_lists() -> dict[str, set[str]]:
     yao = pd.read_csv(LISTS / "Yao2014_TableS1_DUX4_induced_genes.tsv", sep="\t")
     return {"immediate_early": ieg, "transcription_factor": tf, "chromatin": chromatin,
             "regeneration": regeneration, "yao2014_ensembl": set(yao["ensembl_gene_id"]),
-            "yao2014_symbol": set(yao["source_gene_symbol"]),
             "composition": COMPOSITION, "known_regulator": set(KNOWN_REGULATORS)}
 
 
@@ -73,10 +83,9 @@ def flags(table: pd.DataFrame, lists: dict[str, set[str]]) -> pd.DataFrame:
     out["biomarker"] = name.isin(config.BIOMARKERS)
     out["immediate_early"] = name.isin(lists["immediate_early"])
     out["composition"] = name.isin(lists["composition"]) | name.str.startswith("HLA-")
-    # Yao 2014 by Ensembl ID; for the IDs absent from GENCODE v24 (retired or renamed since
-    # 2014), by symbol, so that targets such as DUXA and the PRAMEF genes are not missed.
-    out["yao2014_target"] = table.index.str.split(".").str[0].isin(lists["yao2014_ensembl"]) \
-        | name.isin(lists["yao2014_symbol_fallback"])
+    # Yao 2014: the count features mapped in yao_mapping() (by Ensembl ID, or by a unique symbol
+    # for IDs absent from the deposited counts, e.g. DUXA and five PRAMEF genes).
+    out["yao2014_target"] = table.index.isin(lists["yao2014_features"])
     for key in ["transcription_factor", "chromatin", "regeneration", "known_regulator"]:
         out[key] = name.isin(lists[key])
     return out
@@ -117,8 +126,33 @@ RUNS_A = {"primary": "primary", "ladder_batch": "ladder_batch", "site": "site",
 RUNS_B = ["score", "score_nosex", "score_all34", "score_omit_32_0006", "score_omit_01_0025"]
 
 
+def yao_mapping(primary: pd.DataFrame) -> pd.DataFrame:
+    """Each Yao 2014 row mapped to at most one count feature: Ensembl ID first; for an ID absent
+    from the deposited counts, the symbol, only if it names exactly one feature not already
+    assigned. Ambiguous symbols are dropped, not chosen."""
+    yao = pd.read_csv(LISTS / "Yao2014_TableS1_DUX4_induced_genes.tsv", sep="\t")
+    by_id = pd.Series(primary.index, index=primary.index.str.split(".").str[0])
+    yao["feature"] = yao["ensembl_gene_id"].map(by_id)
+    yao["matched_by"] = np.where(yao["feature"].notna(), "ensembl_id", "")
+    assigned = set(yao["feature"].dropna())
+    for i in yao.index[yao["feature"].isna()]:
+        named = list(primary.index[primary["gene_name"] == yao.loc[i, "source_gene_symbol"]])
+        hits = [f for f in named if f not in assigned]
+        yao.loc[i, "symbol_features"] = len(named)
+        if len(hits) == 1:
+            yao.loc[i, ["feature", "matched_by"]] = [hits[0], "symbol"]
+            assigned.add(hits[0])
+        elif len(hits) > 1:
+            yao.loc[i, "matched_by"] = "symbol ambiguous"
+        elif named:
+            yao.loc[i, "matched_by"] = "symbol feature already assigned"
+        else:
+            yao.loc[i, "matched_by"] = "not in the deposited counts"
+    return yao
+
+
 def top10_by_run(runs: dict[str, pd.DataFrame], size_col: str, lists: dict[str, set[str]],
-                 main_eligible: pd.Index, main_run: str) -> pd.DataFrame:
+                 initial: pd.Index, selectable: pd.Index, main_run: str) -> pd.DataFrame:
     """Each run's own top 10: gene filters + padj < 0.05 and |size| >= 1 in that run, ranked
     by that run's padj. Returns the union with every gene's rank in every run."""
     ranks = {}
@@ -135,7 +169,8 @@ def top10_by_run(runs: dict[str, pd.DataFrame], size_col: str, lists: dict[str, 
         out[f"rank_{run}"] = r.reindex(top)
     out[f"{main_run}_{size_col}"] = main[size_col].reindex(top)
     out[f"{main_run}_padj"] = main["padj"].reindex(top)
-    out["eligible_by_rule"] = out.index.isin(main_eligible)
+    out["passes_initial_filters"] = out.index.isin(initial)   # statistics + gene filters
+    out["selectable_for_query"] = out.index.isin(selectable)  # + pools, Yao, known regulators
     out["in_main_top10"] = out[f"rank_{main_run}"] <= TOP
     return out.sort_values(f"rank_{main_run}", na_position="last")
 
@@ -153,18 +188,75 @@ def pick(pools: list[tuple[str, pd.DataFrame]], check) -> tuple[str | None, list
     return None, log
 
 
+def across_fits(genes: dict[str, str]) -> pd.DataFrame:
+    """Every Track B table (one per fit and contrast): log2FC (score fits: also the log2FC
+    across the G1-G4 span) and padj of the chosen genes."""
+    rows = []
+    for path in sorted(TRACK_B.glob("*/de_*.csv.gz")):
+        table = pd.read_csv(path, index_col=0)
+        for label, gene in genes.items():
+            if gene in table.index:
+                row = table.loc[gene]
+                rows.append({"gene": label, "fit": path.parent.name,
+                             "contrast": path.name.removeprefix("de_").removesuffix(".csv.gz"),
+                             "log2FC": row["log2FoldChange"],
+                             "lfc_span": row.get("lfc_span", np.nan),
+                             "lfcSE": row["lfcSE"], "padj": row["padj"]})
+    return pd.DataFrame(rows)
+
+
+def count_plots(genes: dict[str, str]) -> pd.DataFrame:
+    """Counts / full-cohort size factors (Track A) for the chosen genes, per biopsy, plotted by
+    group; colour = batch, marker = inferred sex, open markers = excluded from Track B."""
+    counts = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
+    size = pd.read_csv(config.RESULTS / "step3_de" / "track_a" / "size_factors.csv",
+                       index_col="sample")["size_factor_deposited"]
+    _, meta = de.sample_table()
+    norm = counts.loc[list(genes.values())] / size[counts.columns]
+    table = meta[["group", "batch", "sex", "site", "score"]].copy()
+    table["excluded_from_track_b"] = table.index.isin(config.TRACK_B_EXCLUDE)
+    for label, gene in genes.items():
+        table[label] = norm.loc[gene, table.index]
+    order = [de.REF, "G1", "G2", "G3", "G4"]
+    colours = dict(zip(sorted(table["batch"].unique()), ["tab:blue", "tab:orange", "tab:green",
+                                                         "tab:purple"]))
+    rng = np.random.default_rng(0)
+    for label in genes:
+        fig, ax = plt.subplots(figsize=(6, 4))
+        for i, group in enumerate(order):
+            sub = table[table["group"] == group]
+            x = i + rng.uniform(-0.15, 0.15, len(sub))
+            for (batch, sex, excl), part in sub.groupby(["batch", "sex", "excluded_from_track_b"]):
+                idx = sub.index.get_indexer(part.index)
+                ax.scatter(x[idx], part[label] + 1, marker="o" if sex == "female" else "^",
+                           s=40, facecolors="none" if excl else colours[batch],
+                           edgecolors=colours[batch], linewidths=1)
+            ax.hlines(sub[label].median() + 1, i - 0.3, i + 0.3, color="k", lw=1)
+        ax.set_yscale("log")
+        ax.set_xticks(range(len(order)), order)
+        ax.set_ylabel(f"{label}, normalised count + 1")
+        handles = [plt.Line2D([], [], marker="s", ls="", color=c, label=f"batch {b}")
+                   for b, c in colours.items()]
+        handles += [plt.Line2D([], [], marker="o", ls="", mfc="none", mec="k", label="female"),
+                    plt.Line2D([], [], marker="^", ls="", mfc="none", mec="k", label="male"),
+                    plt.Line2D([], [], marker="o", ls="", mfc="none", mec="grey",
+                               label="open = excluded from Track B")]
+        ax.legend(handles=handles, fontsize=6, loc="upper left")
+        ax.set_title(f"{label}: median per group (line)")
+        fig.tight_layout()
+        fig.savefig(OUT / f"counts_{label}.png", dpi=150)
+        plt.close(fig)
+    return table
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     lists = reference_lists()
     primary = pd.read_csv(TRACK_B / "primary" / "de_FSHD_vs_Control.csv.gz", index_col=0)
     ids = set(primary.index.str.split(".").str[0])
-    yao = pd.read_csv(LISTS / "Yao2014_TableS1_DUX4_induced_genes.tsv", sep="\t")
-    yao["matched_by"] = np.where(yao["ensembl_gene_id"].isin(ids), "ensembl_id",
-                                 np.where(yao["source_gene_symbol"].isin(primary["gene_name"]),
-                                          "symbol", "not in the counts"))
+    yao = yao_mapping(primary)
     yao.to_csv(OUT / "yao2014_matching.csv", index=False)
-    lists["yao2014_symbol_fallback"] = set(yao.loc[yao["matched_by"] == "symbol",
-                                                   "source_gene_symbol"])
+    lists["yao2014_features"] = set(yao["feature"].dropna())
     score = pd.read_csv(TRACK_B / "score" / "de_score_slope.csv.gz", index_col=0)
     g4g1 = pd.read_csv(TRACK_B / "groups" / "de_G4_vs_G1.csv.gz", index_col=0)
     robust_a = pd.read_csv(TRACK_B / "robustness.csv.gz", index_col=0)
@@ -173,7 +265,9 @@ def main() -> None:
     names = set(primary["gene_name"].dropna())
     matching = [{"list": key, "symbols": len(values),
                  "found": len(values & ids) if key == "yao2014_ensembl" else len(values & names)}
-                for key, values in lists.items() if key != "yao2014_symbol_fallback"]
+                for key, values in lists.items() if key != "yao2014_features"]
+    matching += [{"list": f"yao2014 rows {k}", "symbols": len(yao), "found": int(v)}
+                 for k, v in yao["matched_by"].value_counts().items()]
     pd.DataFrame(matching).to_csv(OUT / "list_matching.csv", index=False)
 
     # View A.
@@ -183,11 +277,12 @@ def main() -> None:
     a["robust_with_rochester"] = robust_a["robust_with_rochester"].reindex(a.index).fillna(False)
     a["follows_score"] = (a["score_padj"] < ALPHA) & \
         (np.sign(a["score_slope"]) == np.sign(a["log2FoldChange"]))
-    eligible_a = a[(a["padj"] < ALPHA) & (a["log2FoldChange"].abs() >= 1)
-                   & a["robust_with_rochester"].astype(bool) & a["follows_score"]
-                   & a["autosomal"] & a["protein_coding"] & ~a["biomarker"]
-                   & ~a["immediate_early"] & ~a["composition"]]
-    eligible_a = ranked(eligible_a, "padj", "stat")
+    initial_a = a[(a["padj"] < ALPHA) & (a["log2FoldChange"].abs() >= 1)
+                  & a["robust_with_rochester"].astype(bool) & a["follows_score"]
+                  & a["autosomal"] & a["protein_coding"] & ~a["biomarker"]
+                  & ~a["immediate_early"] & ~a["composition"]]
+    # Known DUX4 regulators are reported (known_regulators.csv), never selected.
+    eligible_a = ranked(initial_a[~initial_a["known_regulator"]], "padj", "stat")
     pools_a = [("A_regeneration", eligible_a[eligible_a["regeneration"]]),
                ("A_tf_chromatin", eligible_a[eligible_a["transcription_factor"]
                                              | eligible_a["chromatin"]]),
@@ -211,10 +306,10 @@ def main() -> None:
     b["primary_log2FC"] = primary["log2FoldChange"]
     b["primary_padj"] = primary["padj"]
     b["g4_vs_g1_log2FC"] = g4g1["log2FoldChange"]
-    eligible_b = b[(b["padj"] < ALPHA) & (b["lfc_span"].abs() >= 1) & b["robust_b"]
-                   & b["autosomal"] & b["protein_coding"] & ~b["biomarker"]
-                   & ~b["immediate_early"] & ~b["composition"]]
-    eligible_b = ranked(eligible_b, "padj", "stat")
+    initial_b = b[(b["padj"] < ALPHA) & (b["lfc_span"].abs() >= 1) & b["robust_b"]
+                  & b["autosomal"] & b["protein_coding"] & ~b["biomarker"]
+                  & ~b["immediate_early"] & ~b["composition"]]
+    eligible_b = ranked(initial_b[~initial_b["known_regulator"]], "padj", "stat")
     pools_b = [("B_chromatin", eligible_b[eligible_b["chromatin"]]),
                ("B_tf", eligible_b[eligible_b["transcription_factor"]])]
     gene_b, log_b = pick(pools_b, lambda g: (not b.loc[g, "yao2014_target"],
@@ -238,8 +333,12 @@ def main() -> None:
     runs_a = {k: pd.read_csv(TRACK_B / v / "de_FSHD_vs_Control.csv.gz", index_col=0)
               for k, v in RUNS_A.items()}
     runs_b = {k: pd.read_csv(TRACK_B / k / "de_score_slope.csv.gz", index_col=0) for k in RUNS_B}
-    explore = {"A": top10_by_run(runs_a, "log2FoldChange", lists, eligible_a.index, "primary"),
-               "B": top10_by_run(runs_b, "lfc_span", lists, eligible_b.index, "score")}
+    pickable_b = eligible_b[(eligible_b["chromatin"] | eligible_b["transcription_factor"])
+                            & ~eligible_b["yao2014_target"]]
+    explore = {"A": top10_by_run(runs_a, "log2FoldChange", lists, initial_a.index,
+                                 eligible_a.index, "primary"),
+               "B": top10_by_run(runs_b, "lfc_span", lists, initial_b.index,
+                                 pickable_b.index, "score")}
     for view, table in explore.items():
         table.to_csv(OUT / f"top10_by_run_{view}.csv", float_format="%.6g", index_label="gene_id")
 
@@ -262,10 +361,12 @@ def main() -> None:
 
     lines = ["list matching (symbols found in our annotation):"]
     lines += [f"  {m['list']}: {m['found']} / {m['symbols']}" for m in matching]
-    lines += [f"view A eligible: {len(eligible_a)}; pools: "
+    lines += [f"view A: {len(initial_a)} pass the initial filters, {len(eligible_a)} after removing "
+              "known regulators; pools: "
               + ", ".join(f"{n} {len(p)}" for n, p in pools_a),
-              f"view B eligible: {len(eligible_b)} ({int(eligible_b['yao2014_target'].sum())} "
-              "Yao 2014 targets, not pickable); pools: "
+              f"view B: {len(initial_b)} pass the initial filters, {len(eligible_b)} after removing "
+              f"known regulators ({int(eligible_b['yao2014_target'].sum())} Yao 2014 targets, "
+              "not pickable); pools: "
               + ", ".join(f"{n} {len(p)}" for n, p in pools_b)]
     for view, table in explore.items():
         outside = table[~table["in_main_top10"]]
@@ -288,6 +389,12 @@ def main() -> None:
                      f"with '{'decrease' if up else 'increase'}'")
     else:
         lines.append("view B gene: none (rule not relaxed)")
+    chosen = {a.loc[g, "gene_name"]: g for g in [gene_a, gene_b] if g is not None}
+    if chosen:
+        across_fits(chosen).to_csv(OUT / "selected_genes_across_fits.csv", float_format="%.6g",
+                                   index=False)
+        count_plots(chosen).to_csv(OUT / "normalised_counts_selected.csv", float_format="%.6g",
+                                   index_label="sample")
     (OUT / "selection.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 

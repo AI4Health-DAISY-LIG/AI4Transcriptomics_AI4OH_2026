@@ -4,6 +4,9 @@ transcription_factor,1639,1490
 chromatin,710,688
 regeneration,25,19
 yao2014_ensembl,213,136
-yao2014_symbol,212,131
 composition,28,27
 known_regulator,13,13
+yao2014 rows ensembl_id,213,136
+yao2014 rows not in the deposited counts,213,69
+yao2014 rows symbol,213,6
+yao2014 rows symbol feature already assigned,213,2
