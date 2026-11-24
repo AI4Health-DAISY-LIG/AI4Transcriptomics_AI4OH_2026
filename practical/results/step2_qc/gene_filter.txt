@@ -1,3 +1,0 @@
-rule: >= 10 counts in >= 9 samples
-genes before: 27506
-genes after: 19198
