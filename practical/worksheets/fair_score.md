@@ -32,4 +32,10 @@ List here what you could not find in GEO or in the paper and needed to decide
 for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
--
+-In Step 1:
+Age and gender information are missing for all 9 control samples in GEO.
+One sample ID is different between the count file (01-0022-1) and GEO (01-0022).
+The samples are not equally distributed across batches.
+The paper describes 36 recruited FSHD patients, but RNA-seq data are available for only 34.
+GEO does not specify the FSHD subtype for each sequenced sample.
+Some clinical and MRI information is only available for FSHD samples.
