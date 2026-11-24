@@ -256,7 +256,8 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
             ax.text(0.01, 0.01, ma_note, transform=ax.transAxes, fontsize=6, va="bottom")
         else:
             ax.set_title(f"MA plot, full scale ({len(sig)} genes with padj < {ALPHA})", fontsize=9)
-        legend(ax)
+        if not zoom:   # one legend, on the full-scale panel, clear of the zoom's note
+            legend(ax)
     fig.tight_layout()
     fig.savefig(out / f"ma_{tag}.png", dpi=150)
     plt.close(fig)
@@ -283,7 +284,8 @@ def plots(res: pd.DataFrame, sig: pd.DataFrame, tag: str, out) -> None:
         else:
             ax.set_title(f"volcano plot, full scale ({len(sig)} genes with padj < {ALPHA})",
                          fontsize=9)
-        legend(ax)
+        if not zoom:   # one legend, on the full-scale panel, clear of the zoom's note
+            legend(ax)
     fig.tight_layout()
     fig.savefig(out / f"volcano_{tag}.png", dpi=150)
     plt.close(fig)

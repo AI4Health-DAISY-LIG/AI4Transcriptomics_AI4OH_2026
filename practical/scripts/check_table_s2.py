@@ -30,6 +30,7 @@ import config
 SHEETS = {"raw_counts": config.COUNTS_FILE,
           "normalized_counts": "GSE115650_biosy_normalized_genecounts.csv.gz",
           "RPKM": "GSE115650_biopsy_FPKM.csv.gz"}
+EXPECTED_GENES = 54   # DUX4 candidate biomarkers in the published Table S2
 
 
 def read_sheet(path: Path, sheet: str) -> pd.DataFrame:
@@ -40,7 +41,11 @@ def read_sheet(path: Path, sheet: str) -> pd.DataFrame:
     header = raw.index[raw.iloc[:, 0].astype(str) == "gene_id"][0]
     table = raw.iloc[header + 1:].copy()
     table.columns = raw.iloc[header]
-    table = table[table["gene_id"].notna()].set_index("gene_id").drop(columns="gene_name")
+    table = table[table.drop(columns=["gene_id", "gene_name"]).notna().any(axis=1)]
+    ids = table["gene_id"].astype(str).str.strip()
+    if table["gene_id"].isna().any() or (ids == "").any() or ids.duplicated().any():
+        raise SystemExit(f"{sheet}: a data row has a blank or repeated gene_id")
+    table = table.set_index("gene_id").drop(columns="gene_name")
     return table.apply(pd.to_numeric, errors="coerce")
 
 
@@ -49,9 +54,22 @@ def main() -> None:
         raise SystemExit(__doc__)
     workbook = Path(sys.argv[1])
     rows = []
+    first_genes = None
     for sheet, geo_file in SHEETS.items():
         s2 = read_sheet(workbook, sheet)
         geo = pd.read_csv(config.RAW / geo_file, index_col=0)
+        # Completeness, for this fixed workbook: every sheet holds all GEO biopsies and the same
+        # genes (54 unique IDs in the published table).
+        if set(s2.columns) != set(geo.columns):
+            raise SystemExit(f"{sheet}: biopsies differ from GEO: missing "
+                             f"{sorted(set(geo.columns) - set(s2.columns))}, extra "
+                             f"{sorted(set(s2.columns) - set(geo.columns))}")
+        if first_genes is None:
+            first_genes = set(s2.index)
+            if len(first_genes) != EXPECTED_GENES:
+                raise SystemExit(f"{sheet}: {len(first_genes)} genes, expected {EXPECTED_GENES}")
+        elif set(s2.index) != first_genes:
+            raise SystemExit(f"{sheet}: gene IDs differ from the first sheet")
         genes = s2.index.intersection(geo.index)
         samples = s2.columns.intersection(geo.columns)
         # Every S2 gene and biopsy must be found in GEO, and every paired value must be finite,
