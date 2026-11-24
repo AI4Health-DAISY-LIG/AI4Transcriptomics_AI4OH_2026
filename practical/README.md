@@ -244,7 +244,8 @@ uv run --locked python scripts/step2_qc_exploration.py
 uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA without the 3 low-mapping libraries
 pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Step 3 Track A: the authors' DE, per contrast
 uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs supplementary tables S4-S10
-uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: our own DE, 9 planned fits
+uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: our own DE, all planned fits
+uv run --locked python scripts/bonus_select_genes.py                          # Bonus: Translator genes, rule in worksheets/bonus_translator.md
 ```
 
 Optional, with the paper's supplementary archive unzipped in `doc/supp/`:

@@ -1,0 +1,15 @@
+list matching (symbols found in our annotation):
+  immediate_early: 46 / 48
+  transcription_factor: 1490 / 1639
+  chromatin: 688 / 710
+  regeneration: 19 / 25
+  yao2014_ensembl: 136 / 213
+  yao2014_symbol: 131 / 212
+  composition: 27 / 28
+  known_regulator: 13 / 13
+view A eligible: 51; pools: A_regeneration 0, A_tf_chromatin 3, A_all 51
+view B eligible: 102 (43 Yao 2014 targets, not pickable); pools: B_chromatin 0, B_tf 8
+top 10 by run, view A: 27 genes in the union; 17 not in the main top 10: FGF18, CDKN2A, GPR37, THBS1, EGR2, KERA, DMBT1, RUNX1, MYL4, MEDAG, MYH8, PLA2G2A, SERPINE1, DNER, CSRP1, EMP1, OSTN
+top 10 by run, view B: 12 genes in the union; 2 not in the main top 10: PRAMEF6, MBD3L2
+view A gene: RUNX1 (ENSG00000159216.18), log2FC 2.055, padj 0.000406; Translator: 'What chemicals may decrease the activity of a gene?'
+view B gene: SOX11 (ENSG00000176887.6), log2FC across the span 3.280, padj 0.00021; rises with the DUX4-target score: True; optional Translator question with 'decrease'
