@@ -23,7 +23,7 @@ Covariates included and why, or why not:
 
 Covariates you wanted and could not include, and why:
 - **Age:** missing for every control in GEO.
-- **Biopsied muscle:** not in GEO (Table S1 only). All controls are quadriceps, as are 6 of the 34 FSHD biopsies (paper, Results). Muscle is therefore not fully confounded with condition, but it cannot be adjusted for in the full design; only a quadriceps-only comparison would separate the two, and it was not run.
+- **Biopsied muscle:** not in GEO (Table S1 only). All controls are quadriceps, as are 6 of the 34 sequenced FSHD biopsies (Table S1, matched to GEO by participant ID), so quadriceps is the only muscle sampled in both cases and controls. Muscle is not in the model. An additive muscle term from the Table S1 labels was not tested; the case–control contrast would then rest on the six quadriceps FSHD biopsies.
 - **Relatedness of controls to patients:** not recorded in GEO.
 - **Tissue composition (fat, inflammation, blood):** deliberately not adjusted, because it is part of the disease.
 
@@ -63,7 +63,7 @@ Top 10 genes by adjusted p-value, primary FSHD vs Control (`primary/de_FSHD_vs_C
 | TNFAIP6 | chr2 | 1.66 | 3.7e-05 |
 | FOS | chr14 | 3.16 | 3.7e-05 |
 
-These are extracellular matrix and fibrosis genes (COMP, TNMD, PRG4, CTGF), stress and inflammation genes (CDKN1A, TNFAIP6) and immediate early genes (FOS, FOSB). They match the top of the paper's S5 (G1): PRG4 1st, COMP 2nd, TNMD 4th, CDKN1A 7th. A test pooling all FSHD biopsies favours changes shared by most of them, and those are not the DUX4 targets, which are switched on in only some biopsies. FOS and FOSB respond within minutes to tissue handling, so part of their signal may come from how the banked controls and the study biopsies were collected. TNMD is on chrX and is not interpreted.
+These are extracellular matrix and fibrosis genes (COMP, PRG4, CTGF; TNMD ranks second but is on chrX and is not interpreted), stress and inflammation genes (CDKN1A, TNFAIP6) and immediate early genes (FOS, FOSB). They match the top of the paper's S5 (G1): PRG4 1st, COMP 2nd, TNMD 4th, CDKN1A 7th. A test pooling all FSHD biopsies favours changes shared by most of them, and those are not the DUX4 targets, which are switched on in only some biopsies. FOS and FOSB respond within minutes to tissue handling, so part of their signal may come from how the banked controls and the study biopsies were collected.
 
 ## Checks
 
@@ -71,19 +71,19 @@ These are extracellular matrix and fibrosis genes (COMP, TNMD, PRG4, CTGF), stre
   A large spike in the first bin (about 4,200 genes with p < 0.02), then a flat part from about 0.3 to 1 (about 350–450 genes per bin). Between them, a gradual decline from 0.02 to about 0.3 (`primary/pvalue_histogram_FSHD_vs_Control.png`). There is no hump near 1 and no U shape, two common signs of a misspecified model; the histogram alone does not show that the model is adequate. The unadjusted model has the same shape with a higher spike, about 6,500 genes (`ladder_none/`).
 
 - **Run the analysis with and without batch in the design. Report how many genes are significant in both, and in one only.**
-  On the same 39 biopsies, `~ condition` gives 5,509 genes and `~ batch + condition` gives 4,315. That is 4,166 genes in both, 1,343 only without batch and 149 only with batch (`batch_overlap.csv`). Adding batch removes about a quarter of the calls, but the effects of the genes kept are stable. Of the 2,577 primary genes, 2,560 keep their direction and at least half their log2FC without any adjustment, and 2,565 without sex (`sensitivity_comparison.csv`, `robustness.csv.gz`). Adding sex brings the count down to 2,577. The full ladder of models and the other sensitivity runs (site, all 43, 32-0004 restored, 32-0016 omitted, Rochester only) are in `sensitivity_comparison.csv`. Effects hold in 2,416–2,577 of the 2,577 genes; site mostly widens the standard errors (median SE ratio 1.15).
+  On the same 39 biopsies, `~ condition` gives 5,509 genes and `~ batch + condition` gives 4,315. That is 4,166 genes in both, 1,343 only without batch and 149 only with batch (`batch_overlap.csv`). Adding batch removes about a fifth of the calls. A separate check uses a different denominator, the 2,577 genes significant in the primary model: 2,560 of them keep their direction and at least half their log2FC without any adjustment, and 2,565 without sex (`sensitivity_comparison.csv`, `robustness.csv.gz`). Adding sex brings the count down to 2,577. The full ladder of models and the other sensitivity runs (site, all 43, 32-0004 restored, 32-0016 omitted, Rochester only) are in `sensitivity_comparison.csv`. Effects hold in 2,416–2,577 of the 2,577 genes; site mostly widens the standard errors (median SE ratio 1.15).
 
 - **Group 1 biopsies show almost no expression of the biomarkers. Count the genes that differ between group 1 and the controls, and list the explanations you can think of other than the disease.**
   Track B, `~ batch + sex + group`: 1,002 genes (866 up, 136 down); 1,945 without batch and sex (`groups_none`). Track A, the paper's design: 393 at |log2FC| ≥ 2, but only 40 once the two G1 outliers, 01-0037 and 32-0016, are removed (`track_a/summary.txt`). Explanations other than the disease:
   - **Two outlier libraries.** 01-0037 maps at 76.5%; 32-0016 is a fat-rich biopsy. The number of G1 calls depends heavily on these two (393 with them, 40 without); that count does not measure how much biological signal they carry.
-  - **How the biopsies were collected and stored.** The controls are banked Rochester biopsies, so needle, handling and ischaemia time may differ. The raised immediate early genes (FOS, FOSB) are compatible with a handling difference of unknown size. Banking is confounded with condition, since every control is banked; site only partly, since Rochester has both cases and controls.
-  - **Muscle and age.** All controls are quadriceps, while the G1 biopsies come from several muscles. The controls are younger: mean 35 years (paper, Methods; not in GEO), against 54.7 for the 10 published G1 biopsies and 54.0 for the 9 G1 biopsies of Track B.
+  - **How the biopsies were collected and stored.** The controls are banked Rochester biopsies. The paper states that they were obtained under identical conditions (Methods, "Study subjects"), but storage duration and handling history are not reported per biopsy. The raised immediate early genes (FOS, FOSB) are compatible with a handling or storage difference of unknown size. Banking is confounded with condition, since every control is banked; site only partly, since Rochester has both cases and controls.
+  - **Muscle and age.** All controls are quadriceps, while the G1 biopsies come from several muscles. The controls are younger: mean 35 years (paper, Results, "Study cohort"; not in GEO), against 54.7 for the 10 published G1 biopsies and 54.0 for the 9 G1 biopsies of Track B.
   - **Sex and batch imbalance**, adjusted only in Track B.
   - **Relatedness:** controls are spouses, parents or siblings of patients.
   - **Tissue composition** (fat, fibrous tissue, immune cells): it changes bulk expression whatever its cause.
   - **A different DE design.** The paper fits each group separately with controls, so for G1 the dispersions come from 19 biopsies; Track B fits all groups together.
 
-  G1 can also reflect the disease without detectable DUX4, because DUX4 is sporadic. The shared fibrosis signal (PRG4, COMP, TNMD) points that way, but these data cannot separate it from the explanations above.
+  G1 can also reflect the disease without detectable DUX4, because DUX4 is sporadic. The shared fibrosis signal (PRG4, COMP) points that way, but these data cannot separate it from the explanations above.
 
 ## Decisions I made
 

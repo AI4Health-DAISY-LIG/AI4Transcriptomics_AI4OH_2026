@@ -456,15 +456,16 @@ def main() -> None:
     args = parser.parse_args()
     fits = args.fit or list(FITS)
     OUT.mkdir(parents=True, exist_ok=True)
-    x, meta = sample_table()
-    checks = preflight(x, meta)
-    (OUT / "preflight.txt").write_text("\n".join(checks) + "\n", encoding="utf-8")
-    print("\n".join(checks))
-    if args.preflight:
-        return
-    annot = gene_annotation()
-    for name in ([] if args.no_fit else fits):
-        run_fit(name, x, meta, annot)
+    if not args.no_fit:  # --no-fit reads only the saved fit tables, not the counts
+        x, meta = sample_table()
+        checks = preflight(x, meta)
+        (OUT / "preflight.txt").write_text("\n".join(checks) + "\n", encoding="utf-8")
+        print("\n".join(checks))
+        if args.preflight:
+            return
+        annot = gene_annotation()
+        for name in fits:
+            run_fit(name, x, meta, annot)
     lines = [(OUT / f / "summary.txt").read_text(encoding="utf-8").rstrip()
              for f in FITS if (OUT / f / "summary.txt").exists()]
     robustness_lines = robustness() + batch_overlap() + score_robustness()
