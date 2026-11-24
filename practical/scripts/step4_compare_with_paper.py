@@ -258,6 +258,10 @@ def main() -> None:
     if claims.empty:
         summary.append("[claims] paper/paper_claims.csv has no gene rows yet: part B skipped")
     symbol_to_id = dict(zip(gene_names["gene_name"], gene_names["gene_id_noversion"]))
+    keys = set(claims["my_contrast"].fillna("").str.strip()) - {""}
+    unmatched = sorted(keys - {tag for tag, _ in de_files()})
+    summary.append(f"[claims] contrast keys: {len(keys)}; matching no result file: "
+                   + (", ".join(unmatched) if unmatched else "none"))
     for tag, de_file in de_files() if not claims.empty else []:
         mine = claims[claims["my_contrast"].fillna("").str.strip().isin(["", tag])]
         if mine.empty:

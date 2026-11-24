@@ -188,6 +188,10 @@ Everything else in this folder goes into your fork: the scripts, `results/`,
 
 ## How to run
 
+**This fork's full pipeline** (R reproduction, Track B and the bonus) is in
+[Running this fork's analysis](#running-this-forks-analysis) below; the course's four
+scripts follow first.
+
 You need [uv](https://docs.astral.sh/uv/) and git. uv installs Python 3.12 for
 you (see `.python-version`). Work in your fork, inside this folder:
 
@@ -239,22 +243,36 @@ curl -fL -o data/raw/authors/mk.rda \
 sha256sum data/raw/authors/mk.rda              # d385c0cbf167fbe9d1da7f9c4465d3c9a98c7510e68f177ef855fbe69621f08b
 ```
 
+Gene symbols: the GEO R object carries them, but the CSV workflow reads them from the
+GENCODE v24 annotation (step 1), an open-format mapping of the deposited identifiers.
+
+Two inputs are not downloaded by a script; get them before the steps that read them:
+- **the paper's supplementary archive**, unzipped into `doc/supp/` (git-ignored,
+  `paper/README.md`), for the Step 3 comparison with Tables S4–S10;
+- **the reference-list snapshot** of the bonus, extracted into `data/raw/bonus_lists/`
+  (`bonus_lists/README.md`), for the bonus selection, which feeds the Step 4 Track B panel.
+
+In this order:
+
 ```bash
 pixi install --manifest-path r/pixi.toml
+# Step 2
 pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R      # Figure 3 replay, sample link, mapping rates
 pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R   # rlog recomputed from the GEO counts
 uv run --locked python scripts/step2_qc_exploration.py
 uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA without the 3 low-mapping libraries
-pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Step 3 Track A: the authors' DE, per contrast
-uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs supplementary tables S4-S10
-uv run --locked python scripts/step3_differential_expression.py               # Step 3 Track B: independent DE, all planned fits
-pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R          # Step 4 Track A: the authors' score, groups, Figure 2, correlations
-uv run --locked python scripts/step4_compare_with_paper.py                    # Step 4 course parts: Python score, paper claims
-uv run --locked python scripts/step4_track_b.py --panel                       # Step 4 Track B: Translator panel genes
-pixi run --manifest-path r/pixi.toml Rscript r/vst_track_b.R                  # Step 4 Track B: blind VST, selected genes
-uv run --locked python scripts/step4_track_b.py                               # Step 4 Track B: alternative score, tissue state
-# Bonus: first extract the reference-list snapshot into data/raw/bonus_lists/ (bonus_lists/README.md)
-uv run --locked python scripts/bonus_select_genes.py                          # Bonus: Translator genes, rule in worksheets/bonus_translator.md
+# Step 3
+pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Track A: the authors' DE, per contrast
+uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs Tables S4-S10 (needs doc/supp)
+uv run --locked python scripts/step3_differential_expression.py               # Track B: independent DE, all planned fits
+# Bonus selection (needs data/raw/bonus_lists), before Step 4 Track B
+uv run --locked python scripts/bonus_select_genes.py                          # Translator genes, rule in worksheets/bonus_translator.md
+# Step 4
+pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R          # Track A: the authors' score, groups, Figure 2, correlations
+uv run --locked python scripts/step4_compare_with_paper.py                    # course parts: Python score, paper claims
+uv run --locked python scripts/step4_track_b.py --panel                       # Track B: Translator panel genes (reads the bonus outputs)
+pixi run --manifest-path r/pixi.toml Rscript r/vst_track_b.R                  # Track B: blind VST, selected genes
+uv run --locked python scripts/step4_track_b.py                               # Track B: alternative score, tissue state
 ```
 
 Optional, with the paper's supplementary archive unzipped in `doc/supp/`:

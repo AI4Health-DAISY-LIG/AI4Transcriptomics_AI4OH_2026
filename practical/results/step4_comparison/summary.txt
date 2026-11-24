@@ -20,6 +20,7 @@ deposited_group
 2                    5   1.72    2.88   3.55
 3                   13   6.15    9.73  14.14
 4                    6  16.83   19.91  24.06
+[claims] contrast keys: 7; matching no result file: none
 [track_a/S10_G4] claimed genes: 18  found in my results: 18
 [track_a/S10_G4] significant in my results (padj < 0.05): 18
 [track_a/S10_G4] same direction as the paper: 18

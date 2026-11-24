@@ -36,5 +36,11 @@ it as you read the paper.
 | value_in_paper | the number the paper gives, if any |
 | notes | threshold, software, sample subset |
 
+In this fork, the DE results sit in two tracks, so `my_contrast` takes a qualified key:
+`track_a/<contrast>` for `results/step3_de/track_a/de_<contrast>.csv.gz` (for example
+`track_a/S10_G4`), or `track_b/groups/<level>_vs_Control` for
+`results/step3_de/track_b/groups/de_<level>_vs_Control.csv.gz` (for example
+`track_b/groups/G4_vs_Control`). The script reports any key that matches no result file.
+
 A claim that does not concern one gene, such as a count of biopsies or a
 correlation, goes in the tables of `worksheets/step4_comparison.md`.
