@@ -20,7 +20,9 @@ Not the reproduction (r/score_reproduction.R). Three parts, all descriptive:
    literature). Spearman with MRI, pathology and the GEO score; partial correlation given the
    GEO score (Pearson correlation of rank residuals). Groups, fixed from Step 3 before this
    analysis: "follows the DUX4 level" (score padj < 0.05, G4 vs G1 padj < 0.05, and the
-   same sign as FSHD vs controls when that is significant) and "FSHD-wide".
+   same sign as FSHD vs controls when that is significant) and "case-control only" (the
+   other panel genes: selected through FSHD vs controls, outside that joint criterion; the
+   label says nothing about expression being uniform across FSHD muscles).
 3. RUNX1-POSTN and SOX11-POSTN expression correlations.
 
 Bootstrap: 5,000 resamples of the FSHD biopsies with replacement, seed 20261124, the same draws
@@ -98,7 +100,7 @@ def build_panel() -> pd.DataFrame:
                    and (not p_sig or np.sign(score.loc[gene, "log2FoldChange"])
                         == np.sign(primary.loc[gene, "log2FoldChange"])))
         rows.append({"gene_id": gene, "gene_name": name, "status": status,
-                     "group": "follows the DUX4 level" if follows else "FSHD-wide",
+                     "group": "follows the DUX4 level" if follows else "case-control only",
                      "low_count": primary.loc[gene, "baseMean"] < 20,
                      "primary_log2FC": primary.loc[gene, "log2FoldChange"],
                      "primary_padj": primary.loc[gene, "padj"],
