@@ -51,7 +51,7 @@ GROUP_COL = "char:rnaseq.rank"
 # results/step2_qc/mapping_rates.csv). The main analysis keeps all 43 biopsies.
 SENSITIVITY_EXCLUDE = ["32-0008", "01-0037", "32-0009"]
 # Step 3, Track B (own analysis, not the reproduction): sample rules fixed after QC and before
-# any DE result (consensus of 23 Nov). (a) 32-0004: unresolved disagreement between recorded sex
+# any DE result (23 Nov). (a) 32-0004: unresolved disagreement between recorded sex
 # and the expression profile (results/step2_qc/sex_check.csv); a provenance flag, not a proven
 # swap. (b) mapping rate below 90% (SENSITIVITY_EXCLUDE). Biological extremes (32-0016) are kept.
 TRACK_B_EXCLUDE = SENSITIVITY_EXCLUDE + ["32-0004"]

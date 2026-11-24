@@ -20,7 +20,7 @@ All five reference datasets are included. Yao Supplementary Table S1 is provided
 
 ## Yao DUX4-induced gene exclusion
 
-- `supp_ddu251_ddu251supp_table1.xls` is the original Supplementary Table S1 workbook, supplied by the student. It is included byte-for-byte.
+- `supp_ddu251_ddu251supp_table1.xls` is the original Supplementary Table S1 workbook, kept byte-for-byte.
 - `Yao2014_TableS1_DUX4_induced_genes.tsv` contains every one of the 213 gene rows from worksheet `Dux4.target.csv`, in the published order. It preserves the Ensembl gene ID and the original symbol. The workbook defines which genes belong to the set. The displayed fold changes are rounded.
 - Match on the Ensembl gene ID, dropping any version suffix from the analysis IDs before matching. Keep a record of unmatched identifiers when applying the list to GENCODE v24. The 213 IDs have 212 distinct source symbols because `KHDC1L` labels two IDs (ENSG00000243501, ENSG00000256980).
 

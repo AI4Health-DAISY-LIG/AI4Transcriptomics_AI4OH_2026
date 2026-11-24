@@ -2,7 +2,7 @@
 
 ## Gene selection rule
 
-Fixed on 24 Nov 2026, before the selection script was run. Agreed between the student, the lead assistant, Fable and Assistant 2. Applied by `scripts/bonus_select_genes.py`, which writes to `results/bonus/translator/`. The reference lists are data: they sit in the git-ignored `data/raw/bonus_lists/`. Their sources, versions, retrieval method and SHA-256 are tracked in `bonus_lists/sources.tsv` and `bonus_lists/SHA256SUMS`, and `bonus_lists/README.md` explains how to get them again.
+Fixed on 24 Nov 2026, before the selection script was run. Applied by `scripts/bonus_select_genes.py`, which writes to `results/bonus/translator/`. The reference lists are data: they sit in the git-ignored `data/raw/bonus_lists/`. Their sources, versions, retrieval method and SHA-256 are tracked in `bonus_lists/sources.tsv` and `bonus_lists/SHA256SUMS`, and `bonus_lists/README.md` explains how to get them again.
 
 This is exploratory, for the bonus. No comparison of biopsies taken at a single time can show what causes DUX4 expression.
 
@@ -51,7 +51,7 @@ This is exploratory, for the bonus. No comparison of biopsies taken at a single 
 3. **Muscle regeneration:** GO:0043403, human annotations, descendants through `is_a` and `part_of` (QuickGO, 45 annotations).
 4. **Known DUX4 regulators, reported in both views and never selected (enforced by the script):** SMCHD1, DNMT3B, LRIF1, CHD4, HDAC2, MTA2, MBD2, RBBP4, CHAF1A, CHAF1B, MBD3L2, MAPK14, MAPK11.
 
-Symbols that match no gene in our annotation are counted and reported.
+Symbols that match no gene in the annotation are counted and reported.
 
 ### Ranking, influence check, choice
 
@@ -84,4 +84,4 @@ The union of these top-10 lists, with each gene's rank in every run, is in `top1
 
 ## Queries and results
 
-To fill in: date, link ("Share Result Set"), number of results after "Sync New Results", first results, the evidence behind one relationship, and what it tells us.
+To fill in: date, link ("Share Result Set"), number of results after "Sync New Results", first results, the evidence behind one relationship, and what it shows.

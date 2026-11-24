@@ -1,4 +1,4 @@
-list matching (symbols found in our annotation):
+list matching (symbols found in the annotation):
   immediate_early: 46 / 48
   transcription_factor: 1490 / 1639
   chromatin: 688 / 710

@@ -1,7 +1,7 @@
 """Step 3, Track A: compare the reproduced DE tables with the published supplementary tables.
 
 For each published contrast (S4, S5, S6, S8, S10), it compares
-  1. gene membership: our genes at padj < 0.05 and |log2FC| >= 2 vs the genes in the table;
+  1. gene membership: the recomputed genes at padj < 0.05 and |log2FC| >= 2 vs the genes in the table;
   2. the shared genes' statistics: baseMean, log2FoldChange, lfcSE, padj;
   3. the per-sample normalised counts in the table vs raw count / full-cohort size factor,
      which shows which size factors the published fits used.
@@ -60,8 +60,8 @@ def main() -> None:
     rows = []
     for table_id, contrast in TABLES.items():
         published = read_published(supp / f"Supplemental Table {table_id}.xlsx")
-        ours = pd.read_csv(TRACK_A / f"de_{contrast}.csv.gz", index_col=0)
-        called = ours[(ours["padj"] < 0.05) & (ours["log2FoldChange"].abs() >= 2)]
+        recomputed = pd.read_csv(TRACK_A / f"de_{contrast}.csv.gz", index_col=0)
+        called = recomputed[(recomputed["padj"] < 0.05) & (recomputed["log2FoldChange"].abs() >= 2)]
         shared = published.index.intersection(called.index)
         row = {"table": table_id, "contrast": contrast,
                "published": len(published), "reproduced": len(called), "shared": len(shared),

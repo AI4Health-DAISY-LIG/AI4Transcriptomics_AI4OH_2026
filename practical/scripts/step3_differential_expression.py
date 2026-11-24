@@ -1,7 +1,7 @@
-"""Step 3, Track B: our own differential expression with PyDESeq2, on raw counts.
+"""Step 3, Track B: independent differential expression with PyDESeq2, on raw counts.
 
-Track A (r/de_reproduction.R) reproduces the authors' tables. This script is our own analysis,
-with the design and the sample rules agreed before any DE result (consensus of 23 Nov):
+Track A (r/de_reproduction.R) reproduces the authors' tables. This script is the independent analysis,
+with the design and the sample rules fixed before any DE result (23 Nov):
 
   primary          39 biopsies   ~ batch + sex + condition         main result
   ladder_none      39            ~ condition                       worksheet: without batch
@@ -22,7 +22,7 @@ libraries 32-0008 and 32-0009 explain the gap with the published G3 count. The g
 gives G4 vs G1 (DUX4-marker-high vs DUX4-marker-low FSHD biopsies), exploratory: the groups
 were built from DUX4 targets.
 
-Added on 24 Nov after review (Assistant 2, Fable):
+Added on 24 Nov as further checks:
   rochester_norefit   24        as rochester, Cook's replacement off   checks the 15,409 refits
   score               30 FSHD   ~ batch + sex + score                  DUX4-target score slope
   score_nosex         30 FSHD   ~ batch + score

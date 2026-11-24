@@ -12,7 +12,7 @@ Inputs:  results/step3_de/track_b/ (primary, score, groups, robustness tables)
          data/processed/counts_filtered.csv, metadata.csv; results/step2_qc/sex_check.csv;
          results/step3_de/track_a/size_factors.csv (for the count plots)
 Outputs (results/bonus/translator/):
-  list_matching.csv          symbols of each list found in our annotation
+  list_matching.csv          symbols of each list found in the annotation
   yao2014_matching.csv       each Yao 2014 row: matched by Ensembl ID, by a unique symbol (with
                              the count feature it maps to), ambiguous, or absent from the counts
   pool_<view>_<filter>.csv   top 10 of each pool, with flags and the reason for each skip
@@ -359,7 +359,7 @@ def main() -> None:
             known.append({"gene_name": symbol, "gene_id": "not in the counts"})
     pd.DataFrame(known).to_csv(OUT / "known_regulators.csv", float_format="%.6g", index=False)
 
-    lines = ["list matching (symbols found in our annotation):"]
+    lines = ["list matching (symbols found in the annotation):"]
     lines += [f"  {m['list']}: {m['found']} / {m['symbols']}" for m in matching]
     lines += [f"view A: {len(initial_a)} pass the initial filters, {len(eligible_a)} after removing "
               "known regulators; pools: "
