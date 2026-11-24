@@ -6,10 +6,11 @@ score: controls, GEO-convention values 0.035 0.411 0.004 0.591 0.227 0.230 0.251
 groups: raw cluster sizes 13/24/5/1; recomputed groups equal GEO for the 34 FSHD: TRUE; controls all in group 1: TRUE; equal to RNA.Cluster for all 43: TRUE; literal numeric rule gives the same: TRUE
 groups: sizes among FSHD (1-4) 10/5/13/6; paper 10/5/13/6
 controls (FPKM assay of the GEO object): max FPKM per marker PRAMEF2 0.000, TRIM43 0.020, KHDC1L 0.019, LEUTX 0.016; values >= 0.1: 0 of 36
-STIR+ biopsies in groups 2-4: 20/23; without 32-0016: 20/22 (paper 20/23 and 91%)
+STIR+ biopsies in groups 2-4 (the paper's definition of expressing DUX4 targets): 20/23; without 32-0016: 20/22 (paper 20/23 and 91%)
+STIR+ biopsies with at least one marker above relative rlog 2 (Figure 1 calls >= 1), another definition: 15/23
 Figure 2 groups: MRI-normal (STIR 0 and T1 0) 10, STIR+ 23, in neither: 01-0022-1
 Figure 2 (GEO score): means 1.383 / 7.666, population SD 2.4506 / 5.7262, sample SD 2.5832 / 5.8549 (paper 1.4 / 7.7, SD 2.4 / 5.7)
-Figure 2 test, unnamed in the paper (P < 0.001); candidates, neither confirmed: Welch t-test p = 0.00017; Wilcoxon rank-sum, normal approximation with tie and continuity correction, p = 0.0012
+Figure 2 test, unnamed in the paper (P < 0.001); candidates, two-sided, none confirmed: Welch t-test p = 0.00017; exact Wilcoxon rank-sum p = 0.00064; Wilcoxon normal approximation with continuity correction p = 0.0012
 Spearman (average ranks for ties; p from the asymptotic t approximation), all endpoint-complete FSHD:
   stir         score_geo n 34  rho 0.555  p 0.00065  paper 0.61
   stir         group     n 34  rho 0.544  p 0.00089  paper 0.63
@@ -20,4 +21,4 @@ Spearman (average ranks for ties; p from the asymptotic t approximation), all en
   pathology    score_geo n 32  rho 0.584  p 0.00045  paper 0.63
   pathology    group     n 32  rho 0.466  p 0.0072  paper -
 DUX4 candidates (mk.rda): 55 features, 54 in the counts, TRIM43CP present: TRUE; not in the counts: ENSG00000144188.9
-DE (padj < 0.05, |log2FC| >= 2) among the 54 without TRIM43CP: group 3 47, group 4 54 (paper 47/54, 54/54); among all 55: group 3 47, group 4 54
+DE (padj < 0.05, |log2FC| >= 2) among the 54 candidates in the counts: group 3 47, group 4 54 (paper 47/54, 54/54); not assessed: TRIM43CP

@@ -8,9 +8,12 @@
 #   misc_tools.R L185-L198 (getRankSummary) table sorted by the sum; GEO score = sum - minimum
 #   misc_tools.R L350-L351 (do_deseq)       the four marker IDs
 #   addColDataToDDS.R L14-L31               relabelling of the raw clusters into groups 1-4
-#   misc_tools.R L345                        DE call for the DUX4 candidates: padj < 0.05 and
-#                                            |log2FC| >= 2; candidate list = data/mk.rda, minus
-#                                            TRIM43CP (rankScore.R L25)
+#   misc_tools.R L335-L348 (do_deseq)       DE call for the DUX4 candidates: the 55 features of
+#                                            data/mk.rda intersected with the DE results, then
+#                                            padj < 0.05 and |log2FC| >= 2. TRIM43CP is not in the
+#                                            deposited counts, which leaves 54 (its explicit removal
+#                                            in rankScore.R L25 concerns the clustering only)
+#   makeManuscripts_supFig_scatterPlot.R    Figure 1 scatter panel: coloured by the final RNA group
 #
 # Inputs
 #   data/raw/GSE115650_biopsy.dds.rda.gz          authors' DESeqDataSet deposited on GEO
@@ -27,7 +30,8 @@
 #   figure2.csv            score by MRI status: n, mean, population and sample SD
 #   correlations.csv       Spearman correlations with the paper's values, by subset
 #   dux4_targets_de.csv    DE status of each DUX4 candidate in groups 3 and 4
-#   figure1_style.png      sum by biopsy, colour = raw cluster, dot size = calls + 1
+#   figure1_style.png      Figure 1 scatter panel: sum by biopsy, colour = recomputed group,
+#                          dot size = calls + 1 (the heat map panel is not redrawn)
 #   summary.txt, r_session_info.txt
 # Run from practical/:  pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R
 
@@ -84,15 +88,24 @@ say("score: controls, GEO-convention values %s (GEO gives no score for controls)
 # --- 1.2 Groups ------------------------------------------------------------------------------
 raw <- cutree(hclust(dist(t(lg))), k = 4)               # Euclidean, complete, on the rlog values
 level <- rank(tapply(log_sum, raw, median))             # raw clusters ordered by their median sum
-# Authors' rule: cluster 2 -> 1, cluster 1 -> 3, clusters 3 and 4 -> 4, then rows 20-24 of the
-# table sorted by the sum -> 2. Their raw table is not public, so each raw cluster is identified
-# by its level (lowest -> group 1, second -> group 3, top two -> group 4); the literal numeric
-# rule is also applied, to show whether the cluster numbering matches theirs.
-by_level <- c(1, 3, 4, 4)[level[as.character(raw)]]
-literal <- c(3, 1, 4, 4)[raw]
+# Authors' rule, in their order, on the table sorted by the sum (addColDataToDDS.R L20-L26):
+# cluster 2 -> 1; rows 20-24 -> 2; cluster 1 -> 3; clusters 3 and 4 -> 4 (the last two steps
+# would overwrite a row 20-24 that is not in cluster 2). Their raw table is not public, so each
+# raw cluster is also identified by its level (lowest -> 1, second -> 3, top two -> 4); the
+# literal numeric rule shows whether the cluster numbering matches theirs.
 sorted <- order(log_sum)
-by_level[sorted[20:24]] <- 2
-literal[sorted[20:24]] <- 2
+relabel <- function(cluster_sorted, as_g1, as_g3, as_g4) {
+  g <- rep(1, length(cluster_sorted))
+  g[cluster_sorted %in% as_g1] <- 1
+  g[20:24] <- 2
+  g[cluster_sorted %in% as_g3] <- 3
+  g[cluster_sorted %in% as_g4] <- 4
+  out <- numeric(length(g))
+  out[sorted] <- g                                     # back to the object's column order
+  out
+}
+literal <- relabel(raw[sorted], 2, 1, c(3, 4))
+by_level <- relabel(level[as.character(raw[sorted])], 1, 2, c(3, 4))
 geo_group <- num(geo[["char:rnaseq.rank"]])
 dep_group <- num(as.character(dds$RNA.Cluster))
 say("groups: raw cluster sizes %s; recomputed groups equal GEO for the 34 FSHD: %s; controls all in group 1: %s; equal to RNA.Cluster for all 43: %s; literal numeric rule gives the same: %s",
@@ -116,12 +129,13 @@ write.csv(data.frame(sample = colnames(dds), condition = dds$pheno_type, batch =
 # --- 1.3 Figure 1-style plot -----------------------------------------------------------------
 draw <- function() {
   par(mar = c(6, 4, 2, 1))
-  plot(seq_along(sorted), log_sum[sorted], col = raw[sorted] + 1, pch = 19,
+  plot(seq_along(sorted), log_sum[sorted], col = by_level[sorted] + 1, pch = 19,
        cex = 0.5 * (calls[sorted] + 1), xaxt = "n", xlab = "",
-       ylab = "Sum of relative expression (rlog)", main = "Recomputed score (Figure 1 style)")
+       ylab = "Sum of relative expression (rlog - control mean)",
+       main = "Figure 1 scatter panel, recomputed (dot size = markers above 2, plus 1)")
   axis(1, at = seq_along(sorted), cex.axis = 0.5, las = 2,
        labels = paste0(ifelse(ctrl[sorted], "", "*"), colnames(dds)[sorted]))
-  legend("topleft", legend = paste("raw cluster", 1:4), col = 2:5, pch = 19, cex = 0.7)
+  legend("topleft", legend = paste("group", 1:4), col = 2:5, pch = 19, cex = 0.7)
 }
 ok <- tryCatch({ png(file.path(out, "figure1_style.png"), width = 1600, height = 900, res = 150,
                      type = "cairo"); TRUE }, error = function(e) FALSE)
@@ -153,8 +167,10 @@ pos <- fshd & !is.na(stir) & stir > 0
 normal <- fshd & !is.na(stir) & stir == 0 & !is.na(t1) & t1 == 0
 in_g24 <- by_level %in% 2:4
 no16 <- colnames(dds) != "32-0016"
-say("STIR+ biopsies in groups 2-4: %d/%d; without 32-0016: %d/%d (paper 20/23 and 91%%)",
+say("STIR+ biopsies in groups 2-4 (the paper's definition of expressing DUX4 targets): %d/%d; without 32-0016: %d/%d (paper 20/23 and 91%%)",
     sum(pos & in_g24), sum(pos), sum(pos & in_g24 & no16), sum(pos & no16))
+say("STIR+ biopsies with at least one marker above relative rlog 2 (Figure 1 calls >= 1), another definition: %d/%d",
+    sum(pos & calls >= 1), sum(pos))
 say("Figure 2 groups: MRI-normal (STIR 0 and T1 0) %d, STIR+ %d, in neither: %s",
     sum(normal), sum(pos), paste(colnames(dds)[fshd & !pos & !normal], collapse = " "))
 sdp <- function(v) sqrt(mean((v - mean(v))^2))
@@ -168,13 +184,15 @@ fig2 <- cbind(group = rep(c("MRI_normal", "STIR_positive"), 2), fig2,
               paper_mean = c(1.4, 7.7), paper_sd = c(2.4, 5.7))
 write.csv(fig2, file.path(out, "figure2.csv"), row.names = FALSE)
 welch <- t.test(geo_score[pos], geo_score[normal])$p.value
+stopifnot(!anyDuplicated(geo_score[pos | normal]))       # no ties: the exact test applies
+wilc_exact <- wilcox.test(geo_score[pos], geo_score[normal], exact = TRUE)$p.value
 wilc <- suppressWarnings(wilcox.test(geo_score[pos], geo_score[normal], exact = FALSE,
                                      correct = TRUE)$p.value)
 say("Figure 2 (GEO score): means %.3f / %.3f, population SD %.4f / %.4f, sample SD %.4f / %.4f (paper 1.4 / 7.7, SD 2.4 / 5.7)",
     fig2$mean[1], fig2$mean[2], fig2$sd_population[1], fig2$sd_population[2],
     fig2$sd_sample[1], fig2$sd_sample[2])
-say("Figure 2 test, unnamed in the paper (P < 0.001); candidates, neither confirmed: Welch t-test p = %.2g; Wilcoxon rank-sum, normal approximation with tie and continuity correction, p = %.2g",
-    welch, wilc)
+say("Figure 2 test, unnamed in the paper (P < 0.001); candidates, two-sided, none confirmed: Welch t-test p = %.2g; exact Wilcoxon rank-sum p = %.2g; Wilcoxon normal approximation with continuity correction p = %.2g",
+    welch, wilc_exact, wilc)
 
 # --- 1.7 Spearman correlations ---------------------------------------------------------------
 endpoints <- c(stir = "char:stir", t1 = "char:t1", fat_fraction = "char:fat.fraction",
@@ -215,17 +233,17 @@ for (contrast in c("S8_G3", "S10_G4")) {
   hit <- res[cand, ]
   de_tab[[paste0("log2FC_", contrast)]] <- hit$log2FoldChange
   de_tab[[paste0("padj_", contrast)]] <- hit$padj
-  de_tab[[paste0("de_", contrast)]] <- !is.na(hit$padj) & hit$padj < 0.05 &
-    abs(hit$log2FoldChange) >= 2
+  de_tab[[paste0("de_", contrast)]] <- ifelse(de_tab$in_counts,             # NA = not assessed
+    !is.na(hit$padj) & hit$padj < 0.05 & abs(hit$log2FoldChange) >= 2, NA)
 }
 write.csv(de_tab, file.path(out, "dux4_targets_de.csv"), row.names = FALSE)
-keep54 <- !de_tab$is_trim43cp
+keep54 <- de_tab$in_counts
 say("DUX4 candidates (mk.rda): %d features, %d in the counts, TRIM43CP present: %s; not in the counts: %s",
     nrow(de_tab), sum(de_tab$in_counts), any(de_tab$is_trim43cp),
     paste(de_tab$gene_id[!de_tab$in_counts], collapse = " "))
-say("DE (padj < 0.05, |log2FC| >= 2) among the 54 without TRIM43CP: group 3 %d, group 4 %d (paper 47/54, 54/54); among all %d: group 3 %d, group 4 %d",
-    sum(de_tab$de_S8_G3[keep54]), sum(de_tab$de_S10_G4[keep54]), nrow(de_tab),
-    sum(de_tab$de_S8_G3), sum(de_tab$de_S10_G4))
+say("DE (padj < 0.05, |log2FC| >= 2) among the %d candidates in the counts: group 3 %d, group 4 %d (paper 47/54, 54/54); not assessed: %s",
+    sum(keep54), sum(de_tab$de_S8_G3[keep54]), sum(de_tab$de_S10_G4[keep54]),
+    paste(de_tab$gene_name[!keep54], collapse = " "))
 
 writeLines(lines, file.path(out, "summary.txt"))
 writeLines(capture.output(sessionInfo()), file.path(out, "r_session_info.txt"))
