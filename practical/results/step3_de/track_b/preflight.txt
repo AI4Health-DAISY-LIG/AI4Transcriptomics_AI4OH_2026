@@ -1,4 +1,5 @@
 genes in the input: 27506; samples: 43
+score span G1-G4 medians: 14.98423 (frozen SCORE_SPAN 14.98423)
 primary: n=39 (Control=9, FSHD=30); design rank 6/6; all-zero genes 0
 ladder_none: n=39 (Control=9, FSHD=30); design rank 2/2; all-zero genes 0
 ladder_batch: n=39 (Control=9, FSHD=30); design rank 5/5; all-zero genes 0
@@ -10,3 +11,9 @@ groups: n=39 (Control=9, G1=9, G2=5, G3=11, G4=5); design rank 9/9; all-zero gen
 groups_none: n=39 (Control=9, G1=9, G2=5, G3=11, G4=5); design rank 5/5; all-zero genes 0
 rochester: n=24 (Control=9, FSHD=15); design rank 5/5; all-zero genes 3
 groups_g3_check: n=41 (Control=9, G1=9, G2=5, G3=13, G4=5); design rank 9/9; all-zero genes 0
+rochester_norefit: n=24 (Control=9, FSHD=15); design rank 5/5; all-zero genes 3
+score: n=30 (FSHD=30, score 0.04-21.23); design rank 6/6; all-zero genes 0
+score_nosex: n=30 (FSHD=30, score 0.04-21.23); design rank 5/5; all-zero genes 0
+score_all34: n=34 (FSHD=34, score 0.02-21.23); design rank 6/6; all-zero genes 0
+score_omit_32_0006: n=29 (FSHD=29, score 0.04-15.98); design rank 6/6; all-zero genes 0
+score_omit_01_0025: n=29 (FSHD=29, score 0.04-21.23); design rank 6/6; all-zero genes 0

@@ -1,0 +1,3 @@
+[rochester_norefit] design: ~ batch + sex + condition  samples: 24  excluded: 32-0008, 01-0037, 32-0009, 32-0004; Rochester only; Cook's replacement off
+  Control=9, FSHD=15; genes refitted after Cook's outlier replacement: 0
+  FSHD_vs_Control: finite p-value 27434, finite padj 19444, Cook's-filtered 69, independently filtered 7990; padj < 0.05: 1445 (up 1222, down 223); also |log2FC| >= 1: 821, >= 2: 249

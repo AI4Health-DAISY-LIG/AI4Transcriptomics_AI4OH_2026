@@ -41,14 +41,34 @@
   G2_vs_Control: finite p-value 27339, finite padj 20437, Cook's-filtered 167, independently filtered 6902; padj < 0.05: 184 (up 168, down 16); also |log2FC| >= 1: 175, >= 2: 117
   G3_vs_Control: finite p-value 27339, finite padj 19905, Cook's-filtered 167, independently filtered 7434; padj < 0.05: 1669 (up 1345, down 324); also |log2FC| >= 1: 1082, >= 2: 415
   G4_vs_Control: finite p-value 27339, finite padj 21497, Cook's-filtered 167, independently filtered 5842; padj < 0.05: 5844 (up 3466, down 2378); also |log2FC| >= 1: 4197, >= 2: 1982
-robustness: 2577 genes with padj < 0.05 in primary; robust 2385 (2298 autosomal); holds without sex 2565, site 2416, all43 2577, 32-0004 restored 2576, 32-0016 omitted 2577, Rochester only 2436; same direction and size in ~ condition (reported only) 2560
+[rochester_norefit] design: ~ batch + sex + condition  samples: 24  excluded: 32-0008, 01-0037, 32-0009, 32-0004; Rochester only; Cook's replacement off
+  Control=9, FSHD=15; genes refitted after Cook's outlier replacement: 0
+  FSHD_vs_Control: finite p-value 27434, finite padj 19444, Cook's-filtered 69, independently filtered 7990; padj < 0.05: 1445 (up 1222, down 223); also |log2FC| >= 1: 821, >= 2: 249
+[score] design: ~ batch + sex + score  samples: 30  excluded: 32-0008, 01-0037, 32-0009, 32-0004; FSHD only
+  FSHD=30, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 23773, Cook's-filtered 0, independently filtered 3733; padj < 0.05: 144 (up 129, down 15); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 143
+[score_nosex] design: ~ batch + score  samples: 30  excluded: 32-0008, 01-0037, 32-0009, 32-0004; FSHD only
+  FSHD=30, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 24306, Cook's-filtered 0, independently filtered 3200; padj < 0.05: 287 (up 240, down 47); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 273
+[score_all34] design: ~ batch + sex + score  samples: 34  excluded: none; FSHD only
+  FSHD=34, score 0.02-21.23; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 24306, Cook's-filtered 0, independently filtered 3200; padj < 0.05: 238 (up 217, down 21); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 224
+[score_omit_32_0006] design: ~ batch + sex + score  samples: 29  excluded: 32-0008, 01-0037, 32-0009, 32-0004, 32-0006; FSHD only
+  FSHD=29, score 0.04-15.98; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 25372, Cook's-filtered 0, independently filtered 2134; padj < 0.05: 140 (up 125, down 15); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 137
+[score_omit_01_0025] design: ~ batch + sex + score  samples: 29  excluded: 32-0008, 01-0037, 32-0009, 32-0004, 01-0025; FSHD only
+  FSHD=29, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 27506, Cook's-filtered 0, independently filtered 0; padj < 0.05: 68 (up 67, down 1); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 68
+robustness: 2577 genes with padj < 0.05 in primary; robust (planned five) 2408 (2319 on chr1-22); with Rochester 2385 (2297 on chr1-22); holds without sex 2565, site 2416, all43 2577, 32-0004 restored 2576, 32-0016 omitted 2577, Rochester only 2436; reported only: ~ condition 2560, Rochester without Cook's replacement 2440
 sensitive to 32-0016 (padj < 0.05 only without it): 187
 paired comparison with primary (genes significant in primary for ratios):
-            fit  finite_padj  significant  both  primary_only  fit_only  lfc_spearman_primary_genes  median_lfc_ratio  median_se_ratio
-   ladder_batch        21092         4315  2465           112      1850                      0.9779             1.043            0.952
-           site        21613          583   549          2028        34                      0.9032             0.914            1.150
-          all43        20533         2107  2064           513        43                      0.9989             1.010            1.025
-restore_32_0004        20549         2654  2549            28       105                      1.0000             1.000            0.990
-   omit_32_0016        20023         2415  2228           349       187                      0.9938             0.934            0.967
-      rochester        19497         1450  1151          1426       299                      0.9032             0.956            1.102
-    ladder_none        22172         5509  2445           132      3064                      0.9501             1.128            0.973
+              fit  finite_padj  significant  both  primary_only  fit_only  lfc_spearman_primary_genes  median_lfc_ratio  median_se_ratio
+     ladder_batch        21092         4315  2465           112      1850                      0.9779             1.043            0.952
+             site        21613          583   549          2028        34                      0.9032             0.914            1.150
+            all43        20533         2107  2064           513        43                      0.9989             1.010            1.025
+  restore_32_0004        20549         2654  2549            28       105                      1.0000             1.000            0.990
+     omit_32_0016        20023         2415  2228           349       187                      0.9938             0.934            0.967
+        rochester        19497         1450  1151          1426       299                      0.9032             0.956            1.102
+      ladder_none        22172         5509  2445           132      3064                      0.9501             1.128            0.973
+rochester_norefit        19444         1445  1149          1428       296                      0.9070             0.957            1.103
+score (view B): 144 genes with padj < 0.05; robust 141; robust with |log2FC across the span| >= 1 140; holds without sex 143, all 34 142, without 32-0006 144, without 01-0025 144, same sign in G4 vs G1 144
