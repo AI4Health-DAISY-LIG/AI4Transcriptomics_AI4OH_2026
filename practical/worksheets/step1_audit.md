@@ -143,7 +143,7 @@ Variables not found in the GEO record (Age and Gender are recorded for patients 
 
 Total: 26/30 (see `fair_score.md`). The two weakest criteria and why:
 F2 (important variabes are missing and cannot be assessed to reproduce all paper results, compare groups for balance, and confounders )
-R6 (authors did not explicitly clarify which metadata is linked to which results or figure)
+R1 (we don't have a legal permission to reuse the data)
 
 ## Decisions I made
 
