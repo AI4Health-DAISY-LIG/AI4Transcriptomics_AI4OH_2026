@@ -147,4 +147,12 @@ R1 (we don't have a legal permission to reuse the data)
 
 ## Decisions I made
 
--
+-I should inspect the raw gene counts to decide if any filtering is needed
+-What about missing values in this case, do I leave them empty?
+-How should I normalize the data for PCA and plots?
+-DE takes raw conts
+-Log1p?
+-Should I perform feature selection top 2000 genes ?
+-What covariates should I consider: batch
+
+

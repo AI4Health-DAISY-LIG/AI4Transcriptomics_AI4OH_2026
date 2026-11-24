@@ -19,7 +19,7 @@ evidence, so do not round up.
 | I2 | Gene identifiers follow a named reference (which genome build, which annotation release?) |2 |Taken from the paper: "To profile the gene expression, the gene features and annotation were first obtained from GENCODE,version 24." |
 | I3 | The metadata use controlled vocabularies, or at least consistent spelling, for condition and tissue |2 |"sample_table.csv" |
 | R1 | A licence or usage terms are stated |0 | CC BY or CC0 for data Not stated anywhere|
-| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |2 |Taken from paper methods: "The preprocessing of RNA-Seq data started with filtering unqualified reads, followed by trimming Illumina universal adapter using Trimmomatic-0.32. Subsequently, the preprocessed reads were aligned to genome build hg38 using Tophat-21.0/Bowtie2-2.2.6. To profile the gene expression, the gene features and annotation were first obtained from GENCODE, version 24. Gene counts were then estimated by using Bioconductor function GenomicAlignment::summarizeOverlap with IntersectionStrict mode, which restrict read counts to those that fall completely within the range of exons.The bioinformatics analysis and visualization were mostly performed using R/3.4 and Bioconductor 3.5 packages." |
+| R2 | The processing provenance is stated: aligner, annotation, counting method, software versions |2 |Taken from paper methods: "The preprocessing of RNA-Seq data started with filtering unqualified reads, followed by trimming Illumina universal adapter using Trimmomatic-0.32. Subsequently, the preprocessed reads were aligned to genome build hg38 using Tophat-21.0/Bowtie2-2.2.6. To profile the gene expression, the gene features and annotation were first obtained from GENCODE, version 24. Gene counts were then estimated by using Bioconductor function GenomicAlignment::summarizeOverlap with IntersectionStrict mode, which restrict read counts to those that fall completely within the range of exons.Further downstream analysis for RNA-seq samples included differential and GSEA using DESeq2 and GOSeq Bioconductor packages, respectively.The bioinformatics analysis and visualization were mostly performed using R/3.4 and Bioconductor 3.5 packages." |
 | R3 | Raw counts are deposited, not only normalised values |2 |Series RNA-seq raw counts matrix Raw count matrices may be suitable for input into differential expression analysis tools. GSE115650_raw_counts_GRCh38.p13_NCBI.tsv.gz |
 | R4 | The sample table lets you rebuild the groups compared in the paper without guessing |2 |in "sample_table.csv" Column source_name_ch1|
 | R5 | The deposited files and the paper agree on the number of samples |2 |34 patients and 9 controls in deposited files, similar to paper |
@@ -33,5 +33,10 @@ for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
 -Although data are available but I didn't find any statement from the authors' to the licence to legally reuse the data.
--I didn't find some technical and biological variables that could be used as covariates such as FSHD type, age, gender of controls, biopsy needle type, 
+-The authors did not mention if they applied any filter on the counts matrix (for genes detected in almost no samples)
+-Normalization of counts was not explained by the authors
+-Feature selection to keep higly variable genes not mentioned, not performed?
+-Selection of technical confounders/covariates: batch for example was not considered among covariates which might introduce batch effect. Sites and needle type ? 
+-I didn't find some biological variables that are associated with disease such as FSHD type, age, muscle type, CSS, parental link between cases and controls.
+
 
