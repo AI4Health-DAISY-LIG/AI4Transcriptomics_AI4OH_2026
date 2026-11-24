@@ -36,7 +36,10 @@ feeds Part 2 of your report.
 -The authors did not mention if they applied any filter on the counts matrix (for genes detected in almost no samples)
 -Normalization of counts was not explained by the authors
 -Feature selection to keep higly variable genes not mentioned, not performed?
+-Number of principal components?
 -Selection of technical confounders/covariates: batch for example was not considered among covariates which might introduce batch effect. Sites and needle type ? 
 -I didn't find some biological variables that are associated with disease such as FSHD type, age, muscle type, CSS, parental link between cases and controls.
+-What about the 3 QC numbers that might be potential confounders (RIN, Percentage of mitochondrial reads, percentage of ribosomal RNA.duplication rate )???
+-What about PMI? 
 
 
