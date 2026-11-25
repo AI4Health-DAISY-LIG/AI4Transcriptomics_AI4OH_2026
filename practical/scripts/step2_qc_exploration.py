@@ -1,13 +1,22 @@
 """Step 2: quality control and exploration of the raw counts.
 
-Outputs (results/step2_qc/):
-  library_sizes.png                 total counts per sample, coloured by condition
-  gene_filter.txt                   genes before and after filtering, with the rule used
-  pca_variance.csv                  variance explained by the first 10 components
-  pca_scores.csv                    PC1 to PC10 per sample
-  pca_by_<variable>.png             PC1 vs PC2 coloured by condition and by each variable
-  data/processed/counts_filtered.csv   filtered raw counts (genes x samples), input of step 3
-  data/processed/metadata.csv          one row per sample column of the counts, with condition
+Outputs:
+  results/step2_qc/
+    library_sizes.png                   total counts per sample, coloured by condition
+    read_counts_summary.csv             summary statistics of sequencing depth by group
+    read_counts_by_<variable>.png       read count scatter and boxplots by batch, site, and condition
+    gene_filter.txt                     genes before and after filtering, with the rule used
+
+  results/step2_qc/{RLOG2_PCA, VST_PCA, INLIERS_VST_PCA}/
+    pca_variance.csv                    variance explained by the first 10 components
+    pca_scores.csv                      PC1 to PC10 per sample
+    pca_by_<variable>.png               PC1 vs PC2 coloured by condition and metadata variables
+    PCA_top_variables.csv               R² / η² variance explained and FDR per variable on PC1 & PC2
+    PC1_PC2_top_variables.png           horizontal bar chart of top variables driving PC1 & PC2
+
+  data/processed/
+    counts_filtered.csv                 filtered raw counts (genes x samples), input of step 3
+    metadata.csv                        one row per sample column of the counts, with condition
 
 Decisions marked TODO(student) are yours. Record them in worksheets/step2_qc.md.
 
@@ -19,6 +28,11 @@ from __future__ import annotations
 import matplotlib
 import numpy as np
 import pandas as pd
+from pathlib import Path
+from scipy import stats
+
+from infer_sex import verify_sample_sex
+from helpers.statistics import benjamini_hochberg
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -26,7 +40,10 @@ from sklearn.decomposition import PCA  # noqa: E402
 from step2_view_genes_filtering_effects import (
     display_genes_and_sample_size_for_biomarkers,
 )
-from pca import deseq2_rlog_exact_python, python_pydeseq2_vst
+from norm_before_pca import (
+    python_pydeseq2_vst,
+    deseq2_rlog_exact_python,
+)
 from adjustText import adjust_text
 
 import config  # noqa: E402
@@ -34,26 +51,38 @@ import config  # noqa: E402
 OUT = config.RESULTS / "step2_qc"
 AUDIT = config.RESULTS / "step1_audit"
 
+OUT_RLOG2_PCA = config.RESULTS / "step2_qc" / "RLOG2_PCA"
+OUT_VST_PCA = config.RESULTS / "step2_qc" / "VST_PCA"
+OUT_INLIERS_VST_PCA = config.RESULTS / "step2_qc" / "INLIERS_VST_PCA"
 
-def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
+
+for path in [OUT_RLOG2_PCA, OUT_VST_PCA, OUT_INLIERS_VST_PCA]:
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def load_counts(with_mapping=True) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Raw counts (genes x samples) and metadata aligned on the sample columns."""
     counts = pd.read_csv(config.RAW / config.COUNTS_FILE, index_col=0)
-    samples = pd.read_csv(AUDIT / "sample_table.csv")
+
+    if with_mapping:
+        samples = pd.read_csv(AUDIT / "sample_table.csv")
+    else:
+        samples = pd.read_csv(AUDIT / "sample_table.csv", index_col=0)
+
+    # this function is used in the step1 to infer gender so we skip the rest if it's already aligned
+    if "char:infer_gender" in samples.columns:
+        return counts, samples
+
     # TODO(student): read results/step1_audit/counts_header_check.txt first. This join keeps
     # only the count columns whose name equals a GEO sample_id. If a column has no match,
     # find out which biopsy it is and decide: rename it, or leave it out and say why.
-
-    # # remove a list of samples sample that have
-    # counts = counts.drop(columns=["01-0037", "32-0016"])
-
-    # samples = samples.loc[~samples["title"].isin(["01-0037", "32-0016"])]
 
     # rename sample_id 01-0022 to 01-0022-1 to match the geo record
     samples.loc[samples["gsm"] == "GSM3186680", "char:sample_id"] = "01-0022-1"
 
     key = "char:sample_id" if "char:sample_id" in samples.columns else "title"
     meta = samples.set_index(key).reindex(counts.columns)
-    meta.to_csv(config.RAW / "tmp.csv")
+
     missing = meta["condition"].isna()
     if missing.any():
         print(
@@ -63,140 +92,149 @@ def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
     return counts, meta
 
 
+variables = (
+    ["condition"]
+    + config.TECHNICAL_VARS
+    + config.BIOLOGICAL_VARS
+    + config.PATHOLOGY_VARS
+    + config.INFER_VARS
+)
+
+
+def _sig_stars(fdr: float) -> str:
+    if pd.isna(fdr) or fdr >= 0.05:
+        return ""
+    if fdr < 0.001:
+        return "***"
+    if fdr < 0.01:
+        return "**"
+    return "*"
+
+
 def plot_top_pc_drivers(
     pcs: pd.DataFrame,
     metadata: pd.DataFrame,
     ratio,
     path,
-    top_n: int = 20,
+    variables: list | set | None = None,
+    ntop: int = 20,
     title: str = "Top Variables Separating Samples on PC1 & PC2",
 ) -> pd.DataFrame:
     """
     Ranks variables in `metadata` by how well they separate samples along PC1 and PC2
-    (using R² for numeric and η² for categorical variables) and plots the top `top_n`.
+    (using R² for numeric and η² for categorical variables), plots the top `ntop`,
+    and exports the full results table (with p-values and FDR) to a CSV file.
     """
-
     records = []
 
-    # Iterate through each column in the metadata to evaluate its association with PCs
     for col in metadata.columns:
-        # Filter to keep only the variable used in the PCA plot
-        if not (col.startswith("char:")) and col != "condition":
-            continue
-
-        # Specific exclusion for a known non-informative or redundant variable
-        if col == "char:subject status":
+        if variables is not None and col not in variables:
             continue
 
         s = metadata[col]
-
-        # Data Quality Check: Ensure there are enough valid data points to compute statistics reliably
         valid = s.notna()
         if valid.sum() < 3:
             continue
 
-        # Determine Variable Type (Numeric vs Categorical)
-        # Attempt to convert to numeric : if successful for all non-NaN values and has sufficient variance, treat as numeric
         s_valid = s[valid]
         numeric = pd.to_numeric(s_valid, errors="coerce")
-
-        # Heuristic for categorical data
         is_numeric = numeric.notna().all() and numeric.nunique() > 8
 
         row = {
-            "variable": col.replace("char:", ""),  # Clean variable name for plotting
+            "variable": col.replace("char:", ""),
+            "original_column": col,
             "type": "numeric" if is_numeric else "categorical",
+            "metric": "R2" if is_numeric else "eta2",
+            "n_samples": int(valid.sum()),
         }
 
-        # Calculate association strength (Variance Explained) for PC1 and PC2
         for pc in ["PC1", "PC2"]:
-            y = pcs.loc[valid, pc].to_numpy(
-                dtype=float
-            )  # The Principal Component scores (target variable)
-
-            # Total Sum of Squares (SS_total): Variance in the PC scores themselves
+            y = pcs.loc[valid, pc].to_numpy(dtype=float)
             ss_total = np.sum((y - y.mean()) ** 2)
 
-            # If PC has no variance (constant), association is zero
             if ss_total == 0:
                 row[pc] = 0.0
+                row[f"{pc}_pvalue"] = np.nan
                 continue
 
             if is_numeric:
                 x = numeric.to_numpy(dtype=float)
-
-                # Check for constant numeric variable (no variance to explain)
                 if np.std(x) == 0:
                     row[pc] = 0.0
+                    row[f"{pc}_pvalue"] = np.nan
                 else:
-                    # For Numeric Variables: Use Pearson Correlation Coefficient squared (R²)
-                    # R² represents the proportion of variance in PC scores explained by the linear relationship with variable x
-                    r = np.corrcoef(x, y)[0, 1]
+                    r, p_val = stats.pearsonr(x, y)
                     row[pc] = float(r**2)
+                    row[f"{pc}_pvalue"] = float(p_val)
             else:
-                # For Categorical Variables: Use Eta-squared (η²)
-                # η² represents the proportion of variance in PC scores explained by group membership
-
                 groups = s_valid.astype(str)
-
-                # Check for valid categorical structure: Must have at least 2 groups to compare means and not be unique per sample (which would make it an ID, not a category)
                 if groups.nunique() < 2 or groups.nunique() >= len(groups):
                     row[pc] = 0.0
+                    row[f"{pc}_pvalue"] = np.nan
                 else:
                     df_tmp = pd.DataFrame({"y": y, "g": groups})
-
-                    # Calculate Sum of Squares Between Groups
                     group_means = df_tmp.groupby("g")["y"].transform("mean")
                     ss_between = np.sum((group_means - y.mean()) ** 2)
-
-                    # Eta-squared
                     row[pc] = float(ss_between / ss_total)
+
+                    # One-way ANOVA p-value corresponding to eta-squared
+                    grouped_y = [grp["y"].to_numpy() for _, grp in df_tmp.groupby("g")]
+                    _, p_val = stats.f_oneway(*grouped_y)
+                    row[f"{pc}_pvalue"] = float(p_val)
 
         records.append(row)
 
-    # Convert list of dictionaries into a DataFrame for easy sorting and plotting
     scores = pd.DataFrame(records)
 
-    fig, axes = plt.subplots(1, 2, figsize=(11, max(4, top_n * 0.4)), sharey=False)
+    if not scores.empty:
+        # Add Benjamini-Hochberg FDR-adjusted p-values
+        scores["PC1_fdr"] = benjamini_hochberg(scores["PC1_pvalue"])
+        scores["PC2_fdr"] = benjamini_hochberg(scores["PC2_pvalue"])
+
+        # Add combined variance explained across PC1 & PC2 for overall ranking
+        scores["combined_score"] = scores["PC1"] + scores["PC2"]
+        scores = scores.sort_values("combined_score", ascending=False).reset_index(
+            drop=True
+        )
+
+    # Export to CSV
+    scores.to_csv(path / "PCA_top_variables.csv", index=False)
+
+    # --- Plotting ---
+    fig, axes = plt.subplots(1, 2, figsize=(11, max(4, ntop * 0.4)), sharey=False)
     palette = {"numeric": "#2b5c8f", "categorical": "#d95f02"}
 
-    # Iterate through axes to plot PC1 and PC2 results separately
     for ax, pc, var_ratio in zip(axes, ["PC1", "PC2"], ratio[:2]):
-
-        # Sort scores by the current PC's score (descending) and take top N
-        # .iloc[::-1] reverses order so highest value is at the top of the bar chart
-        top_df = scores.nlargest(top_n, pc).iloc[::-1]
+        top_df = scores.nlargest(ntop, pc).iloc[::-1]
         colors = [palette[t] for t in top_df["type"]]
 
-        # Create horizontal bar chart
         bars = ax.barh(
             top_df["variable"], top_df[pc], color=colors, edgecolor="none", height=0.7
         )
 
-        # Configure axes and labels
-        ax.set_xlim(0, 1.08)  # Add slight padding to the right for text labels
         ax.set_xlabel("Variance Explained ($R^2$ / $\\eta^2$)", fontsize=9)
         ax.set_title(f"{pc} ({var_ratio:.0%})", fontsize=10, fontweight="bold")
-
-        # Style adjustments for readability
         ax.tick_params(axis="y", labelsize=8)
         ax.grid(axis="x", linestyle="--", alpha=0.4)
         ax.spines[["top", "right"]].set_visible(False)
 
-        # Add value labels at the end of each bar
-        for bar in bars:
+        ax.set_xlim(0, 1.15)
+
+        # Add value + FDR significance labels at the end of each bar
+        for bar, fdr in zip(bars, top_df[f"{pc}_fdr"]):
             w = bar.get_width()
+            stars = _sig_stars(fdr)
             ax.text(
                 w + 0.015,
                 bar.get_y() + bar.get_height() / 2,
-                f"{w:.2f}",
+                f"{w:.2f}{stars}",
                 va="center",
                 ha="left",
                 fontsize=7.5,
-                color="#333333",
+                fontweight="bold" if stars else "normal",
+                color="#111111" if stars else "#666666",
             )
 
-    # Create a shared legend for the entire figure indicating variable types
     handles = [
         plt.Rectangle((0, 0), 1, 1, color=palette["numeric"], label="Numeric ($R^2$)"),
         plt.Rectangle(
@@ -204,7 +242,6 @@ def plot_top_pc_drivers(
         ),
     ]
 
-    # Place legend outside the plot area to avoid overlapping bars
     fig.legend(
         handles=handles,
         loc="upper right",
@@ -213,11 +250,12 @@ def plot_top_pc_drivers(
         bbox_to_anchor=(0.98, 0.98),
     )
 
-    # Finalize figure layout and save
     fig.suptitle(title, fontsize=11, y=0.98)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    fig.savefig(path, dpi=150)
+    fig.savefig(path / "PC1_PC2_top_variables.png", dpi=150)
     plt.close(fig)
+
+    return scores
 
 
 def scatter_by(
@@ -287,13 +325,230 @@ def scatter_by(
     plt.close(fig)
 
 
+def compare_read_counts(
+    counts: pd.DataFrame,
+    metadata: pd.DataFrame,
+    group_variables: list[str],
+    output_dir,
+) -> pd.DataFrame:
+    """
+    Compare raw sequencing read counts per sample across batches, sites,
+    and biological groups.
+    """
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Calculate total reads per sample
+    library_sizes = counts.sum(axis=0)
+
+    # Align metadata with count columns
+    df = metadata.reindex(counts.columns).copy()
+    df["sample"] = counts.columns
+    df["read_count"] = library_sizes.reindex(counts.columns).values
+    df["read_count_millions"] = df["read_count"] / 1e6
+
+    summary_records = []
+
+    for variable in group_variables:
+
+        if variable not in df.columns:
+            print(f"[warn] {variable} not found in metadata. Skipping.")
+            continue
+
+        plot_df = df.dropna(subset=[variable]).copy()
+
+        if plot_df.empty:
+            continue
+
+        # Convert categories to strings for plotting
+        plot_df[variable] = plot_df[variable].astype(str)
+
+        # Summary statistics
+        summary = (
+            plot_df.groupby(variable)["read_count"]
+            .agg(
+                n_samples="count",
+                mean="mean",
+                median="median",
+                std="std",
+                min="min",
+                max="max",
+            )
+            .reset_index()
+            .rename(columns={variable: "group"})
+        )
+
+        summary["variable"] = variable
+        summary_records.append(summary)
+
+        # Order groups by median read count
+        order = summary.sort_values("median")["group"].tolist()
+
+        # Create figure
+        fig, axes = plt.subplots(
+            1,
+            2,
+            figsize=(14, 5),
+            gridspec_kw={"width_ratios": [1.5, 1]},
+        )
+
+        # Individual sample read counts
+        sample_order = plot_df.sort_values(variable)["sample"]
+
+        colors = plt.cm.tab20(np.linspace(0, 1, plot_df[variable].nunique()))
+
+        color_map = dict(zip(order, colors))
+
+        for category in order:
+            subset = plot_df[plot_df[variable] == category]
+
+            axes[0].scatter(
+                subset["sample"],
+                subset["read_count_millions"],
+                label=category,
+                color=color_map[category],
+                s=45,
+                alpha=0.85,
+            )
+
+        axes[0].set_xticks(range(len(sample_order)))
+        axes[0].set_xticklabels(
+            sample_order,
+            rotation=90,
+            fontsize=7,
+        )
+        axes[0].set_ylabel("Total reads (millions)")
+        axes[0].set_title(f"Read counts per sample by {variable}")
+        axes[0].legend(
+            title=variable,
+            fontsize=8,
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+        )
+        axes[0].grid(axis="y", alpha=0.3)
+
+        # Boxplot comparing group distributions
+        box_data = [
+            plot_df.loc[
+                plot_df[variable] == category,
+                "read_count_millions",
+            ].values
+            for category in order
+        ]
+
+        axes[1].boxplot(
+            box_data,
+            tick_labels=order,
+            showmeans=True,
+            showfliers=True,
+        )
+
+        axes[1].set_ylabel("Total reads (millions)")
+        axes[1].set_title(f"Read count distribution by {variable}")
+        axes[1].tick_params(axis="x", rotation=45)
+        axes[1].grid(axis="y", alpha=0.3)
+
+        fig.suptitle(
+            f"Sequencing depth comparison: {variable}",
+            fontsize=12,
+        )
+
+        fig.tight_layout()
+
+        safe_name = variable.replace("char:", "").replace(" ", "_").replace(".", "_")
+
+        fig.savefig(
+            output_dir / f"read_counts_by_{safe_name}.png",
+            dpi=150,
+            bbox_inches="tight",
+        )
+
+        plt.close(fig)
+
+    # Save combined summary
+    if summary_records:
+        summary_df = pd.concat(summary_records, ignore_index=True)
+
+        summary_df.to_csv(
+            output_dir / "read_counts_summary.csv",
+            index=False,
+        )
+
+        return summary_df
+
+    return pd.DataFrame()
+
+
+def runPCA(
+    data: pd.DataFrame,
+    meta_inliers: pd.DataFrame,
+    output_folder_path: Path,
+    method_name: str,
+    ntop: int = 1500,
+):
+    print(output_folder_path)
+    top_genes = data.var(axis=1).sort_values(ascending=False).index[:ntop]
+    x = data.loc[top_genes].T
+    x = x - x.mean(axis=0)
+    pca = PCA(n_components=10)
+    names = [f"PC{i + 1}" for i in range(10)]
+    pcs = pd.DataFrame(pca.fit_transform(x), index=x.index, columns=names)
+    ratio = pca.explained_variance_ratio_
+
+    pd.DataFrame({"component": names, "variance_explained": ratio}).to_csv(
+        output_folder_path / "pca_variance.csv", index=False
+    )
+    pcs.to_csv(output_folder_path / "pca_scores.csv")
+
+    for var in variables:
+        if var not in meta_inliers.columns:
+            continue
+        safe = var.replace("char:", "").replace(" ", "_").replace(".", "_")
+        scatter_by(
+            pcs,
+            meta_inliers[var],
+            var,
+            ratio,
+            f"PCA of {method_name}, top {ntop} variable genes, coloured by {safe}",
+            output_folder_path / f"pca_by_{safe}.png",
+        )
+    plot_top_pc_drivers(
+        pcs=pcs,
+        metadata=meta_inliers,
+        ratio=ratio,
+        path=output_folder_path,
+        variables=variables,
+        ntop=10,
+        title=f"Top Variables Separating Samples on PC1 & PC2 | {method_name}",
+    )
+    print("figures written to", output_folder_path)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     config.PROCESSED.mkdir(parents=True, exist_ok=True)
-    counts, meta = load_counts()
+    counts, meta = load_counts(with_mapping=False)
     counts = counts.loc[:, ~meta["condition"].isna()]
     meta = meta.loc[counts.columns]
     print(f"counts: {counts.shape[0]} genes x {counts.shape[1]} samples")
+
+    group_variables = [
+        "char:batch",
+        "char:site",
+        "condition",
+    ]
+
+    # Compare sequencing depth across technical and biological variables
+    read_count_summary = compare_read_counts(
+        counts=counts,
+        metadata=meta,
+        group_variables=group_variables,
+        output_dir=OUT,
+    )
+
+    print("\nRead count summary:")
+    print(read_count_summary)
 
     # Library sizes
     lib = counts.sum(axis=0)
@@ -329,56 +584,42 @@ def main() -> None:
     # Read counts_filtered.csv and check if the 4 biomarkers remain after filtering, plus report how many samples are kept
     display_genes_and_sample_size_for_biomarkers()
 
-    rlog_py, p_var = deseq2_rlog_exact_python(filtered)
+    # rlog function coded in python
+    rlog_py, _ = deseq2_rlog_exact_python(filtered)
 
     # Because rlog is not available in pydeseq2 I use vst to have a similar result.
     vst_df = python_pydeseq2_vst(filtered)
 
+    # top gene selection count
+    ntop = 1500
+
     # make the PCA for each different methods
-    for name, data in zip(["rlog2", "VST"], [rlog_py, vst_df]):
-        n_top = 1500
-        top_genes = data.var(axis=1).sort_values(ascending=False).index[:n_top]
-        x = data.loc[top_genes].T
-        x = x - x.mean(axis=0)
-
-        pca = PCA(n_components=10)
-        names = [f"PC{i + 1}" for i in range(10)]
-        pcs = pd.DataFrame(pca.fit_transform(x), index=x.index, columns=names)
-        ratio = pca.explained_variance_ratio_
-
-        pd.DataFrame({"component": names, "variance_explained": ratio}).to_csv(
-            OUT / "pca_variance.csv", index=False
+    for name, data, path in zip(
+        ["rlog2", "VST"], [rlog_py, vst_df], [OUT_RLOG2_PCA, OUT_VST_PCA]
+    ):
+        runPCA(
+            data,
+            meta_inliers=meta,
+            output_folder_path=path,
+            method_name=name,
+            ntop=ntop,
         )
-        pcs.to_csv(OUT / "pca_scores.csv")
 
-        variables = (
-            ["condition"]
-            + config.TECHNICAL_VARS
-            + config.BIOLOGICAL_VARS
-            + config.PATHOLOGY_VARS
-        )
-        for var in variables:
-            if var not in meta.columns:
-                continue
-            safe = var.replace("char:", "").replace(" ", "_").replace(".", "_")
-            scatter_by(
-                pcs,
-                meta[var],
-                var,
-                ratio,
-                f"PCA of {name}, top {n_top} variable genes, coloured by {var}",
-                OUT / f"pca_by_{safe}_{name}.png",
-            )
-        plot_top_pc_drivers(
-            pcs,
-            meta,
-            ratio,
-            OUT / f"pca_PC1_and_PC2_top_variables_{name}.png",
-            10,
-            "Top Variables Separating Samples on PC1 & PC2",
-        )
-        print("figures written to", OUT)
-        print("\nNext: fill worksheets/step2_qc.md")
+    # second analysis without outliers
+
+    inliers = [s for s in filtered.columns if s not in config.OUTLIERS]
+    meta_inliers = meta.loc[meta.index.isin(inliers)].copy()
+
+    # Because rlog is not available in pydeseq2 I use vst to have a similar result.
+    vst_df = python_pydeseq2_vst(filtered[inliers])
+
+    runPCA(
+        vst_df,
+        meta_inliers=meta_inliers,
+        output_folder_path=OUT_INLIERS_VST_PCA,
+        method_name="VST Inliers only",
+        ntop=ntop,
+    )
 
 
 if __name__ == "__main__":
