@@ -50,6 +50,8 @@ PATHOLOGY_VARS = [
     "char:fat.fraction",
     "char:t1",
 ]
+
+# Add two infer variables from th meta data
 INFER_VARS = ["char:infer_gender", "char:site"]
 
 # The four DUX4 target genes the paper uses as biomarkers, by symbol as the paper names them.
@@ -58,4 +60,6 @@ BIOMARKERS = ["LEUTX", "KHDC1L", "PRAMEF2", "TRIM43"]
 GROUP_COL = "char:rnaseq.rank"
 SCORE_COL = "char:rnaseq.score"
 
+
+# Outliers found by the PCA methods in step2 QC
 OUTLIERS = ["01-0037", "32-0016"]
