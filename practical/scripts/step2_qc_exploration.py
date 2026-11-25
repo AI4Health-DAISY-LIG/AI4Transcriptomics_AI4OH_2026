@@ -96,7 +96,7 @@ def main() -> None:
     # TODO(student): choose and justify the rule. The default keeps a gene when at least
     # `min_samples` samples have `min_count` counts or more, with min_samples = smallest group.
     # Check what your rule does to the four biomarker genes of the paper (config.BIOMARKERS).
-    min_count = 5
+    min_count = 10
     min_samples = int(meta["condition"].value_counts().min())
     keep = (counts >= min_count).sum(axis=1) >= min_samples
     filtered = counts.loc[keep]
