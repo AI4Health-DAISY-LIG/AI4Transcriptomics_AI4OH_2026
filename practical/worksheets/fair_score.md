@@ -32,4 +32,5 @@ List here what you could not find in GEO or in the paper and needed to decide
 for yourself (thresholds, covariates, versions, sample exclusions). This list
 feeds Part 2 of your report.
 
--
+-No information about why there's a sample for which title and sample_ID don't match (01-0022-1 and 01-0022).
+-No information about the samples from which RNA was not sequenced and the third sample without histophatological score.
