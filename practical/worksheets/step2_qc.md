@@ -18,15 +18,15 @@ All four biomarker genes (LEUTX, KHDC1L, PRAMEF2, TRIM43) pass the filter.
 
 Figures (in `results/step2_qc/`):
 
-- PCA coloured by condition: 
-- PCA coloured by each technical variable: 
-- PCA coloured by the authors' group (`rnaseq.rank`): 
+- PCA coloured by condition: controls cluster on the left, FSHD spreads to the right along PC1.
+- PCA coloured by each technical variable: batches I and II sit on the right with FSHD, while III and IV are mixed, so batch overlaps with condition.
+- PCA coloured by the authors' group (`rnaseq.rank`): rank 1 to 4 move from left to right on PC1, with rank 4 at the top right and two rank 1 outliers at the bottom right.
 
-Name the variable that separates the samples on PC1, then on PC2: the condition,
-a technical variable, the authors' group, or none you can name. Give the variance
-PC1 and PC2 explain.
+<!-- variance from results/step2_qc/pca_variance.csv -->
 
-Compare your PCA with Figure 3 of the paper. The same or not, and why:
+PC1 explains 65% variance (condition / `rnaseq.rank`) and PC2 explains 11% (no single variable clearly explains it).
+
+Compare with paper Figure 3: same overall pattern (controls on the left, groups 1 to 4 shifting right, and two group 1 outliers on the far right). Variance differs (our PC1 = 65%, PC2 = 11% vs paper PC1 = 38%, PC2 = 14%) because we used log2 CPM on top 2000 variable genes, and PC2 is flipped vertically.
 
 ## Samples I excluded, and why
 
