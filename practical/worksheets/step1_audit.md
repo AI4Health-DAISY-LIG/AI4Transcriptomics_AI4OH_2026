@@ -1,5 +1,5 @@
 # Step 1: fetch and audit
-
+#Status 25 Nov: set-up done, step 1 not started yet.
 *Worksheet. Fill it as you work and commit it with your code. Your report on UNESS cites it as evidence.*
 
 Keep it short and factual. Take each number from `results/step1_audit/`.
