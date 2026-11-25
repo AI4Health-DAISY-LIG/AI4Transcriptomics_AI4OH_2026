@@ -13,21 +13,25 @@ Do the four biomarker genes of the paper pass your filter? yes
 
 ## Exploration
 
-Figures (in `results/step2_qc/`):
+Figures (in `results/step2_qc/`): 
 
 - PCA coloured by condition: 
 ![Condition](image.png)
 
 - PCA coloured by each technical variable: 
 ![Batch](image-1.png)
+![Instrument model](image-2.png)
+![Tissue](image-3.png)
 
 - PCA coloured by the authors' group (`rnaseq.rank`): 
+![rnaseq.rank](image-4.png)
 
 Name the variable that separates the samples on PC1, then on PC2: the condition,
 a technical variable, the authors' group, or none you can name. Give the variance
-PC1 and PC2 explain.
+PC1 and PC2 explain. PC1 explains 64% and PC2 11% of the variance.
+None I can really name. 
 
-Compare your PCA with Figure 3 of the paper. The same or not, and why:
+Compare your PCA with Figure 3 of the paper. The same or not, and why: Not the same; % of variance explained is lower in paper (they did not perform any filtering nor feature selection top 2000); Distribution of samples is different; samples to exclude are different; 
 
 ## Samples I excluded, and why
 

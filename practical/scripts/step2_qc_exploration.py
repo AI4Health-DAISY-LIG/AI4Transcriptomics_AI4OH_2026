@@ -112,7 +112,7 @@ def main() -> None:
     # log2 CPM and PCA on the most variable genes.
     cpm = filtered / filtered.sum(axis=0) * 1e6
     logcpm = np.log2(cpm + 1)
-    n_top = 19258  # TODO(student): does the choice of n_top change the picture?
+    n_top = 2000  # TODO(student): does the choice of n_top change the picture? # The % of variance explained is slightly different but the overall picture doesn't change 
     top = logcpm.var(axis=1).sort_values(ascending=False).index[:n_top]
     x = logcpm.loc[top].T
     x = x - x.mean(axis=0)
