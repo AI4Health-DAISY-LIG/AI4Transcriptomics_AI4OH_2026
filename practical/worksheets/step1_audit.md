@@ -41,5 +41,7 @@ variables the paper describes that you cannot find in the GEO record.
 Total: /30 (see `fair_score.md`). The two weakest criteria and why:
 
 ## Decisions I made
-
+- I will first explore the GSE115650 dataset and its associated metadata.
+- I will check the consistency between the sample table and the gene expression counts before starting the analysis.
+- I will investigate potential confounding variables before performing differential expression analysis.
 -
