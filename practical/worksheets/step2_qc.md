@@ -6,10 +6,13 @@
 
 | Filter | Threshold I chose | Why | Samples and genes before | after |
 |--------|-------------------|-----|--------------------------|-------|
-| | | | | |
+| low-count genes | ≥10 counts in ≥9 samples | 9 is the control group size | 43 samples, 27506 genes | 43 samples, 19198 genes |
 
-Does the paper state its thresholds? Quote them if it does, say so if it does not.
-Do the four biomarker genes of the paper pass your filter? 
+<!-- numbers from results/step2_qc/gene_filter.txt -->
+
+Paper does not mention any filtering threshold.
+
+All four biomarker genes (LEUTX, KHDC1L, PRAMEF2, TRIM43) pass the filter.
 
 ## Exploration
 
