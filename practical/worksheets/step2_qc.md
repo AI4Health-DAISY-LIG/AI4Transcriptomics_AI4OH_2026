@@ -30,7 +30,7 @@ Compare with paper Figure 3: same overall pattern (controls on the left, groups 
 
 ## Samples I excluded, and why
 
--
+- None. All 43 samples were kept. In `results/step2_qc/library_sizes.png`, all samples have reasonable counts (around 17M to 80M) and none look like failed libraries.
 
 ## Decisions I made
 
