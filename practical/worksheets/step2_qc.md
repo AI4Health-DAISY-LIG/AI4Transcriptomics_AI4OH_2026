@@ -16,9 +16,10 @@ Do the four biomarker genes of the paper pass your filter? yes
 Figures (in `results/step2_qc/`):
 
 - PCA coloured by condition: 
-![alt text](image.png)
+![Condition](image.png)
 
 - PCA coloured by each technical variable: 
+![Batch](image-1.png)
 
 - PCA coloured by the authors' group (`rnaseq.rank`): 
 
