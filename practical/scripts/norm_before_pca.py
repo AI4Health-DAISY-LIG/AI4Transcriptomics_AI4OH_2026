@@ -11,8 +11,6 @@ import config  # noqa: E402
 OUT = config.RESULTS / "step2_qc"
 AUDIT = config.RESULTS / "step1_audit"
 
-filtered = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
-
 
 def fit_dispersion_trend(base_mean, raw_disp):
     """
@@ -117,6 +115,8 @@ def python_pydeseq2_vst(counts_df):
 
 
 if __name__ == "__main__":
+
+    filtered = pd.read_csv(config.PROCESSED / "counts_filtered.csv", index_col=0)
 
     rlog_py, p_var = deseq2_rlog_exact_python(filtered)
     print(f"Genes retained: {rlog_py.shape[0]} | estimated prior_var: {p_var:.4f}")
