@@ -1,0 +1,12 @@
+run: no_batch  samples: 41  genes: 19258
+
+design: ~ sex + site + hemoglobin_pct + neutrophil_pct + condition
+samples per level: Control=9, FSHD=32
+[FSHD_vs_Control] genes tested: 19258  padj < 0.05: 358  up: 324  down: 34
+
+design: ~ sex + site + hemoglobin_pct + neutrophil_pct + group
+samples per level: Control=9, G1=8, G2=5, G3=13, G4=6
+[G1_vs_Control] genes tested: 19258  padj < 0.05: 5  up: 4  down: 1
+[G2_vs_Control] genes tested: 19258  padj < 0.05: 553  up: 492  down: 61
+[G3_vs_Control] genes tested: 19258  padj < 0.05: 2703  up: 2174  down: 529
+[G4_vs_Control] genes tested: 19258  padj < 0.05: 8185  up: 4408  down: 3777

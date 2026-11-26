@@ -1,0 +1,10 @@
+test,statistic,p_value,cramers_v,min_expected,warning,variable,analysis,effect_size,effect_measure,p_adjusted,significant
+Chi-square,3.449,0.3274,0.09486626751730384,1.05,Sparse expected frequencies: chi-square approximation may be unreliable.,char:batch,Condition vs observed categories,0.0949,Cramér's V,0.3274,False
+Not applicable,NA,NA,,NA,Insufficient categories,instrument_model,Condition vs observed categories,NA,Cramér's V,NA,False
+Not applicable,NA,NA,,NA,Insufficient categories,char:tissue,Condition vs observed categories,NA,Cramér's V,NA,False
+Not applicable,NA,NA,,NA,Insufficient categories,char:gender,Condition vs observed categories,NA,Cramér's V,NA,False
+Fisher exact,inf,1.773e-09,0.9999999999999999,1.88,,char:gender,Condition vs missingness,1.0000,Cramér's V,4.433e-09,True
+Not applicable,NA,NA,,NA,Insufficient observations,char:age,Condition vs continuous variable,NA,Not calculated,NA,False
+Fisher exact,inf,1.773e-09,0.9999999999999999,1.88,,char:age,Condition vs missingness,1.0000,Cramér's V,4.433e-09,True
+Fisher exact,4.182,0.1221,0.2431304609498731,3.56,,char:infer_gender,Condition vs observed categories,0.2431,Cramér's V,0.1526,False
+Fisher exact,inf,0.005649,0.413335801661842,3.77,,char:site,Condition vs observed categories,0.4133,Cramér's V,0.009415,True

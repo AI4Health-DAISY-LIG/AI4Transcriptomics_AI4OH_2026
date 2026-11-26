@@ -1,0 +1,16 @@
+,Control,FSHD,n_samples_total
+char:subject status,9,34,43
+char:age,0,34,43
+char:gender,0,34,43
+char:path.score,0,32,43
+char:inflam,0,32,43
+char:active,0,32,43
+char:stir,0,34,43
+char:t1,0,34,43
+char:fat.fraction,0,34,43
+char:tissue,9,34,43
+char:rnaseq.score,0,34,43
+char:rnaseq.rank,0,34,43
+char:batch,9,34,43
+char:infer_gender,9,34,43
+char:site,9,34,43
