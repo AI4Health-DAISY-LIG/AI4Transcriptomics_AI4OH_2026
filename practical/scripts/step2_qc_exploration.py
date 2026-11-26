@@ -783,6 +783,13 @@ def main() -> None:
         output_dir=OUT,
     )
 
+    meta.index.name = "sample_id"
+
+    meta["hemoglobin_pct"] = composition_df["hemoglobin_pct"].reindex(meta.index)
+    meta["neutrophil_pct"] = composition_df["neutrophil_pct"].reindex(meta.index)
+
+    meta.to_csv(config.PROCESSED / "metadata.csv")
+
     # make the PCA for each different methods
     for name, data, path in zip(
         ["rlog2", "VST"], [rlog_py, vst_df], [OUT_RLOG2_PCA, OUT_VST_PCA]
