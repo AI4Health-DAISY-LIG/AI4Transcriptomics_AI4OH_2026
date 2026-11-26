@@ -33,6 +33,8 @@ if __name__ == "__main__":
     # Load raw count matrix and rename the first column to 'gene_id'
     raw = pl.read_csv(config.RAW / config.COUNTS_FILE).rename({"": "gene_id"})
 
+    raw = raw.drop(config.OUTLIERS)
+
     # Parse sample groups from the audit table, extracting group labels from source names
     groups = pl.read_csv(AUDIT / "sample_table.csv").select(
         "title", group=pl.col("source_name_ch1").str.replace(r"_(fe)?male$", "")
