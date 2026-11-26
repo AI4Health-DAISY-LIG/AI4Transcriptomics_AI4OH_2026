@@ -121,3 +121,8 @@ if __name__ == "__main__":
     parser.add_argument("--optional", action="store_true",
                         help="also download the FPKM, normalised and R object files")
     main(parser.parse_args().optional)
+
+
+#read Gencode annotation file
+#read GSE biospy gene counts 
+

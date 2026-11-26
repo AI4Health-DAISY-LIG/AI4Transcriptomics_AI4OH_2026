@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 from pydeseq2.dds import DeseqDataSet  # noqa: E402
 from pydeseq2.ds import DeseqStats  # noqa: E402
 
-import config  # noqa: E402
+import config  # noqa: E402p
 
 OUT = config.RESULTS / "step3_de"
 ALPHA = 0.05

@@ -1,0 +1,12 @@
+samples: 43  genes: 19258
+
+design: ~ condition
+samples per level: Control=9, FSHD=34
+[FSHD_vs_Control] genes tested: 19258  padj < 0.05: 6558  up: 4656  down: 1902
+
+design: ~ group
+samples per level: Control=9, G1=10, G2=5, G3=13, G4=6
+[G1_vs_Control] genes tested: 19258  padj < 0.05: 3158  up: 2782  down: 376
+[G2_vs_Control] genes tested: 19258  padj < 0.05: 383  up: 346  down: 37
+[G3_vs_Control] genes tested: 19258  padj < 0.05: 3804  up: 2927  down: 877
+[G4_vs_Control] genes tested: 19258  padj < 0.05: 9614  up: 5231  down: 4383

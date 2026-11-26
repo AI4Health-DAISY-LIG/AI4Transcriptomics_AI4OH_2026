@@ -29,7 +29,6 @@ import config  # noqa: E402
 OUT = config.RESULTS / "step2_qc"
 AUDIT = config.RESULTS / "step1_audit"
 
-
 def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Raw counts (genes x samples) and metadata aligned on the sample columns."""
     counts = pd.read_csv(config.RAW / config.COUNTS_FILE, index_col=0)
@@ -112,7 +111,7 @@ def main() -> None:
     # log2 CPM and PCA on the most variable genes.
     cpm = filtered / filtered.sum(axis=0) * 1e6
     logcpm = np.log2(cpm + 1)
-    n_top = 2000  # TODO(student): does the choice of n_top change the picture?
+    n_top = 2000  # TODO(student): does the choice of n_top change the picture? # The % of variance explained is slightly different but the overall picture doesn't change 
     top = logcpm.var(axis=1).sort_values(ascending=False).index[:n_top]
     x = logcpm.loc[top].T
     x = x - x.mean(axis=0)
@@ -138,3 +137,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+#Compute loadings of genes on PC1 and PC2?
+#Remove outliers and repeat analysis? sample 320016 and sample 01-0037
+
+
+
+
