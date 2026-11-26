@@ -28,6 +28,14 @@ import config  # noqa: E402
 OUT = config.RESULTS / "step3_de"
 ALPHA = 0.05
 
+#define the outliers samples
+outliers = ["320016", "01-0037"]
+#remove outliers from metadata.csv and from counts_filtered.csv
+metadata = metadata.drop(index=outliers)
+counts_filtered = counts_filtered.drop(columns=outliers)
+
+
+
 # TODO(student): the design. False fits "~ <factor>" and ignores the batch; True fits
 # "~ batch + <factor>". Look at results/step1_audit/crosstab_batch.csv and at your PCA
 # before you decide, run both, and report what changes.
