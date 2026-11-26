@@ -138,3 +138,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+#Compute loadings of genes on PC1 and PC2?
+

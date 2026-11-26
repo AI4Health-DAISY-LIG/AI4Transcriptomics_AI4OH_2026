@@ -141,7 +141,7 @@ Variables not found in the GEO record (Age and Gender are recorded for patients 
 
 ## FAIR score
 
-Total: 26/30 (see `fair_score.md`). The two weakest criteria and why:
+Total: 25/30 (see `fair_score.md`). The two weakest criteria and why:
 F2 (important variabes are missing and cannot be assessed to reproduce all paper results, compare groups for balance, and confounders )
 R1 (we don't have a legal permission to reuse the data)
 
