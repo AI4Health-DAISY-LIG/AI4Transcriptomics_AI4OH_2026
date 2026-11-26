@@ -56,4 +56,4 @@ Total: 21/30 (see `fair_score.md`). The two weakest criteria and why: R1 (0, no 
 - Keep sample `01-0022-1` and rename it `01-0022` (same GEO record, matched by title).
 - Treat batch as a technical confounder: run step 3 with and without batch in the design.
 - Site and muscle type cannot be adjusted for with the deposited variables (site is only in the id prefix and is fully confounded with being a control; muscle type is absent). I report them as limits.
-- Sex and age cannot be used as covariates: they are missing for all controls.s
+- Sex and age cannot be used as covariates: they are missing for all controls.
