@@ -6,32 +6,33 @@
 
 | Filter | Threshold I chose | Why | Samples and genes before | after |
 |--------|-------------------|-----|--------------------------|-------|
-| low-count genes | ≥10 counts in ≥9 samples | 9 is the control group size | 43 samples, 27506 genes | 43 samples, 19198 genes |
+| low-count genes | >= 10 counts in >= 9 samples | 9 is the smallest group (controls) | 42 samples, 27506 genes | 42 samples, 19198 genes |
 
-<!-- numbers from results/step2_qc/gene_filter.txt -->
+The paper does not state any filtering threshold.
 
-Paper does not mention any filtering threshold.
-
-All four biomarker genes (LEUTX, KHDC1L, PRAMEF2, TRIM43) pass the filter.
+The four biomarker genes (LEUTX, KHDC1L, PRAMEF2, TRIM43) pass the filter.
 
 ## Exploration
 
 Figures (in `results/step2_qc/`):
 
-- PCA coloured by condition: controls cluster on the left, FSHD spreads to the right along PC1.
-- PCA coloured by each technical variable: batches I and II sit on the right with FSHD, while III and IV are mixed, so batch overlaps with condition.
-- PCA coloured by the authors' group (`rnaseq.rank`): rank 1 to 4 move from left to right on PC1, with rank 4 at the top right and two rank 1 outliers at the bottom right.
+- PCA coloured by condition: controls are on the left, FSHD samples spread to the right on PC1.
+- PCA coloured by each technical variable: batches I and II are on the right with FSHD, batches III and IV are mixed. Batch overlaps with condition.
+- PCA coloured by the authors' group (`rnaseq.rank`): rank 1 to 4 move from left to right on PC1. Rank 4 is at the top right and two rank 1 outliers are at the bottom right.
 
-<!-- variance from results/step2_qc/pca_variance.csv -->
+PC1 explains 65% of the variance (condition and `rnaseq.rank`). PC2 explains 11% (no clear variable).
 
-PC1 explains 65% variance (condition / `rnaseq.rank`) and PC2 explains 11% (no single variable clearly explains it).
+Compare your PCA with Figure 3 of the paper. The same or not, and why:
 
-Compare with paper Figure 3: same overall pattern (controls on the left, groups 1 to 4 shifting right, and two group 1 outliers on the far right). Variance differs (our PC1 = 65%, PC2 = 11% vs paper PC1 = 38%, PC2 = 14%) because we used log2 CPM on top 2000 variable genes, and PC2 is flipped vertically.
+- Similar pattern (controls left, groups 1 to 4 moving right, 2 group 1 outliers). Variance differs (65%/11% vs 38%/14%) because we used log2 CPM on top 2000 genes, and PC2 is flipped.
 
 ## Samples I excluded, and why
 
-- None. All 43 samples were kept. In `results/step2_qc/library_sizes.png`, all samples have reasonable counts (around 17M to 80M) and none look like failed libraries.
+- `01-0022-1` was dropped by the script because its name in counts did not match `01-0022` in GEO metadata (`data/processed/metadata.csv` has 42 samples).
+- None of the 42 remaining samples were excluded. All have normal library sizes (17M to 80M counts in `library_sizes.png`).
 
 ## Decisions I made
 
--
+- Kept `min_count = 10` and `min_samples = 9` (controls count). Genes went from 27506 to 19198.
+- Kept `n_top = 2000` for PCA.
+- Left the default sample join in `scripts/step2_qc_exploration.py`, which kept 42 samples and dropped `01-0022-1`.
