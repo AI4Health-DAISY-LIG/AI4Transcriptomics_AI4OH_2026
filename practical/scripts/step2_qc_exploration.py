@@ -6,6 +6,8 @@ Outputs:
     read_counts_summary.csv             summary statistics of sequencing depth by group
     read_counts_by_<variable>.png       read count scatter and boxplots by batch, site, and condition
     gene_filter.txt                     genes before and after filtering, with the rule used
+    tissue_composition_ratios.png       composition of the tissue to flag outliers image
+    tissue_composition_ratios.csv       composition of the tissue to flag outliers raw results
 
   results/step2_qc/{RLOG2_PCA, VST_PCA, INLIERS_VST_PCA}/
     pca_variance.csv                    variance explained by the first 10 components
@@ -129,6 +131,9 @@ def plot_top_pc_drivers(
 
     for col in metadata.columns:
         if variables is not None and col not in variables:
+            continue
+
+        if col == "char:gender":
             continue
 
         s = metadata[col]
@@ -525,6 +530,185 @@ def runPCA(
     print("figures written to", output_folder_path)
 
 
+def check_tissue_composition_ratios(
+    raw_counts: pd.DataFrame,
+    metadata: pd.DataFrame,
+    output_dir: Path,
+) -> pd.DataFrame:
+    """
+    Computes the percentage of total library reads attributable to:
+    1. Red blood cells / Hemoglobin (HBB, HBA1, HBA2, HBD)
+    2. Neutrophils (FCGR3B, S100A8, S100A9, CXCR2, CSF3R)
+    3. Core skeletal muscle (ACTA1, TTN, CKM, MYH1, MYH2, MYH7, MB)
+    4. Active interferon/inflammatory response (ISG15, MX1, IFIT1, IL6, IL1B)
+    5. mtDNA-encoded transcripts / membrane damage (MT-CO1..3, MT-ND1..5, MT-ATP6/8, MT-CYB, MT-RNR1/2)
+    6. Nuclear mitochondrial stress / UPRmt mitokines (GDF15, FGF21, ATF4, ATF5, DDIT3, HSPA9, HSPD1, LONP1)
+
+    Exports a per-sample summary CSV and a diagnostic plot to distinguish physical
+    whole-blood contamination and handling/mitochondrial stress from true muscle inflammation.
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Map gene_id -> gene_name
+    gene_map_path = config.PROCESSED / "gene_names.csv"
+    gene_df = pd.read_csv(gene_map_path)[["gene_id", "gene_name"]].drop_duplicates(
+        subset="gene_id"
+    )
+    id_to_name = (
+        gene_df.set_index("gene_id")["gene_name"]
+        .fillna(gene_df.set_index("gene_id").index.to_series())
+        .to_dict()
+    )
+
+    # Collapse counts by gene_name (summing if multiple isoforms/IDs share a symbol)
+    counts_by_symbol = raw_counts.copy()
+    counts_by_symbol.index = [id_to_name.get(gid, gid) for gid in raw_counts.index]
+    counts_by_symbol = counts_by_symbol.groupby(level=0).sum()
+
+    total_reads = raw_counts.sum(axis=0)
+
+    # Dynamically capture all MT- genes present (fallback to canonical list if none match prefix)
+    mt_genes = [g for g in counts_by_symbol.index if str(g).upper().startswith("MT-")]
+    if not mt_genes:
+        mt_genes = [
+            "MT-CO1",
+            "MT-CO2",
+            "MT-CO3",
+            "MT-ND1",
+            "MT-ND2",
+            "MT-ND4",
+            "MT-ND5",
+            "MT-ATP6",
+            "MT-ATP8",
+            "MT-CYB",
+            "MT-RNR1",
+            "MT-RNR2",
+        ]
+
+    panels = {
+        "hemoglobin_pct": ["HBB", "HBA1", "HBA2", "HBD"],
+        "neutrophil_pct": ["FCGR3B", "S100A8", "S100A9", "CXCR2", "CSF3R"],
+        "muscle_pct": ["ACTA1", "TTN", "CKM", "MYH1", "MYH2", "MYH7", "MB"],
+        "inflammation_pct": ["ISG15", "MX1", "IFIT1", "IL6", "IL1B"],
+        "mito_encoded_pct": mt_genes,
+        "mito_stress_pct": [
+            "GDF15",
+            "FGF21",
+            "ATF4",
+            "ATF5",
+            "DDIT3",
+            "HSPA9",
+            "HSPD1",
+            "LONP1",
+        ],
+    }
+
+    records = pd.DataFrame(index=raw_counts.columns)
+    records.index.name = "sample_id"
+    records["condition"] = metadata.reindex(raw_counts.columns)["condition"]
+    records["total_reads"] = total_reads
+
+    for col_name, markers in panels.items():
+        present = [g for g in markers if g in counts_by_symbol.index]
+        missing = [g for g in markers if g not in counts_by_symbol.index]
+        if missing:
+            print(f"[info] {col_name}: missing markers {missing}")
+        panel_reads = (
+            counts_by_symbol.loc[present].sum(axis=0)
+            if present
+            else pd.Series(0.0, index=raw_counts.columns)
+        )
+        records[col_name] = (panel_reads / total_reads) * 100.0
+
+    # Ratio of blood (hemoglobin + neutrophils) to core muscle transcripts
+    records["blood_to_muscle_ratio"] = (
+        records["hemoglobin_pct"] + records["neutrophil_pct"]
+    ) / records["muscle_pct"].replace(0, np.nan)
+
+    # Flag outliers (> median + 5 * MAD) on blood contamination and mitochondrial stress
+    outlier_cols = [
+        "hemoglobin_pct",
+        "neutrophil_pct",
+        "mito_encoded_pct",
+        "mito_stress_pct",
+    ]
+    for col in outlier_cols:
+        med = records[col].median()
+        mad = (records[col] - med).abs().median()
+        threshold = med + 5 * (mad * 1.4826 if mad > 0 else records[col].std())
+        records[f"{col}_outlier"] = records[col] > threshold
+
+    records = records.sort_values("hemoglobin_pct", ascending=False)
+    csv_path = output_dir / "tissue_composition_ratios.csv"
+    records.to_csv(csv_path)
+
+    # Print any flagged outlier samples across all QC metrics
+    outlier_flag_cols = [f"{c}_outlier" for c in outlier_cols]
+    flagged = records[records[outlier_flag_cols].any(axis=1)]
+    print(f"\n=== Flagged QC Outlier Samples ({len(flagged)} total) ===")
+    if not flagged.empty:
+        print(
+            flagged[
+                [
+                    "condition",
+                    "hemoglobin_pct",
+                    "neutrophil_pct",
+                    "mito_encoded_pct",
+                    "mito_stress_pct",
+                ]
+                + outlier_flag_cols
+            ]
+            .round(3)
+            .to_string()
+        )
+    else:
+        print("None")
+
+    # --- Plot 6-panel comparison across all samples ---
+    plot_df = records.sort_values("hemoglobin_pct", ascending=True)
+    cond_colors = (
+        plot_df["condition"]
+        .map({"Control": "#2b5c8f", "FSHD": "#d95f02"})
+        .fillna("#777777")
+    )
+
+    fig, axes = plt.subplots(
+        1, 6, figsize=(22, max(5, len(plot_df) * 0.22)), sharey=True
+    )
+    metrics = [
+        ("hemoglobin_pct", "Hemoglobin / RBC (%)"),
+        ("neutrophil_pct", "Neutrophil Markers (%)"),
+        ("muscle_pct", "Core Muscle Markers (%)"),
+        ("inflammation_pct", "Interferon / Cytokines (%)"),
+        ("mito_encoded_pct", "mtDNA Transcripts (%)"),
+        ("mito_stress_pct", "Mito Stress / UPRmt (%)"),
+    ]
+
+    for ax, (col, title) in zip(axes, metrics):
+        ax.barh(plot_df.index, plot_df[col], color=cond_colors, height=0.75)
+        med = plot_df[col].median()
+        ax.axvline(
+            med, color="black", linestyle="--", lw=1, label=f"Median ({med:.2f}%)"
+        )
+        ax.set_xlabel("% of total reads", fontsize=8)
+        ax.set_title(title, fontsize=9, fontweight="bold")
+        ax.tick_params(axis="y", labelsize=7)
+        ax.legend(fontsize=7, loc="lower right")
+        ax.spines[["top", "right"]].set_visible(False)
+
+    fig.suptitle(
+        "Per-Sample Tissue Composition: Blood, Muscle, Inflammation & Mitochondrial QC",
+        fontsize=11,
+        fontweight="bold",
+    )
+    fig.tight_layout()
+    fig.savefig(output_dir / "tissue_composition_ratios.png", dpi=150)
+    plt.close(fig)
+
+    return records
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     config.PROCESSED.mkdir(parents=True, exist_ok=True)
@@ -592,6 +776,12 @@ def main() -> None:
 
     # top gene selection count
     ntop = 1500
+
+    composition_df = check_tissue_composition_ratios(
+        raw_counts=counts,
+        metadata=meta,
+        output_dir=OUT,
+    )
 
     # make the PCA for each different methods
     for name, data, path in zip(
