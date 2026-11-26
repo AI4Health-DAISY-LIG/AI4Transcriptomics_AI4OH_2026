@@ -33,11 +33,11 @@ _Worksheet. Fill it as you work and commit it with your code. Your report on UNE
 - **Impact:** DESeq2 size factors correct library size, not detection power. Low-expressed genes (the DUX4 biomarkers) are easier to miss in the 3 shallow controls, so their zeros are less informative than the zeros of the deep ones. All samples have at least 17.6M reads, which is enough for gene-level DE.
 - The paper does not report depth, so no comparison is possible.
 
-## Tissue analyse composition
+## Tissue composition analysis
 
 ![](../results/step2_qc/tissue_composition_ratios.png)
 
-Some samples are contaminated by blood `32-0014`, `32-0005` and `32-0008`. It all FSHD samples, so I believe that the patient muscle is more fragile and can be more impacted by the needle during the biopsy.
+Some samples are contaminated by blood `32-0014`, `32-0005` and `32-0008`. All are FSHD samples, so I believe that the patient muscle is more fragile and can be more impacted by the needle during the biopsy.
 
 ## PCA exploration
 
