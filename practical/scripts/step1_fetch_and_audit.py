@@ -26,6 +26,9 @@ import geo
 OUT = config.RESULTS / "step1_audit"
 
 
+
+
+
 def gene_names_from_gtf(gtf_gz, dest) -> pd.DataFrame:
     """One row per gene of a GENCODE GTF: versioned id, id without version, symbol, type."""
     rows = []
