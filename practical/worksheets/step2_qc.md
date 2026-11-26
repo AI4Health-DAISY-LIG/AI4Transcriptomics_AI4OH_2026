@@ -48,6 +48,7 @@ They showed very high score on pc1 and very low score on pc2, unlike all other s
 
 ## Decisions I made
 
--Remove 2 outliers
+-Remove 2 outliers from raw counts or metadata and filtered counts?
+-rerun step 2 analysis?
 -Slight Batch effect which is recoverable
 

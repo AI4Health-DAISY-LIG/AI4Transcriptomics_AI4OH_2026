@@ -29,7 +29,6 @@ import config  # noqa: E402
 OUT = config.RESULTS / "step2_qc"
 AUDIT = config.RESULTS / "step1_audit"
 
-
 def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Raw counts (genes x samples) and metadata aligned on the sample columns."""
     counts = pd.read_csv(config.RAW / config.COUNTS_FILE, index_col=0)
@@ -141,4 +140,6 @@ if __name__ == "__main__":
 
 
 #Compute loadings of genes on PC1 and PC2?
+#Remove outliers and repeat analysis? sample 320016 and sample 01-0037
+
 
