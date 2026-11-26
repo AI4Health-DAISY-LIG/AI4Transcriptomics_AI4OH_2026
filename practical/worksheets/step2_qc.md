@@ -33,7 +33,7 @@ PC1 and PC2 explain.
 PC1 explains 64% and PC2 11% of the variance.
 Condition separates on PC1 and PC2
 rnaseq.rank separates on PC1 and PC2 mainly controls and group 4 from other groups (group 1, 2 , and 3 are in the same space where slight separation can be seen )
-Batch partially separates batch I (blue dots) on pc1 and pc2 but I cannot really say there's a batch effect. What is reassuring is that group 4 FSHD patients where divided into 2 batches I and III. 
+Batch partially separates batch I (blue dots) on pc1 and pc2 but I cannot really say there's a batch effect or at least it is recoverable. What is reassuring is that group 4 FSHD patients where divided into 2 batches I and III. 
 
 
 Compare your PCA with Figure 3 of the paper. The same or not, and why: 
@@ -49,5 +49,5 @@ They showed very high score on pc1 and very low score on pc2, unlike all other s
 ## Decisions I made
 
 -Remove 2 outliers
--Batch is not considered as confounder after exploring pca
+-Slight Batch effect which is recoverable
 
