@@ -1,0 +1,12 @@
+run: no_blood  samples: 41  genes: 19258
+
+design: ~ batch + sex + site + condition
+samples per level: Control=9, FSHD=32
+[FSHD_vs_Control] genes tested: 19258  padj < 0.05: 824  up: 747  down: 77
+
+design: ~ batch + sex + site + group
+samples per level: Control=9, G1=8, G2=5, G3=13, G4=6
+[G1_vs_Control] genes tested: 19258  padj < 0.05: 16  up: 16  down: 0
+[G2_vs_Control] genes tested: 19258  padj < 0.05: 318  up: 290  down: 28
+[G3_vs_Control] genes tested: 19258  padj < 0.05: 1973  up: 1604  down: 369
+[G4_vs_Control] genes tested: 19258  padj < 0.05: 6822  up: 3897  down: 2925
