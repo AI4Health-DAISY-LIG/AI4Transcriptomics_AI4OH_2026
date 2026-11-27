@@ -1,0 +1,9 @@
+Reproduced (padj < 0.05, |log2FC| >= 2) vs published supplementary tables
+norm_max_rel_diff: published normalised counts vs raw / full-cohort size factor
+
+table       contrast  published  reproduced  shared  published_only  reproduced_only  baseMean_max_abs_diff  log2FoldChange_max_abs_diff  lfcSE_max_abs_diff  padj_max_abs_diff  norm_samples  norm_max_rel_diff
+   S4 S4_G1_outliers       5680        5680    5680               0                0               4.66e-09                     0.000408             0.00259           0.000179            11           3.57e-15
+   S5          S5_G1        393         393     393               0                0               4.77e-12                     1.18e-05            5.06e-05           2.79e-05            19           4.41e-15
+   S6          S6_G2        303         303     303               0                0                  5e-12                     5.04e-05            8.32e-05           2.23e-05            14           3.55e-15
+   S8          S8_G3        816         816     816               0                0               4.55e-11                     1.28e-05            3.25e-05           5.82e-06            22           3.65e-15
+  S10         S10_G4       2826        2826    2826               0                0               4.37e-10                     7.93e-06            0.000113           8.25e-06            15           3.56e-15

@@ -1,0 +1,4 @@
+sheet,geo_file,genes_in_s2,genes_matched,samples_matched,values_compared,max_abs_difference
+raw_counts,GSE115650_biopsy_genecounts.csv.gz,54,54,43,2322,0.0
+normalized_counts,GSE115650_biosy_normalized_genecounts.csv.gz,54,54,43,2322,5.115907697472721e-13
+RPKM,GSE115650_biopsy_FPKM.csv.gz,54,54,43,2322,1.2434497875801753e-14

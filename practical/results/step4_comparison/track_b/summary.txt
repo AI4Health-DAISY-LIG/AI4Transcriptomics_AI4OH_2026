@@ -1,0 +1,17 @@
+bootstrap: 5000 resamples, seed 20261124; descriptive, not adjusted for multiple testing
+scores: S1 142 features (markers removed 0), Spearman with GEO 0.9517, FSHD above the highest control 31/34; S1_lfo 137 features (markers removed 5), Spearman with GEO 0.9481, FSHD above the highest control 31/34; S3 54 features (markers removed 0), Spearman with GEO 0.9597, FSHD above the highest control 32/34; S3_lfo 50 features (markers removed 4), Spearman with GEO 0.9594, FSHD above the highest control 32/34
+headline, change in rho against the GEO score (all endpoint-complete FSHD):
+  stir         S1_lfo  n 34  delta +0.013 [-0.115, +0.154]  difference unresolved
+  stir         S3_lfo  n 34  delta +0.017 [-0.099, +0.146]  difference unresolved
+  t1           S1_lfo  n 34  delta +0.004 [-0.107, +0.125]  difference unresolved
+  t1           S3_lfo  n 34  delta +0.006 [-0.103, +0.126]  difference unresolved
+  fat_fraction S1_lfo  n 34  delta +0.071 [-0.037, +0.197]  difference unresolved
+  fat_fraction S3_lfo  n 34  delta +0.057 [-0.041, +0.177]  difference unresolved
+  pathology    S1_lfo  n 32  delta +0.035 [-0.062, +0.159]  difference unresolved
+  pathology    S3_lfo  n 32  delta +0.049 [-0.039, +0.167]  difference unresolved
+GEO score rho: stir 0.555, t1 0.392, fat_fraction 0.226, pathology 0.584
+tissue state, 34 FSHD (rho; partial rho given the GEO score):
+  POSTN: stir +0.38 (+0.09), t1 +0.40 (+0.23), fat_fraction +0.35 (+0.28), pathology +0.62 (+0.42), active +0.59 (+0.30), inflammation +0.69 (+0.50), dux4_score_geo +0.57
+  RUNX1: stir +0.44 (+0.14), t1 +0.38 (+0.18), fat_fraction +0.39 (+0.33), pathology +0.62 (+0.39), active +0.66 (+0.38), inflammation +0.75 (+0.55), dux4_score_geo +0.64
+  SOX11: stir +0.36 (-0.12), t1 +0.28 (-0.04), fat_fraction +0.25 (+0.12), pathology +0.70 (+0.48), active +0.67 (+0.29), inflammation +0.67 (+0.31), dux4_score_geo +0.76
+POSTN pairs: RUNX1-POSTN 34 FSHD rho +0.785 [+0.622, +0.880]; RUNX1-POSTN 30 Track B rho +0.783 [+0.596, +0.888]; SOX11-POSTN 34 FSHD rho +0.531 [+0.166, +0.787]; SOX11-POSTN 30 Track B rho +0.604 [+0.246, +0.830]

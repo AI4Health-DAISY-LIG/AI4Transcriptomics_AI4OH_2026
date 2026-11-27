@@ -1,0 +1,2 @@
+pool,gene_id,gene_name,passes,note
+A_tf_chromatin,ENSG00000159216.18,RUNX1,True,without 01-0036: log2FC 1.943 vs 2.055

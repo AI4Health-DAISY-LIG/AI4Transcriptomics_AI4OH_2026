@@ -1,1 +1,129 @@
 claim_id,figure_or_table,comparison,my_contrast,gene,direction_in_paper,value_in_paper,notes
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,C1QA,up,3.191,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,C1QA,up,2.242,log2FC from Table S6
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,C1QA,up,2.027,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,C1QA,up,3.815,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,C1QA,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,C1QA,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,C1QA,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,C1QB,up,3.301,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,C1QB,up,2.654,log2FC from Table S6
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,C1QB,up,2.393,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,C1QB,up,4.243,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,C1QB,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,C1QB,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,C1QB,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,C2,up,4.399,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,C2,up,2.698,log2FC from Table S6
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,C2,up,3.405,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,C2,up,4.952,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,C2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,C2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,C2,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,C3,up,2.847,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,C3,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,C3,up,2.308,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,C3,up,3.212,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,C3,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,C3,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,C3,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,C7,up,6.204,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,C7,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,C7,up,2.146,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,C7,up,3.619,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,C7,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,C7,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,C7,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,CCL18,up,4.922,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,CCL18,up,6.808,log2FC from Table S6
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,CCL18,up,6.572,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,CCL18,up,8.243,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,CCL18,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,CCL18,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,CCL18,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,CD44,up,3.662,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,CD44,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,CD44,up,,not in Table S8 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,CD44,up,2.819,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,CD44,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,CD44,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,CD44,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,CTLA4,up,,in the figure but not in Table S4 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,CTLA4,up,3.53,log2FC from Table S6
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,CTLA4,up,3.768,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,CTLA4,up,5.32,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,CTLA4,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,CTLA4,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,CTLA4,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 4; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,TIMP1,up,3.966,log2FC from Table S4
+C2,Fig 4; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,TIMP1,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 4; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,TIMP1,up,2.39,log2FC from Table S8
+C2,Fig 4; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,TIMP1,up,3.964,log2FC from Table S10
+C2,Fig 4,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,TIMP1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,TIMP1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 4,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,TIMP1,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,CDKN1A,up,3.512,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,CDKN1A,up,2.933,log2FC from Table S6
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,CDKN1A,up,3.695,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,CDKN1A,up,4.811,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,CDKN1A,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,CDKN1A,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,CDKN1A,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,CIDEC,up,8.642,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,CIDEC,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,CIDEC,up,4.556,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,CIDEC,up,2.866,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,CIDEC,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,CIDEC,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,CIDEC,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,COL1A1,up,5.125,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,COL1A1,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,COL1A1,up,2.566,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,COL1A1,up,5.1,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,COL1A1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,COL1A1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,COL1A1,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,COL1A2,up,4.106,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,COL1A2,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,COL1A2,up,,not in Table S8 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,COL1A2,up,3.681,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,COL1A2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,COL1A2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,COL1A2,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,COL3A1,up,3.895,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,COL3A1,up,,not in Table S6 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,COL3A1,up,,not in Table S8 (padj < 0.05 and |log2FC| >= 2)
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,COL3A1,up,4.091,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,COL3A1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,COL3A1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,COL3A1,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,COMP,up,11.451,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,COMP,up,6.475,log2FC from Table S6
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,COMP,up,6.432,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,COMP,up,8.866,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,COMP,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,COMP,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,COMP,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,PLA2G2A,up,8.038,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,PLA2G2A,up,3.437,log2FC from Table S6
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,PLA2G2A,up,5.216,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,PLA2G2A,up,8.624,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,PLA2G2A,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,PLA2G2A,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,PLA2G2A,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,SAA1,up,5.194,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,SAA1,up,3.884,log2FC from Table S6
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,SAA1,up,5.432,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,SAA1,up,7.126,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,SAA1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,SAA1,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,SAA1,up,,Track B joint model ~ batch + sex + group; no published value
+C1,Fig 5; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls",track_a/S4_G1_outliers,SFRP2,up,7.076,log2FC from Table S4
+C2,Fig 5; Table S6,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S6_G2,SFRP2,up,3.046,log2FC from Table S6
+C2,Fig 5; Table S8,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S8_G3,SFRP2,up,4.234,log2FC from Table S8
+C2,Fig 5; Table S10,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_a/S10_G4,SFRP2,up,6.956,log2FC from Table S10
+C2,Fig 5,"group 2 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G2_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 3 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G3_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
+C2,Fig 5,"group 4 vs controls (caption: progressively elevated in groups 2, 3 and 4)",track_b/groups/G4_vs_Control,SFRP2,up,,Track B joint model ~ batch + sex + group; no published value
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYF5,down,-9.502,log2FC from Table S4
+C3,Results; Table S4,"group 1 outliers (01-0037, 32-0016) vs controls (Results: Myf5 and MyoD decreased)",track_a/S4_G1_outliers,MYOD1,down,-10.962,log2FC from Table S4

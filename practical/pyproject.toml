@@ -11,6 +11,7 @@ dependencies = [
     "scikit-learn>=1.4",
     "pydeseq2>=0.5",
     "tabulate>=0.9",
+    "openpyxl>=3.1.5",
 ]
 
 [dependency-groups]

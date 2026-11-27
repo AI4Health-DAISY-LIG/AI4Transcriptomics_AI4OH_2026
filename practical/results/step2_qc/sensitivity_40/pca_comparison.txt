@@ -1,0 +1,12 @@
+excluded: 32-0008, 01-0037, 32-0009 (40 samples left)
+same 500 genes as the main PCA (results/step2_qc/pca_genes.txt), same rlog values
+PC1 38.65% (main 37.32%), PC2 10.76% (main 13.61%)
+score correlation with the main PCA on the 40 shared samples: PC1 0.9961, PC2 0.8978
+PC2 highest: 32-0016 (32.8), 32-0014 (23.5), 32-0013 (15.9)
+PC1 R^2 condition: 0.298 (main 0.299)
+PC1 R^2 paper_group: 0.752 (main 0.608)
+PC1 R^2 batch: 0.381 (main 0.363)
+PC2 R^2 condition: 0.002 (main 0.004)
+PC2 R^2 batch: 0.077 (main 0.330)
+PC2 R^2 batch, main run's PC2 scores of the 40 samples, not refitted: 0.222
+variant, 500 genes re-selected on the 40 samples: PC1 37.23%, PC2 10.65%, 432 genes shared with the main PCA

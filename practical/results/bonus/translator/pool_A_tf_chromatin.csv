@@ -1,0 +1,4 @@
+gene_id,rank,gene_name,baseMean,log2FoldChange,padj,stat,score_slope,score_padj,max_cooks_sample,transcription_factor,chromatin,regeneration,yao2014_target,check
+ENSG00000159216.18,1,RUNX1,594.355,2.05503,0.00040578,4.93491,0.152563,0.0452829,01-0036,True,False,False,False,without 01-0036: log2FC 1.943 vs 2.055
+ENSG00000180532.10,2,ZSCAN4,29.8911,3.79877,0.00080645,4.65102,0.291923,1.67527e-09,01-0025,True,False,False,True,not reached
+ENSG00000116990.10,3,MYCL,61.4967,1.78258,0.00603389,3.81678,0.156171,0.0287596,01-0047,True,False,False,False,not reached

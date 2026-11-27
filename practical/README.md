@@ -36,7 +36,8 @@ You hand in two things:
 
 The raw count file is your input. The FPKM and normalised files let you check
 your own normalisation against the authors'. Step 1 also downloads the GENCODE
-v24 annotation (38.7 MB), because no file on GEO gives the gene symbols.
+v24 annotation (38.7 MB), because no CSV file on GEO gives the gene symbols (the GEO R
+object carries them).
 
 ## The paper
 
@@ -81,7 +82,9 @@ names of the count file against the GEO samples.
 
 **Step 2, QC and exploration.** Filter low-count genes, plot library sizes,
 compute a PCA on log2 CPM and colour it by condition, batch, sex, age and the
-authors' variables.
+authors' variables. In this fork, the PCA uses the authors' method (DESeq2
+rlog, 500 most variable genes; see "Running this fork's analysis"), and log2
+CPM is kept only as a comparison.
 
 **Step 3, differential expression.** PyDESeq2 on the filtered raw counts: all
 FSHD biopsies against the controls, then each of the authors' four groups
@@ -186,6 +189,10 @@ Everything else in this folder goes into your fork: the scripts, `results/`,
 
 ## How to run
 
+**This fork's full pipeline** (R reproduction, Track B and the bonus) is in
+[Running this fork's analysis](#running-this-forks-analysis) below; the course's four
+scripts follow first.
+
 You need [uv](https://docs.astral.sh/uv/) and git. uv installs Python 3.12 for
 you (see `.python-version`). Work in your fork, inside this folder:
 
@@ -213,8 +220,71 @@ uv run python scripts/step3_differential_expression.py
 uv run python scripts/step4_compare_with_paper.py
 ```
 
-The four scripts run as they are, in a few minutes on a laptop. Commit your
+These four commands are the original course workflow, kept for reference. In this fork,
+Step 2 also needs inputs written by R, so follow
+[Running this fork's analysis](#running-this-forks-analysis) instead. Commit your
 scripts, `results/` and `worksheets/` each time you stop working.
+
+### Running this fork's analysis
+
+Step 2 here reproduces the paper's PCA with the authors' method (DESeq2 rlog), so it
+needs R through a locked [Pixi](https://pixi.sh) environment in `r/`, and two inputs
+beyond the default Step 1 downloads. From `practical/`:
+
+```bash
+uv sync --locked
+uv run --locked python scripts/step1_fetch_and_audit.py --optional   # adds FPKM, normalised counts and the GEO R object
+```
+
+```bash
+mkdir -p data/raw/authors
+curl -fL -o data/raw/authors/sanitized.rlg.rda \
+  https://raw.githubusercontent.com/TapscottLab/FSHD-Biopsy-RNA-seq/90cd343b3d60a696a35041a33015131ab9908164/data/sanitized.rlg.rda
+sha256sum data/raw/authors/sanitized.rlg.rda   # 70b1758029229dbb89c33f3f0abc2dea5165d43f61e0da102566994c2dc18239
+curl -fL -o data/raw/authors/mk.rda \
+  https://raw.githubusercontent.com/TapscottLab/FSHD-Biopsy-RNA-seq/90cd343b3d60a696a35041a33015131ab9908164/data/mk.rda
+sha256sum data/raw/authors/mk.rda              # d385c0cbf167fbe9d1da7f9c4465d3c9a98c7510e68f177ef855fbe69621f08b
+```
+
+Gene symbols: the GEO R object carries them, but the CSV workflow reads them from the
+GENCODE v24 annotation (step 1), an open-format mapping of the deposited identifiers.
+
+Two inputs are not downloaded by a script; get them before the steps that read them:
+- **the paper's supplementary archive**, unzipped into `doc/supp/` (git-ignored,
+  `paper/README.md`), for the Step 3 comparison with Tables S4–S10;
+- **the reference-list snapshot** of the bonus, extracted into `data/raw/bonus_lists/`
+  (`bonus_lists/README.md`), for the bonus selection, which feeds the Step 4 Track B panel.
+
+In this order:
+
+```bash
+pixi install --manifest-path r/pixi.toml
+# Step 2
+pixi run --manifest-path r/pixi.toml Rscript r/pca_replay.R      # Figure 3 replay, sample link, mapping rates
+pixi run --manifest-path r/pixi.toml Rscript r/rlog_from_geo.R   # rlog recomputed from the GEO counts
+uv run --locked python scripts/step2_qc_exploration.py
+uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA without the 3 low-mapping libraries
+# Step 3
+pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Track A: the authors' DE, per contrast
+uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs Tables S4-S10 (needs doc/supp)
+uv run --locked python scripts/step3_differential_expression.py               # Track B: independent DE, including the site and histology follow-up
+uv run --locked python scripts/step3_differential_expression.py --plots       # Track B: MA, volcano and p-value plots only
+# Bonus selection (needs data/raw/bonus_lists), before Step 4 Track B
+uv run --locked python scripts/bonus_select_genes.py                          # Translator genes, rule in worksheets/bonus_translator.md
+# Step 4
+pixi run --manifest-path r/pixi.toml Rscript r/score_reproduction.R          # Track A: the authors' score, groups, Figure 2, correlations
+uv run --locked python scripts/step4_compare_with_paper.py                    # course parts: Python score, paper claims
+uv run --locked python scripts/step4_track_b.py --panel                       # Track B: Translator panel genes (reads the bonus outputs)
+pixi run --manifest-path r/pixi.toml Rscript r/vst_track_b.R                  # Track B: blind VST, selected genes
+uv run --locked python scripts/step4_track_b.py                               # Track B: alternative score, tissue state
+```
+
+Optional, with the paper's supplementary archive unzipped in `doc/supp/`:
+
+```bash
+uv run --locked python scripts/check_paper_sample_ids.py "doc/supp/Supplemental Table S1.docx"
+uv run --locked python scripts/check_table_s2.py "doc/supp/Supplemental Table S2.xlsx"   # Table S2 vs GEO (FAIR R6)
+```
 
 ## A pace that fits the milestones
 
@@ -249,7 +319,7 @@ practical/
 ## Before you trust a result
 
 - Read `results/step1_audit/counts_header_check.txt` before any join between the
-  counts and the sample table. Step 2 prints a warning if it drops a column.
+  counts and the sample table. In this fork, Step 2 joins on GEO title and stops with an error if a count column has no GEO record.
 - Look at `missing_values.csv`. Some variables exist for one condition only.
 - Compare the paper's description of the biopsies with the fields GEO records
   for them.

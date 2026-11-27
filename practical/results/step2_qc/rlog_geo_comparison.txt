@@ -1,0 +1,11 @@
+R 4.5.3, DESeq2 1.50.2
+size factors, max abs difference vs authors: 0
+betaPriorVar: recomputed 1.07696, authors 1.07696
+rlog values, abs difference: max 21.85, median 4.103e-07, 99th percentile 4.872e-06
+rlog values, correlation over all genes x samples: 0.999973
+top 500 genes shared with the replay: 498 / 500
+PC1 37.32% (replay 37.94%), PC2 13.61% (replay 13.77%)
+score correlation with replay (sign-aligned): PC1 0.999959, PC2 0.999789
+PC2 extremes: 32-0016, 01-0037
+genes with max abs rlog difference > 0.1: 9 (rlog_geo_differing_genes.csv)
+PCA without them: PC1 38.38% vs authors 38.38%, PC2 13.91% vs authors 13.91%

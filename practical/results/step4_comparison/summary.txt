@@ -1,0 +1,45 @@
+[score] markers: LEUTX ENSG00000213921.6, KHDC1L ENSG00000256980.4, PRAMEF2 ENSG00000120952.4, TRIM43 ENSG00000144015.4
+[score] PyDESeq2 vs deposited size factors: max relative difference 4.67e-15
+[score] Spearman with the deposited score (34 FSHD): VST 0.9956, log2(normalised + 0.5) 0.9937; max |VST - deposited| 5.110
+[score] clusters of the VST values vs deposited groups: score_clusters.txt
+[score] Spearman of my score with the deposited variables:
+    variable  n  spearman
+rnaseq.score 34     0.996
+        stir 34     0.577
+      active 32     0.686
+      inflam 32     0.665
+  path.score 32     0.571
+ rnaseq.rank 34     0.955
+fat.fraction 34     0.241
+          t1 34     0.398
+[score] my score by authors' group (0 = control): min, median, max
+                 count    min  median    max
+deposited_group                             
+0                    9   0.00    0.00   1.51
+1                   10   0.00    0.69   1.40
+2                    5   1.72    2.88   3.55
+3                   13   6.15    9.73  14.14
+4                    6  16.83   19.91  24.06
+[claims] contrast keys: 7; matching no result file: none
+[track_a/S10_G4] claimed genes: 18  found in my results: 18
+[track_a/S10_G4] significant in my results (padj < 0.05): 18
+[track_a/S10_G4] same direction as the paper: 18
+[track_a/S4_G1_outliers] claimed genes: 20  found in my results: 20
+[track_a/S4_G1_outliers] significant in my results (padj < 0.05): 19
+[track_a/S4_G1_outliers] same direction as the paper: 20
+[track_a/S6_G2] claimed genes: 18  found in my results: 18
+[track_a/S6_G2] significant in my results (padj < 0.05): 17
+[track_a/S6_G2] same direction as the paper: 18
+[track_a/S8_G3] claimed genes: 18  found in my results: 18
+[track_a/S8_G3] significant in my results (padj < 0.05): 18
+[track_a/S8_G3] same direction as the paper: 18
+[track_b/groups/G2_vs_Control] claimed genes: 18  found in my results: 18
+[track_b/groups/G2_vs_Control] significant in my results (padj < 0.05): 10
+[track_b/groups/G2_vs_Control] same direction as the paper: 18
+[track_b/groups/G3_vs_Control] claimed genes: 18  found in my results: 18
+[track_b/groups/G3_vs_Control] significant in my results (padj < 0.05): 11
+[track_b/groups/G3_vs_Control] same direction as the paper: 18
+[track_b/groups/G4_vs_Control] claimed genes: 18  found in my results: 18
+[track_b/groups/G4_vs_Control] significant in my results (padj < 0.05): 15
+[track_b/groups/G4_vs_Control] same direction as the paper: 18
+[figures] 18 genes; group medians G2 <= G3 <= G4: 10; G2, G3 and G4 all above controls: 18

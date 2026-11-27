@@ -1,0 +1,50 @@
+== 1. Subject IDs ==
+Table S1 subject IDs: 36 (unique: 36)
+GEO FSHD samples: 34; GEO control samples: 9
+
+[char:sample_id] GEO FSHD unique values: 34
+[char:sample_id] in both: 34
+[char:sample_id] only in Table S1: 01-0028, 01-0031
+[char:sample_id] only in GEO FSHD: none
+
+[title] GEO FSHD unique values: 34
+[title] in both: 33
+[title] only in Table S1: 01-0022, 01-0028, 01-0031
+[title] only in GEO FSHD: 01-0022-1
+
+GEO controls found in Table S1: none
+
+== 2. Cohort as described by Table S1 ==
+Table S1 notes:
+  Supplemental Table 1: Subject Demographics, genetics, pathology and MRI features
+  Note: *FSHD2, **Mosaic, # vastus medialis
+  Abbreviations: CSS: 10 point clinically severity score; TA tibialis anterior, G Gatrocnemius, Q quadriceps, H hamstring
+  Shaded boxes: failure to obtain sample
+
+All subjects: n = 36
+  genotype (from Short4q marks): {'FSHD1 (unmarked)': 32, 'FSHD2': 3, 'mosaic': 1}
+  sex: {'M': 23, 'F': 13}; female = 13/36 = 36.1%
+  age: mean 54.0, range 20-75
+  muscle biopsied: {'G': 14, 'TA': 14, 'Q': 7, 'H': 1}
+
+Subjects with an RNA-seq score: n = 34
+  genotype (from Short4q marks): {'FSHD1 (unmarked)': 30, 'FSHD2': 3, 'mosaic': 1}
+  sex: {'M': 22, 'F': 12}; female = 12/34 = 35.3%
+  age: mean 53.6, range 20-75
+  muscle biopsied: {'G': 14, 'TA': 13, 'Q': 6, 'H': 1}
+
+No RNA-seq score: 01-0028, 01-0031
+No pathology score: 01-0031, 32-0011, 32-0016
+
+== 3. Values reported by both (joined on char:sample_id, 34 subjects) ==
+  age           vs char:age             mismatches: 0  none
+  sex           vs char:gender          mismatches: 0  none
+  path          vs char:path.score      mismatches: 0  none
+  inflam        vs char:inflam          mismatches: 0  none
+  active        vs char:active          mismatches: 0  none
+  stir          vs char:stir            mismatches: 0  none
+  t1            vs char:t1              mismatches: 0  none
+  fat_fraction  vs char:fat.fraction    mismatches: 0  none
+  score         vs char:rnaseq.score    mismatches: 0  none
+  rank          vs char:rnaseq.rank     mismatches: 0  none
+  rank          vs Group in source_name mismatches: 0  none

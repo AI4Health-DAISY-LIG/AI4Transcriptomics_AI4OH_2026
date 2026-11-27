@@ -1,0 +1,3 @@
+[score] design: ~ batch + sex + score  samples: 30  excluded: 32-0008, 01-0037, 32-0009, 32-0004; FSHD only
+  FSHD=30, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
+  score_slope: finite p-value 27506, finite padj 23773, Cook's-filtered 0, independently filtered 3733; padj < 0.05: 144 (up 129, down 15); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 143
