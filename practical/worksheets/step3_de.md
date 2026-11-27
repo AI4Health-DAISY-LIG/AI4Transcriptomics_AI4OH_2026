@@ -9,6 +9,8 @@ Step 3 has two tracks:
 
 The design and sample rules of Track B were fixed before the fits were run. Two fits were added after the first run, before any gene-level result was examined: Rochester-only and the G3 check.
 
+The [blood, histology and site follow-up](step3_blood_inflammation.md) documents a later exploratory analysis. It covers a site sensitivity for the within-FSHD DUX4-score slope and RNA-group contrasts, together with three contrasts defined by inflammatory infiltrates on histology.
+
 ## Design
 
 Input matrix (which file, which filter): `data/processed/counts_filtered.csv`, the GEO raw counts (27,506 genes × 43 biopsies). There is no extra filter: the authors had already removed genes with a total count ≤ 20 before deposit (`results/step2_qc/gene_filter.txt`). Size factors are estimated by PyDESeq2 for each fit.

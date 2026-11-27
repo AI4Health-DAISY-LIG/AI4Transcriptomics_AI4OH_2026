@@ -1,0 +1,9 @@
+[inflammation_site] design: ~ batch + sex + site + infiltrates  samples: 37  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD_grade0=19, FSHD_infiltrates=9; genes refitted after Cook's outlier replacement: 0
+  _genewise_converged: 27482 true, 24 false, 0 unavailable
+  _MAP_converged: 27470 true, 36 false, 0 unavailable
+  _LFC_converged: 27383 true, 123 false, 0 unavailable
+  additional FSHD exclusions for missing histology: 32-0011, 32-0016
+  FSHD_grade0_vs_Control: finite p-value 27416, finite padj 18913, Cook's-filtered 90, independently filtered 8503; padj < 0.05: 1243 (up 1056, down 187); also |log2FC| >= 1: 653, >= 2: 202
+  FSHD_infiltrates_vs_Control: finite p-value 27416, finite padj 22095, Cook's-filtered 90, independently filtered 5321; padj < 0.05: 7227 (up 4183, down 3044); also |log2FC| >= 1: 3707, >= 2: 1463
+  FSHD_infiltrates_vs_FSHD_grade0: finite p-value 27416, finite padj 20503, Cook's-filtered 90, independently filtered 6913; padj < 0.05: 4635 (up 2633, down 2002); also |log2FC| >= 1: 1310, >= 2: 274

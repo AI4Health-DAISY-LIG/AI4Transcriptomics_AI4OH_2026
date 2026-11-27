@@ -17,3 +17,7 @@ score_nosex: n=30 (FSHD=30, score 0.04-21.23); design rank 5/5; all-zero genes 0
 score_all34: n=34 (FSHD=34, score 0.02-21.23); design rank 6/6; all-zero genes 0
 score_omit_32_0006: n=29 (FSHD=29, score 0.04-15.98); design rank 6/6; all-zero genes 0
 score_omit_01_0025: n=29 (FSHD=29, score 0.04-21.23); design rank 6/6; all-zero genes 0
+score_site: n=30 (FSHD=30, score 0.04-21.23); design rank 7/7; all-zero genes 0
+groups_site: n=39 (Control=9, G1=9, G2=5, G3=11, G4=5); design rank 10/10; all-zero genes 0
+inflammation: n=37 (Control=9, FSHD_grade0=19, FSHD_infiltrates=9); design rank 7/7; all-zero genes 0
+inflammation_site: n=37 (Control=9, FSHD_grade0=19, FSHD_infiltrates=9); design rank 8/8; all-zero genes 0

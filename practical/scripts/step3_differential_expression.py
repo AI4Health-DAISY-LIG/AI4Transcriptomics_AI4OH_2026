@@ -33,6 +33,18 @@ The score models give "regulatory genes associated with the DUX4-target score wi
 (bonus view B). Their slope is also expressed as a log2FC across the G1-to-G4 score span
 (SCORE_SPAN, medians 0.35207 and 15.33630 in the primary set), on the scale of view A.
 
+Exploratory site and histology fits added on 27 Nov:
+  score_site          30 FSHD   ~ batch + sex + site + score
+  groups_site         39        ~ batch + sex + site + group           G1-G4 vs Control and G4 vs G1
+  inflammation        37        ~ batch + sex + infiltrates
+  inflammation_site   37        ~ batch + sex + site + infiltrates
+Histology groups are Control (9), FSHD grade 0 (19), and FSHD grades 1-3 (9).
+Both histology fits compare the two FSHD groups with controls and with each other.
+The two FSHD biopsies without a recorded grade are omitted only in these fits.
+The site-adjusted score is centered and scaled within the fitted cohort to stabilize
+dispersion estimation. The Wald contrast reports a one-unit change on the original
+GEO scale. These four fits record PyDESeq2 convergence flags for each gene.
+
 The 39 biopsies: all 43 minus config.TRACK_B_EXCLUDE (three libraries mapped below 90%, and
 32-0004, whose recorded sex disagrees with its expression). Sex is the sex inferred from
 expression (results/step2_qc/sex_check.csv); the GEO labels stay in the sample table. Site comes
@@ -119,8 +131,21 @@ FITS = {
                            "fshd_only": True},
     "score_omit_01_0025": {"exclude": config.TRACK_B_EXCLUDE + ["01-0025"], "design": SCORE,
                            "fshd_only": True},
+    "score_site":         {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + site + score",
+                           "fshd_only": True},
+    "groups_site":        {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + site + group"},
+    "inflammation":       {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + infiltrates",
+                           "graded_cases": True},
+    "inflammation_site":  {"exclude": config.TRACK_B_EXCLUDE, "design": "~ batch + sex + site + infiltrates",
+                           "graded_cases": True},
 }
-EXTRA_CONTRASTS = {"groups": [("G4", "G1")]}
+EXTRA_CONTRASTS = {
+    "groups": [("G4", "G1")],
+    "groups_site": [("G4", "G1")],
+    "inflammation": [("FSHD_infiltrates", "FSHD_grade0")],
+    "inflammation_site": [("FSHD_infiltrates", "FSHD_grade0")],
+}
+SITE_FOLLOWUP_FITS = {"score_site", "groups_site", "inflammation", "inflammation_site"}
 PLANNED_FITS = ["ladder_batch", "site", "all43", "restore_32_0004", "omit_32_0016"]
 ROBUSTNESS_FITS = PLANNED_FITS + ["rochester"]
 INFO_FITS = ["ladder_none", "rochester_norefit"]
@@ -156,6 +181,10 @@ def sample_table() -> tuple[pd.DataFrame, pd.DataFrame]:
         if not ids.is_unique or set(ids) != set(counts.columns):
             raise SystemExit(f"{label}: sample IDs not unique or not the same 43 as the counts")
     meta = meta.loc[counts.columns]
+    grade = pd.to_numeric(meta["char:inflam"], errors="raise")
+    invalid = grade.notna() & ~grade.isin([0, 1, 2, 3])
+    if invalid.any():
+        raise ValueError(f"unexpected histological inflammation grades: {grade[invalid].to_dict()}")
     meta = pd.DataFrame({
         "condition": meta["condition"].astype(str),
         "batch": meta["char:batch"].astype(str),
@@ -170,14 +199,22 @@ def sample_table() -> tuple[pd.DataFrame, pd.DataFrame]:
         (meta["score"].isna() & (meta["condition"] != REF))
     if missing.any():
         raise SystemExit(f"missing covariates:\n{meta[missing]}")
+    meta["infiltrates"] = grade.map({
+        0: "FSHD_grade0", 1: "FSHD_infiltrates", 2: "FSHD_infiltrates", 3: "FSHD_infiltrates",
+    })
+    meta.loc[meta["condition"] == REF, "infiltrates"] = REF
     return counts.T.round().astype(int), meta
 
 
 def fit_samples(meta: pd.DataFrame, spec: dict) -> pd.DataFrame:
-    """The biopsies of one fit: all minus its exclusions, restricted to one site if given."""
+    """Apply the sample exclusions and cohort restrictions declared for this fit."""
     m = meta.drop(index=spec["exclude"])
     if spec.get("fshd_only"):
         m = m[m["condition"] != REF]
+    if spec.get("graded_cases"):
+        m = m.dropna(subset=["infiltrates"])
+        if set(m["infiltrates"]) != {REF, "FSHD_grade0", "FSHD_infiltrates"}:
+            raise ValueError("histology fits require controls and FSHD biopsies with and without infiltrates")
     return m[m["site"] == spec["site"]] if "site" in spec else m
 
 
@@ -318,7 +355,15 @@ def run_fit(name: str, x: pd.DataFrame, meta: pd.DataFrame, annot: pd.DataFrame)
     m = fit_samples(meta, spec)
     variables = re.findall(r"[a-z_]+", spec["design"])
     factor = variables[-1]
-    dds = DeseqDataSet(counts=x.loc[m.index], metadata=m[variables], design=spec["design"],
+    model_meta = m[variables].copy()
+    score_scale = 1.0
+    if name == "score_site":
+        score_center = m["score"].mean()
+        score_scale = m["score"].std(ddof=0)
+        if not np.isfinite(score_scale) or score_scale <= 0:
+            raise ValueError("score_site requires a finite positive score standard deviation")
+        model_meta["score"] = (m["score"] - score_center) / score_scale
+    dds = DeseqDataSet(counts=x.loc[m.index], metadata=model_meta, design=spec["design"],
                        refit_cooks=spec.get("refit_cooks", True), quiet=True)
     dds.deseq2()
     dispersion = gene_vector(dds, "dispersions")
@@ -335,12 +380,25 @@ def run_fit(name: str, x: pd.DataFrame, meta: pd.DataFrame, annot: pd.DataFrame)
              + ("; FSHD only" if spec.get("fshd_only") else "")
              + ("; Cook's replacement off" if spec.get("refit_cooks") is False else ""),
              f"  {describe(m, factor)}; genes refitted after Cook's outlier replacement: {refitted}"]
+    if name == "score_site":
+        lines.append(f"  score centered at {score_center:.8g}, scaled by {score_scale:.8g}; "
+                     "Wald contrast and standard error per original score unit")
+    convergence = pd.DataFrame(index=dds.var_names)
+    if name in SITE_FOLLOWUP_FITS:
+        for key in ("_genewise_converged", "_MAP_converged", "_LFC_converged"):
+            flag = gene_vector(dds, key).astype("boolean")
+            convergence[key] = flag
+            lines.append(f"  {key}: {int(flag.sum())} true, {int((~flag).sum())} false, "
+                         f"{int(flag.isna().sum())} unavailable")
+    if spec.get("graded_cases"):
+        no_grade = meta.index[meta["infiltrates"].isna() & ~meta.index.isin(spec["exclude"])]
+        lines.append(f"  additional FSHD exclusions for missing histology: {', '.join(no_grade) or 'none'}")
     if factor == "score":
         columns = list(dds.obsm["design_matrix"].columns)
         if "score" not in columns:
             raise SystemExit(f"no score column in the design matrix: {columns}")
         vector = np.zeros(len(columns))
-        vector[columns.index("score")] = 1.0
+        vector[columns.index("score")] = 1.0 / score_scale
         contrasts = [("score_slope", vector)]
     else:
         pairs = [(level, REF) for level in sorted(set(m[factor]) - {REF})]
@@ -354,6 +412,8 @@ def run_fit(name: str, x: pd.DataFrame, meta: pd.DataFrame, annot: pd.DataFrame)
             res["lfc_span"] = res["log2FoldChange"] * SCORE_SPAN
         res["dispersion"] = dispersion
         res["max_cooks_sample"] = max_cooks_sample
+        if name in SITE_FOLLOWUP_FITS:
+            res = res.join(convergence)
         res = res.sort_values("padj")
         res.to_csv(out / f"de_{tag}.csv.gz", float_format="%.6g", index_label="gene_id")
         sig = res[res["padj"] < ALPHA]

@@ -267,7 +267,7 @@ uv run --locked python scripts/step2_qc_exploration.py --sensitivity   # PCA wit
 # Step 3
 pixi run --manifest-path r/pixi.toml Rscript r/de_reproduction.R             # Track A: the authors' DE, per contrast
 uv run --locked python scripts/step3_compare_published.py doc/supp          # Track A vs Tables S4-S10 (needs doc/supp)
-uv run --locked python scripts/step3_differential_expression.py               # Track B: independent DE, all planned fits
+uv run --locked python scripts/step3_differential_expression.py               # Track B: independent DE, including the site and histology follow-up
 uv run --locked python scripts/step3_differential_expression.py --plots       # Track B: MA, volcano and p-value plots only
 # Bonus selection (needs data/raw/bonus_lists), before Step 4 Track B
 uv run --locked python scripts/bonus_select_genes.py                          # Translator genes, rule in worksheets/bonus_translator.md

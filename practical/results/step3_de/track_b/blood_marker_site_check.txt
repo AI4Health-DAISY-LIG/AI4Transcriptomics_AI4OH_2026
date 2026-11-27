@@ -1,0 +1,25 @@
+GSE115650: per-biopsy blood markers
+Marker CSV SHA-256: 7108464950d35a53cec0c6fee70bbc82b1a50dc2454b80e086ee86cf0ee3f4cb
+Marker percentages use assigned gene counts as the denominator.
+
+cohort	site	condition	n	median_Hb_pct	median_neutrophil_pct	Spearman_rho_Hb_neut
+Track_B	Rochester	Control	9	0.08719836	0.00079920	0.9333
+Track_B	Rochester	FSHD	15	0.08893616	0.00184731	0.7679
+Track_B	Seattle	FSHD	15	0.36696753	0.00379133	0.8000
+inflammation	Rochester	Control	9	0.08719836	0.00079920	0.9333
+inflammation	Rochester	FSHD	15	0.08893616	0.00184731	0.7679
+inflammation	Seattle	FSHD	13	0.24883803	0.00336485	0.7802
+
+cohort	site	infiltrates	n	median_neutrophil_pct
+all_scored_FSHD	Rochester	absent	13	0.00222215
+all_scored_FSHD	Rochester	present	3	0.00184731
+all_scored_FSHD	Seattle	absent	8	0.00278378
+all_scored_FSHD	Seattle	present	8	0.00545978
+Track_B_scored_FSHD	Rochester	absent	12	0.00187229
+Track_B_scored_FSHD	Rochester	present	3	0.00184731
+Track_B_scored_FSHD	Seattle	absent	7	0.00220270
+Track_B_scored_FSHD	Seattle	present	6	0.00545978
+
+cohort	n	exact_two_sided_site_stratified_p
+all_scored_FSHD	32	0.326672
+Track_B_scored_FSHD	28	0.293179

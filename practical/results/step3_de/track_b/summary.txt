@@ -59,6 +59,41 @@
 [score_omit_01_0025] design: ~ batch + sex + score  samples: 29  excluded: 32-0008, 01-0037, 32-0009, 32-0004, 01-0025; FSHD only
   FSHD=29, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
   score_slope: finite p-value 27506, finite padj 27506, Cook's-filtered 0, independently filtered 0; padj < 0.05: 68 (up 67, down 1); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 68
+[score_site] design: ~ batch + sex + site + score  samples: 30  excluded: 32-0008, 01-0037, 32-0009, 32-0004; FSHD only
+  FSHD=30, score 0.04-21.23; genes refitted after Cook's outlier replacement: 0
+  score centered at 5.404526, scaled by 5.5261962; Wald contrast and standard error per original score unit
+  _genewise_converged: 27474 true, 32 false, 0 unavailable
+  _MAP_converged: 27470 true, 36 false, 0 unavailable
+  _LFC_converged: 27384 true, 122 false, 0 unavailable
+  score_slope: finite p-value 27506, finite padj 23773, Cook's-filtered 0, independently filtered 3733; padj < 0.05: 163 (up 145, down 18); also |log2FC| >= 1: 0, >= 2: 0; |log2FC across the G1-G4 span| >= 1: 161
+[groups_site] design: ~ batch + sex + site + group  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, G1=9, G2=5, G3=11, G4=5; genes refitted after Cook's outlier replacement: 0
+  _genewise_converged: 27463 true, 43 false, 0 unavailable
+  _MAP_converged: 27470 true, 36 false, 0 unavailable
+  _LFC_converged: 27270 true, 236 false, 0 unavailable
+  G1_vs_Control: finite p-value 27411, finite padj 18387, Cook's-filtered 95, independently filtered 9024; padj < 0.05: 28 (up 27, down 1); also |log2FC| >= 1: 25, >= 2: 18
+  G2_vs_Control: finite p-value 27411, finite padj 22096, Cook's-filtered 95, independently filtered 5315; padj < 0.05: 230 (up 213, down 17); also |log2FC| >= 1: 219, >= 2: 146
+  G3_vs_Control: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 283 (up 260, down 23); also |log2FC| >= 1: 257, >= 2: 168
+  G4_vs_Control: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 4446 (up 2677, down 1769); also |log2FC| >= 1: 3116, >= 2: 1445
+  G4_vs_G1: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 749 (up 513, down 236); also |log2FC| >= 1: 639, >= 2: 383
+[inflammation] design: ~ batch + sex + infiltrates  samples: 37  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD_grade0=19, FSHD_infiltrates=9; genes refitted after Cook's outlier replacement: 194
+  _genewise_converged: 27475 true, 31 false, 0 unavailable
+  _MAP_converged: 27467 true, 39 false, 0 unavailable
+  _LFC_converged: 27464 true, 42 false, 0 unavailable
+  additional FSHD exclusions for missing histology: 32-0011, 32-0016
+  FSHD_grade0_vs_Control: finite p-value 27453, finite padj 20001, Cook's-filtered 53, independently filtered 7452; padj < 0.05: 938 (up 805, down 133); also |log2FC| >= 1: 511, >= 2: 146
+  FSHD_infiltrates_vs_Control: finite p-value 27453, finite padj 22127, Cook's-filtered 53, independently filtered 5326; padj < 0.05: 7514 (up 4376, down 3138); also |log2FC| >= 1: 3436, >= 2: 1404
+  FSHD_infiltrates_vs_FSHD_grade0: finite p-value 27453, finite padj 20533, Cook's-filtered 53, independently filtered 6920; padj < 0.05: 4040 (up 2319, down 1721); also |log2FC| >= 1: 1136, >= 2: 240
+[inflammation_site] design: ~ batch + sex + site + infiltrates  samples: 37  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, FSHD_grade0=19, FSHD_infiltrates=9; genes refitted after Cook's outlier replacement: 0
+  _genewise_converged: 27482 true, 24 false, 0 unavailable
+  _MAP_converged: 27470 true, 36 false, 0 unavailable
+  _LFC_converged: 27383 true, 123 false, 0 unavailable
+  additional FSHD exclusions for missing histology: 32-0011, 32-0016
+  FSHD_grade0_vs_Control: finite p-value 27416, finite padj 18913, Cook's-filtered 90, independently filtered 8503; padj < 0.05: 1243 (up 1056, down 187); also |log2FC| >= 1: 653, >= 2: 202
+  FSHD_infiltrates_vs_Control: finite p-value 27416, finite padj 22095, Cook's-filtered 90, independently filtered 5321; padj < 0.05: 7227 (up 4183, down 3044); also |log2FC| >= 1: 3707, >= 2: 1463
+  FSHD_infiltrates_vs_FSHD_grade0: finite p-value 27416, finite padj 20503, Cook's-filtered 90, independently filtered 6913; padj < 0.05: 4635 (up 2633, down 2002); also |log2FC| >= 1: 1310, >= 2: 274
 robustness: 2577 genes with padj < 0.05 in primary; robust (planned five) 2408 (2319 on chr1-22); with Rochester 2385 (2297 on chr1-22); holds without sex 2565, site 2416, all43 2577, 32-0004 restored 2576, 32-0016 omitted 2577, Rochester only 2436; reported only: ~ condition 2560, Rochester without Cook's replacement 2440
 sensitive to 32-0016 (padj < 0.05 only without it): 187
 paired comparison with primary (genes significant in primary for ratios):

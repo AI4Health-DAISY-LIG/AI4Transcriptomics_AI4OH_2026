@@ -1,0 +1,10 @@
+[groups_site] design: ~ batch + sex + site + group  samples: 39  excluded: 32-0008, 01-0037, 32-0009, 32-0004
+  Control=9, G1=9, G2=5, G3=11, G4=5; genes refitted after Cook's outlier replacement: 0
+  _genewise_converged: 27463 true, 43 false, 0 unavailable
+  _MAP_converged: 27470 true, 36 false, 0 unavailable
+  _LFC_converged: 27270 true, 236 false, 0 unavailable
+  G1_vs_Control: finite p-value 27411, finite padj 18387, Cook's-filtered 95, independently filtered 9024; padj < 0.05: 28 (up 27, down 1); also |log2FC| >= 1: 25, >= 2: 18
+  G2_vs_Control: finite p-value 27411, finite padj 22096, Cook's-filtered 95, independently filtered 5315; padj < 0.05: 230 (up 213, down 17); also |log2FC| >= 1: 219, >= 2: 146
+  G3_vs_Control: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 283 (up 260, down 23); also |log2FC| >= 1: 257, >= 2: 168
+  G4_vs_Control: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 4446 (up 2677, down 1769); also |log2FC| >= 1: 3116, >= 2: 1445
+  G4_vs_G1: finite p-value 27411, finite padj 21032, Cook's-filtered 95, independently filtered 6379; padj < 0.05: 749 (up 513, down 236); also |log2FC| >= 1: 639, >= 2: 383

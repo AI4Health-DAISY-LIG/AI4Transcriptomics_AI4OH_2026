@@ -18,7 +18,7 @@ Yes. Totals over the 43 samples: LEUTX 902, KHDC1L 2,212, PRAMEF2 1,723, TRIM43 
 
 ## Exploration
 
-Figures (in `results/step2_qc/`). PCA with the authors' method: rlog of the GEO counts (`r/rlog_from_geo.R`), 500 most variable genes, centred (`scripts/step2_qc_exploration.py`); shape = condition, watched samples labelled.
+Figures (in `results/step2_qc/`). The PCA uses the authors' method with rlog of the GEO counts (`r/rlog_from_geo.R`) and 500 centred, highly variable genes (`scripts/step2_qc_exploration.py`). Shape indicates condition. The full-cohort plots label the three low-mapping libraries (32-0008, 01-0037 and 32-0009) and the fat-rich biopsy 32-0016. In Step 3, the fourth Track B exclusion was 32-0004 because its expression profile disagreed with its recorded sex.
 
 - PCA coloured by condition: `pca_by_condition.png`
 - PCA coloured by each technical variable: `pca_by_batch.png`, `pca_by_instrument_model.png` and `pca_by_tissue.png` (one value for all 43 samples, so they cannot separate anything: these two are coloured by condition, with the single instrument and the GEO tissue label stated in the subtitle), plus `pca_by_library_size_millions.png` and `pca_by_mapping_rate_pct.png`
