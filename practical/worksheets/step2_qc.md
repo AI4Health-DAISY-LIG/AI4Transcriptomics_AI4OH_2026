@@ -166,7 +166,7 @@ Result: 43 → 41 samples (9 controls, 32 FSHD). **Cost:** the paper reads these
  
 - **Exclude** `32-0016` and `01-0037` (see above). Reference PCA = VST on the 41 inliers.
 - **Gene set for PCA:** 1,500 most variable genes. The rlog plot is then close to the paper's and the choice reduces noise without dropping informative genes.
-- **Covariates:** keep `infer_gender` (PC2 η² 0.51, clean clusters). I connot adjust for `site`, `age` or `fat.fraction`: collinear with condition or missing for controls.
-- **Batch:** it carries depth and disease effects that cannot be separated without controls in batches I–II. I will test with and without it.
-- **Sensitivity designs for Step 3:** with/without the two outliers, with/without batch, batches III–IV only, and with/without `32-0014`.
-- **Limits to report:** control age and kinship are unknown, depth differs 2.6× between batches III and IV, and site, batch and condition overlap.
+- **Covariates:** Keep `infer_gender` (`sex`, PC2 $\eta^2 = 0.51$, clean orthogonal separation) and `site` (available for all 41 samples; PC1 $\eta^2 = 0.21$, $p = 0.0027$, partially overlapping with batch/condition but estimable). Add RNA-derived compositional proxies (`hemoglobin_pct`, `neutrophil_pct`) to adjust for biopsy blood/immune contamination. Do **not** include `age` (missing in controls and negligible variance in cases: PC1 $R^2 = 0.0035$, PC2 $R^2 = 0.0077$) or pathology/MRI severity metrics (`fat.fraction`, `inflam`, `path.score`, `rnaseq.score`, `stir`, `t1`), which are missing in controls and directly collinear with disease severity.
+- **Batch:** `batch` explains substantial variance (PC1 $\eta^2 = 0.39$, PC2 $\eta^2 = 0.16$) and carries sequencing depth and design imbalance because controls are restricted to batches III–IV. Include `batch` in the primary model and validate sensitivity without it and within batches III–IV alone.
+- **Sensitivity designs for Step 3:** Test primary model against `no_batch`, `no_site`, `no_blood` (omitting `hemoglobin_pct` and `neutrophil_pct`), `site01` (and `site01_no_blood`), `batch_III_IV` only, `without_32-0014`, and `with_outliers` (`32-0016`, `01-0037`).
+- **Limits to report:** Control age and kinship are unknown; sequencing depth differs ~2.6× between batches III and IV; and clinical `site`, `batch`, and `condition` show partial design overlap.
