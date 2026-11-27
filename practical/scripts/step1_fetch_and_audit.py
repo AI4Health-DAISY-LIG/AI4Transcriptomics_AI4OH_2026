@@ -11,7 +11,6 @@ Outputs (results/step1_audit/):
 
 Run:  uv run python scripts/step1_fetch_and_audit.py [--optional]
 """
-
 from __future__ import annotations
 
 import argparse
@@ -19,7 +18,6 @@ import gzip
 import re
 
 import pandas as pd
-
 import config
 import geo
 
