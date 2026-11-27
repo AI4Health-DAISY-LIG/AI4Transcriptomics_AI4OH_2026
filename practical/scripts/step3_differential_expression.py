@@ -32,6 +32,7 @@ OUT = config.RESULTS / "step3_de"
 ALPHA = 0.05
 BLOOD = ["hemoglobin_pct", "neutrophil_pct"]
 FULL = ["batch", "sex", "site", *BLOOD]
+REFERENCE_RUN = {"site01_no_blood": "site01"}
 
 
 def without(*terms: str) -> list[str]:
@@ -161,26 +162,34 @@ def run(
     return lines, results
 
 
-def compare(name: str, tag: str, res: pd.DataFrame, ref: pd.DataFrame) -> dict:
-    """Compare one contrast of one run with the same contrast of the primary run."""
+def compare(res: pd.DataFrame, ref: pd.DataFrame) -> dict:
+    """Compare one contrast of one run with the same contrast of a reference run."""
     sig = set(res.index[res["padj"] < ALPHA])
     ref_sig = set(ref.index[ref["padj"] < ALPHA])
     lfc = res["log2FoldChange"].reindex(ref.index)
+    ref_lfc = ref["log2FoldChange"]
+    same_sign = np.sign(lfc) == np.sign(ref_lfc)  # a missing value counts as False
+
+    shared = list(sig & ref_sig)
+    ref_genes = list(ref_sig)
     top = ref.sort_values("padj").head(100).index
-    up = int((res.loc[res["padj"] < ALPHA, "log2FoldChange"] > 0).sum())
+    up = int((res.loc[list(sig), "log2FoldChange"] > 0).sum())
+
     return {
-        "run": name,
-        "contrast": tag,
         "significant": len(sig),
         "up": up,
         "down": len(sig) - up,
-        "primary_significant": len(ref_sig),
-        "shared_with_primary": len(sig & ref_sig),
-        # Spearman correlation of the fold changes over all genes
-        "lfc_correlation": round(lfc.rank().corr(ref["log2FoldChange"].rank()), 3),
-        "top100_same_direction": int(
-            (np.sign(lfc[top]) == np.sign(ref.loc[top, "log2FoldChange"])).sum()
-        ),
+        "ref_significant": len(ref_sig),
+        "shared_same_direction": int(same_sign[shared].sum()),
+        "shared_opposite_direction": int((~same_sign[shared]).sum()),
+        "only_this_run": len(sig - ref_sig),
+        "only_reference": len(ref_sig - sig),
+        # rank agreement over all genes (says nothing about effect size)
+        "lfc_spearman": round(lfc.rank().corr(ref_lfc.rank()), 3),
+        # over the reference's significant genes: 1 = same size, 0.5 = halved
+        "median_effect_ratio": round((lfc[ref_genes] / ref_lfc[ref_genes]).median(), 3),
+        "top_genes": len(top),
+        "top_same_direction": int(same_sign[top].sum()),
     }
 
 
@@ -199,9 +208,12 @@ def main() -> None:
     x = counts.T.round().astype(int)
     meta = meta.copy()
     meta["condition"] = meta["condition"].astype(str)
-    meta["batch"] = meta["char:batch"].astype(str)
-    meta["sex"] = meta["char:infer_gender"].astype(str)
-    meta["site"] = meta["char:site"].astype(str)
+    for col, source in [
+        ("batch", "char:batch"),
+        ("sex", "char:infer_gender"),
+        ("site", "char:site"),
+    ]:
+        meta[col] = meta[source].astype(str).where(meta[source].notna())
 
     # The paper does not test all FSHD biopsies against the controls. It splits them into
     # four groups by biomarker expression and tests each group against the controls.
@@ -219,31 +231,52 @@ def main() -> None:
     blood.to_csv(OUT / "blood_by_condition.csv")
     print(blood.to_string())
 
-    primary: dict[str, pd.DataFrame] = {}
+    done: dict[str, dict] = {}  # run name -> {contrast: (res, n_control, n_case)}
     rows = []
     for name, (covariates, subset) in RUNS.items():
         out = OUT if name == "primary" else OUT / "sensitivity" / name
         out.mkdir(parents=True, exist_ok=True)
-        sub = select(meta, subset)
+        selected = select(meta, subset)
+        sub = selected.dropna(subset=FULL)
+        dropped = selected.index.difference(sub.index)
+        if len(dropped):
+            print(
+                f"{name}: dropped for missing covariates: {', '.join(map(str, dropped))}"
+            )
         summary = [f"run: {name}  samples: {len(sub)}  genes: {x.shape[1]}", ""]
+        done[name] = {}
         for factor in ("condition", "group"):
             lines, results = run(x.loc[sub.index], sub, factor, covariates, names, out)
             summary += lines + [""]
-            for tag, (res, n_control, n_case) in results.items():
-                if name == "primary":
-                    primary[tag] = res
-                if tag in primary:
-                    row = compare(name, tag, res, primary[tag])
-                    row.update(n_control=n_control, n_case=n_case)
-                    rows.append(row)
+            done[name].update(results)
         (out / "summary.txt").write_text("\n".join(summary), encoding="utf-8")
         print("\n" + "\n".join(summary))
-        # Saved after each run, so finished results survive a later failure.
+
+        if name == "primary":
+            continue
+        ref_name = REFERENCE_RUN.get(name, "primary")
+        for tag in done["primary"]:
+            row = {"run": name, "reference": ref_name, "contrast": tag}
+            if tag not in done[name]:
+                row["status"] = "not estimated in this run"
+            elif tag not in done[ref_name]:
+                row["status"] = "not estimated in reference"
+            else:
+                res, n_control, n_case = done[name][tag]
+                ref, ref_n_control, ref_n_case = done[ref_name][tag]
+                row.update(
+                    status="ok",
+                    n_control=n_control,
+                    n_case=n_case,
+                    ref_n_control=ref_n_control,
+                    ref_n_case=ref_n_case,
+                )
+                row.update(compare(res, ref))
+            rows.append(row)
         pd.DataFrame(rows).to_csv(OUT / "comparison.csv", index=False)
 
     table = pd.DataFrame(rows)
     print(table.to_string(index=False))
-    print(f"\nComparison saved to {OUT / 'comparison.csv'}")
 
 
 if __name__ == "__main__":
