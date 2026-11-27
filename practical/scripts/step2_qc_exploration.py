@@ -37,7 +37,7 @@ def load_counts() -> tuple[pd.DataFrame, pd.DataFrame]:
     # TODO(student): read results/step1_audit/counts_header_check.txt first. This join keeps
     # only the count columns whose name equals a GEO sample_id. If a column has no match,
     # find out which biopsy it is and decide: rename it, or leave it out and say why.
-    key = "char:sample_id" if "char:sample_id" in samples.columns else "title"
+    key = "title"   #changed, remain 
     meta = samples.set_index(key).reindex(counts.columns)
     missing = meta["condition"].isna()
     if missing.any():
@@ -96,7 +96,7 @@ def main() -> None:
     # TODO(student): choose and justify the rule. The default keeps a gene when at least
     # `min_samples` samples have `min_count` counts or more, with min_samples = smallest group.
     # Check what your rule does to the four biomarker genes of the paper (config.BIOMARKERS).
-    min_count = 10
+    min_count = 12  # changed 10 to 12
     min_samples = int(meta["condition"].value_counts().min())
     keep = (counts >= min_count).sum(axis=1) >= min_samples
     filtered = counts.loc[keep]

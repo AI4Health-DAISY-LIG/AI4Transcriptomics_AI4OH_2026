@@ -1,0 +1,3 @@
+rule: >= 12 counts in >= 9 samples
+genes before: 27506
+genes after: 18726
